@@ -4,6 +4,7 @@ import { TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 
 import { images } from "@/config/image"
+import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
   ChartTooltip,
@@ -47,7 +48,7 @@ const stakedData = [
 
 export default function Home() {
   return (
-    <div>
+    <div className="space-y-6">
       <div className="flex flex-col items-center gap-4 md:flex-row">
         <CircleCountdown className="size-[256px] shrink-0" />
         <div className="shrink-0 space-y-2">
@@ -116,6 +117,89 @@ export default function Home() {
             config={{
               value: {
                 color: "var(--color-accent-blue)",
+                label: "Staked",
+              },
+            }}
+          >
+            <LineChart data={stakedData}>
+              <CartesianGrid vertical={false} />
+              <YAxis hide domain={["dataMin", "dataMax"]} />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="var(--color-value)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+        </GradientBorderCard>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="active">Staking</Button>
+        <Button variant="inactive">Ecosystem</Button>
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="shrink-0 space-y-2">
+          <GradientBorderCard>
+            <div>Shards</div>
+            <div className="text-foreground text-base font-bold">1,000</div>
+            <div>Individual Data Partitions</div>
+          </GradientBorderCard>
+          <div className="flex items-center gap-2">
+            <GradientBorderCard>
+              <div>Storage Price</div>
+              <div className="text-foreground text-base font-bold">11,000</div>
+              <div>Frost/MiB/Epoch</div>
+            </GradientBorderCard>
+            <GradientBorderCard>
+              <div>Write Price</div>
+              <div className="text-foreground text-base font-bold">20,000</div>
+              <div>Frost/MiB</div>
+            </GradientBorderCard>
+          </div>
+        </div>
+        <GradientBorderCard className="h-full w-full">
+          <div>Total Storage Usage</div>
+          <div className="text-foreground text-xl">311,572 TB</div>
+          <ChartContainer
+            className="mt-2 max-h-[100px] w-full"
+            config={{
+              value: {
+                color: "var(--color-accent-purple)",
+                label: "Staked",
+              },
+            }}
+          >
+            <LineChart data={stakedData}>
+              <CartesianGrid vertical={false} />
+              <YAxis hide domain={["dataMin", "dataMax"]} />
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Line
+                type="monotone"
+                dataKey="value"
+                stroke="var(--color-value)"
+                strokeWidth={2}
+                dot={false}
+              />
+            </LineChart>
+          </ChartContainer>
+        </GradientBorderCard>
+        <GradientBorderCard className="h-full w-full">
+          <div>Total Paid Fee</div>
+          <div className="text-foreground text-xl">1048.16 WAL</div>
+          <ChartContainer
+            className="mt-2 max-h-[100px] w-full"
+            config={{
+              value: {
+                color: "var(--color-accent-purple)",
                 label: "Staked",
               },
             }}

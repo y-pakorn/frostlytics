@@ -99,7 +99,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             <AppSidebar />
             <div className="relative min-h-screen w-full">
               <img
-                className="fixed inset-0 -z-10 size-full object-cover opacity-8 blur-sm"
+                className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
                 src={images.bg}
                 alt="Background"
               />
