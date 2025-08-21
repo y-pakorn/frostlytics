@@ -47,7 +47,9 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-nav: var(--nav);
   --color-nav-foreground: var(--nav-foreground);
+  --color-tertiary: var(--tertiary);
   --color-tertiary-foreground: var(--tertiary-foreground);
+  --color-quaternary: var(--quaternary);
   --color-quaternary-foreground: var(--quaternary-foreground);
   --color-success-foreground: var(--success-foreground);
   --color-error-foreground: var(--error-foreground);
@@ -150,7 +152,7 @@
   --primary-hover: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
   --secondary-foreground: hsla(218, 4%, 60%, 1);
-  --muted: oklch(0.269 0 0);
+  --muted: hsla(254, 36%, 24%, 0.2);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.371 0 0);
   --accent-foreground: oklch(0.985 0 0);
@@ -175,6 +177,7 @@
   --sidebar-border: transparent;
   --sidebar-ring: oklch(0.439 0 0);
 
+  --tertiary: hsla(220, 4%, 60%, 1);
   --tertiary-foreground: hsla(220, 8%, 35%, 1);
   --quaternary-foreground: hsla(220, 6%, 47%, 1);
 

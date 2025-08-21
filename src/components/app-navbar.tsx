@@ -19,7 +19,7 @@ export function AppNavbar() {
         <h1 className="font-bold">Dashboard</h1>
         <div className="flex-1" />
         <div className="relative md:w-[320px]">
-          <Input placeholder="Search" className="h-11 pl-10" />
+          <Input placeholder="Search" className="pl-10" />
           <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
         </div>
         <Button

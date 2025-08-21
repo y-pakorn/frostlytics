@@ -1,6 +1,6 @@
 "use client"
 
-import { TrendingUp } from "lucide-react"
+import { ChevronDown, Search, TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 
 import { images } from "@/config/image"
@@ -10,8 +10,34 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
+
+const validators = [
+  {
+    name: "Mysten Labs 0",
+    id: "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
+    totalStaked: "25,515,385.3516",
+    apy: "0.67",
+    commission: "80",
+  },
+  {
+    name: "Studio Mirai",
+    id: "0xb07ab3db6b190fe6e32e499e7c79499786174689ae835485c178da0e9a977180",
+    totalStaked: "25,291,177.7264",
+    apy: "0.72",
+    commission: "45",
+  },
+]
 
 const apyData = [
   { date: "Jan 10, 2025", value: 15 },
@@ -222,6 +248,46 @@ export default function Home() {
           </ChartContainer>
         </GradientBorderCard>
       </div>
+      <div className="flex items-center gap-2">
+        <div className="font-semibold">All Operators</div>
+        <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
+          200
+        </div>
+        <div className="flex-1" />
+        <div className="relative md:w-[330px]">
+          <Input placeholder="Enter Validator Name" className="pl-10" />
+          <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+        </div>
+        <Button variant="outline">
+          All Operators <ChevronDown className="size-4" />
+        </Button>
+        <Button>Manage your staking</Button>
+      </div>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name/ID</TableHead>
+            <TableHead>APY%</TableHead>
+            <TableHead>Commission</TableHead>
+            <TableHead>Total Staked</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {validators.map((validator) => (
+            <TableRow key={validator.id}>
+              <TableCell>
+                <div className="font-medium">{validator.name}</div>
+                <div className="text-tertiary font-mono text-sm">
+                  {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
+                </div>
+              </TableCell>
+              <TableCell>{validator.apy}%</TableCell>
+              <TableCell>{validator.commission}%</TableCell>
+              <TableCell>{validator.totalStaked}</TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
     </div>
   )
 }
