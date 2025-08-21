@@ -44,6 +44,8 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-nav: var(--nav);
+  --color-nav-foreground: var(--nav-foreground);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -166,6 +168,9 @@
   --sidebar-accent-foreground: hsla(220, 3%, 93%, 1);
   --sidebar-border: transparent;
   --sidebar-ring: oklch(0.439 0 0);
+
+  --nav: hsla(244, 100%, 3%, 0.9);
+  --nav-foreground: hsla(0, 0%, 97%, 1);
 }
 
 @layer base {

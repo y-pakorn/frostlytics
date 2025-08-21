@@ -78,7 +78,7 @@ export function AppSidebar() {
   return (
     <Sidebar variant="sidebar" collapsible="icon">
       <SidebarHeader className="flex-row items-center gap-3 px-4 py-5 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-2">
-        <Icons.logo className="group-data-[state=collapsed]:size-6" />
+        <Icons.logo />
         <Icons.logoText className="group-data-[state=collapsed]:hidden" />
       </SidebarHeader>
       <SidebarContent>
@@ -106,7 +106,9 @@ export function AppSidebar() {
                         variant="gradient"
                       >
                         <item.icon className={cn(item.className)} />
-                        <span>{item.label}</span>
+                        <span className="group-data-[state=collapsed]:hidden">
+                          {item.label}
+                        </span>
                         {item.isExternal && (
                           <ArrowUpRight className="text-accent-blue! ml-auto" />
                         )}
@@ -119,7 +121,7 @@ export function AppSidebar() {
           </SidebarGroup>
         ))}
       </SidebarContent>
-      <SidebarFooter className="flex-row justify-end group-data-[state=collapsed]:justify-center">
+      <SidebarFooter className="flex-row justify-center">
         <Link
           href={links.twitter}
           target="_blank"
