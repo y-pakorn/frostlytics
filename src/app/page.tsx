@@ -112,7 +112,7 @@ export default function Home() {
           <div>Total Staked</div>
           <div className="text-foreground text-xl">2,200,444 WAL</div>
           <ChartContainer
-            className="mt-2"
+            className="mt-2 max-h-[170px] w-full"
             config={{
               value: {
                 color: "var(--color-accent-blue)",
