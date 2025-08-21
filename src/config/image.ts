@@ -3,4 +3,5 @@ export const images = {
   logoText: "/logo-text.webp",
   logoSvg: "/logo.svg",
   logoTextSvg: "/logo-text.svg",
+  bg: "/bg.webp",
 }

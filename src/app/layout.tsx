@@ -7,10 +7,12 @@ import { GoogleAnalytics } from "@next/third-parties/google"
 import { Analytics } from "@vercel/analytics/next"
 
 import { env } from "@/env.mjs"
+import { images } from "@/config/image"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
 import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import { AppNavbar } from "@/components/app-navbar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 
@@ -95,7 +97,15 @@ export default function RootLayout({ children }: RootLayoutProps) {
         >
           <SidebarProvider>
             <AppSidebar />
-            <main className="container min-h-screen py-8">{children}</main>
+            <div className="relative min-h-screen w-full">
+              <img
+                className="fixed inset-0 size-full object-cover opacity-10 blur-sm"
+                src={images.bg}
+                alt="Background"
+              />
+              <AppNavbar />
+              <div className="container flex-1 py-6">{children}</div>
+            </div>
           </SidebarProvider>
           <Toaster />
         </ThemeProvider>
