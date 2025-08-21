@@ -1,7 +1,8 @@
 import "@/styles/globals.css"
 
 import type { Metadata, Viewport } from "next"
-import { Inter } from "next/font/google"
+import { Geist_Mono } from "next/font/google"
+import localFont from "next/font/local"
 import { GoogleAnalytics } from "@next/third-parties/google"
 import { Analytics } from "@vercel/analytics/next"
 
@@ -11,7 +12,14 @@ import { cn } from "@/lib/utils"
 import { Toaster } from "@/components/ui/sonner"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const inter = Inter({ subsets: ["latin"] })
+const sans = localFont({
+  src: "./mosvita-vf.ttf",
+  variable: "--font-sans",
+})
+const mono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-mono",
+})
 
 interface RootLayoutProps {
   children: React.ReactNode
@@ -73,8 +81,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <head />
       <body
         className={cn(
-          "bg-background min-h-screen antialiased",
-          inter.className
+          "bg-background min-h-screen font-sans antialiased",
+          sans.variable,
+          mono.variable
         )}
       >
         <ThemeProvider

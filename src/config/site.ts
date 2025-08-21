@@ -1,15 +1,18 @@
 import { env } from "@/env.mjs"
 
+import { images } from "./image"
+
 export const siteConfig = {
-  name: "Next Template",
-  author: "Author",
-  description: "Description",
+  name: "Frostlytics",
+  author: "Frostlytics",
+  description:
+    "Frostlytics is a platform for analyzing the performance of the Frost network.",
   keywords: [],
   url: {
     base: env.NEXT_PUBLIC_APP_URL,
     author: "Author",
   },
   twitter: "",
-  favicon: "/favicon.ico",
+  favicon: images.logo,
   ogImage: `${env.NEXT_PUBLIC_APP_URL}/og.jpg`,
 }
