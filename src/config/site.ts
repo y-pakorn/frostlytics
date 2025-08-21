@@ -12,7 +12,7 @@ export const siteConfig = {
     base: env.NEXT_PUBLIC_APP_URL,
     author: "Author",
   },
-  twitter: "",
+  twitter: "@frostlytics",
   favicon: images.logo,
   ogImage: `${env.NEXT_PUBLIC_APP_URL}/og.jpg`,
 }

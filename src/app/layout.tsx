@@ -9,7 +9,9 @@ import { Analytics } from "@vercel/analytics/next"
 import { env } from "@/env.mjs"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
+import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
+import { AppSidebar } from "@/components/app-sidebar"
 import { ThemeProvider } from "@/components/theme-provider"
 
 const sans = localFont({
@@ -88,11 +90,13 @@ export default function RootLayout({ children }: RootLayoutProps) {
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="system"
-          enableSystem
+          forcedTheme="dark"
           disableTransitionOnChange
         >
-          {children}
+          <SidebarProvider>
+            <AppSidebar />
+            <main className="container min-h-screen py-8">{children}</main>
+          </SidebarProvider>
           <Toaster />
         </ThemeProvider>
       </body>
