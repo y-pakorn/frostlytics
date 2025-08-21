@@ -49,6 +49,8 @@
   --color-nav-foreground: var(--nav-foreground);
   --color-tertiary-foreground: var(--tertiary-foreground);
   --color-quaternary-foreground: var(--quaternary-foreground);
+  --color-success-foreground: var(--success-foreground);
+  --color-error-foreground: var(--error-foreground);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -147,7 +149,7 @@
   --primary-foreground: hsla(220, 24%, 12%, 1);
   --primary-hover: oklch(0.205 0 0);
   --secondary: oklch(0.269 0 0);
-  --secondary-foreground: hsla(220, 4%, 82%, 1);
+  --secondary-foreground: hsla(218, 4%, 60%, 1);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
   --accent: oklch(0.371 0 0);
@@ -175,6 +177,9 @@
 
   --tertiary-foreground: hsla(220, 8%, 35%, 1);
   --quaternary-foreground: hsla(220, 6%, 47%, 1);
+
+  --success-foreground: hsla(150, 57%, 54%, 1);
+  --error-foreground: hsla(350, 57%, 54%, 1);
 
   --nav: hsla(244, 100%, 3%, 0.9);
   --nav-foreground: hsla(0, 0%, 97%, 1);
