@@ -21,6 +21,8 @@ const buttonVariants = cva(
         outline: `border shadow-xs bg-primary text-secondary-foreground hover:bg-primary/90 hover:text-accent-foreground/75`,
         active: `bg-accent-purple text-primary-foreground shadow-xs hover:bg-accent-purple/90`,
         inactive: `bg-transparent text-secondary-foreground hover:bg-accent-purple/10`,
+        purple: `bg-accent-purple-dark text-foreground shadow-xs hover:bg-accent-purple-dark/90`,
+        purpleSecondary: `bg-transparent text-accent-purple hover:bg-accent-purple/10 shadow-xs`,
         secondary:
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:

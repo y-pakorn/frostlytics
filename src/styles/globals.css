@@ -27,6 +27,7 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-accent-blue: var(--accent-blue);
   --color-accent-purple: var(--accent-purple);
+  --color-accent-purple-dark: var(--accent-purple-dark);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
   --color-input: var(--input);
@@ -158,6 +159,7 @@
   --accent-foreground: oklch(0.985 0 0);
   --accent-blue: hsla(173, 75%, 77%, 1);
   --accent-purple: hsla(255, 100%, 74%, 1);
+  --accent-purple-dark: hsla(256, 85%, 58%, 1);
   --destructive: oklch(0.704 0.191 22.216);
   --border: hsla(220, 8%, 24%, 1);
   --input: hsla(220, 20%, 6%, 0.7);

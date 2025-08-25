@@ -5,7 +5,7 @@ import { Search } from "lucide-react"
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 
-const NAV_HEIGHT = "72px"
+const NAV_HEIGHT = "64px"
 
 export function AppNavbar() {
   return (

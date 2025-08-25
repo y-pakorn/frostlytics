@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/table"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Watermark } from "@/components/watermark"
 
 const validators = [
   {
@@ -268,7 +269,7 @@ export default function Home() {
         <Button variant="outline">
           All Operators <ChevronDown className="size-4" />
         </Button>
-        <Button>Manage your staking</Button>
+        <Button variant="purple">Manage your staking</Button>
       </div>
       <div className="flex items-center gap-2">
         <Table className="flex-1">
@@ -317,7 +318,7 @@ export default function Home() {
                     )}
                   </TableCell>
                   <TableCell className="text-end">
-                    <Button variant="outline" size="sm">
+                    <Button variant="purpleSecondary" size="sm">
                       Unstake
                     </Button>
                   </TableCell>

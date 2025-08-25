@@ -8,14 +8,14 @@ export const Icons = {
     <img
       {...props}
       src={images.logo}
-      className={cn("size-10 shrink-0", className)}
+      className={cn("size-10 shrink-0 object-contain", className)}
     />
   ),
   logoText: ({ className, ...props }: ComponentProps<"img">) => (
     <img
       {...props}
       src={images.logoText}
-      className={cn("h-10 shrink-0", className)}
+      className={cn("h-10 shrink-0 object-contain", className)}
     />
   ),
 }
