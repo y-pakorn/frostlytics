@@ -14,6 +14,7 @@ import {
 import { FaXTwitter } from "react-icons/fa6"
 
 import { links } from "@/config/link"
+import { navItems } from "@/config/nav"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -32,46 +33,6 @@ import {
 import { Icons } from "./icons"
 import { Button } from "./ui/button"
 
-const items = [
-  {
-    label: "DASHBOARD",
-    items: [
-      {
-        label: "Dashboard",
-        icon: LayoutDashboard,
-        href: "/",
-      },
-      {
-        label: "Profile",
-        icon: User,
-        href: "/profile",
-      },
-      {
-        label: "Reward Calculator",
-        icon: Gem,
-        href: "/reward-calculator",
-      },
-      {
-        label: "Become an Operator",
-        icon: PackageCheck,
-        href: links.becomeValidator,
-        isExternal: true,
-      },
-    ],
-  },
-] as {
-  label: string
-  items: {
-    label: string
-    icon: React.ElementType
-    href: string
-    className?: string
-    isExternal?: boolean
-    matchFn?: (pathname: string) => boolean
-    disabled?: boolean
-  }[]
-}[]
-
 export function AppSidebar() {
   const pathname = usePathname()
 
@@ -82,7 +43,7 @@ export function AppSidebar() {
         <Icons.logoText className="group-data-[state=collapsed]:hidden" />
       </SidebarHeader>
       <SidebarContent>
-        {items.map((item) => (
+        {navItems.map((item) => (
           <SidebarGroup key={item.label}>
             <SidebarGroupLabel>{item.label}</SidebarGroupLabel>
             <SidebarGroupContent>

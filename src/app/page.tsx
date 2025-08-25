@@ -28,6 +28,7 @@ const validators = [
     name: "Mysten Labs 0",
     id: "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
     totalStaked: "25,515,385.3516",
+    votingWeight: "0.45",
     apy: "0.67",
     commission: "80",
   },
@@ -35,6 +36,7 @@ const validators = [
     name: "Studio Mirai",
     id: "0xb07ab3db6b190fe6e32e499e7c79499786174689ae835485c178da0e9a977180",
     totalStaked: "25,291,177.7264",
+    votingWeight: "0.45",
     apy: "0.72",
     commission: "45",
   },
@@ -276,10 +278,11 @@ export default function Home() {
           <TableHeader>
             <TableRow>
               <TableHead>Name/ID</TableHead>
-              <TableHead>APY%</TableHead>
+              <TableHead>APY</TableHead>
+              <TableHead>Voting Weight</TableHead>
               <TableHead>Commission</TableHead>
-              <TableHead>Total Staked</TableHead>
-              <TableHead className="text-foreground text-end">
+              <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
+              <TableHead className="text-foreground rounded-tl-3xl text-end">
                 Your Staking
               </TableHead>
               <TableHead className="text-foreground text-end">Action</TableHead>
@@ -296,11 +299,16 @@ export default function Home() {
                       {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
                     </div>
                   </TableCell>
-                  <TableCell className="text-secondary">
+                  <TableCell className="text-accent-blue font-bold">
                     {validator.apy}%
                   </TableCell>
                   <TableCell className="text-secondary">
-                    {validator.commission}%
+                    {validator.votingWeight}
+                    <span className="text-tertiary">%</span>
+                  </TableCell>
+                  <TableCell className="text-secondary">
+                    {validator.commission}
+                    <span className="text-tertiary">%</span>
                   </TableCell>
                   <TableCell className="text-secondary">
                     {validator.totalStaked} WAL
