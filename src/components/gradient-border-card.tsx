@@ -11,21 +11,16 @@ export function GradientBorderCard({
     <div
       style={{
         background:
-          "linear-gradient(129.43deg, #644B9B 16.64%, rgba(43, 43, 43, 0) 72.56%)",
+          "linear-gradient(180deg, hsla(237, 37%, 6%, 0.4) 0%, hsla(254, 36%, 24%, 0.4) 100%)",
+        boxShadow: "0px 0px 0px 1px hsla(190, 33%, 8%, 1)",
+        border: "1px solid hsla(0, 0%, 17%, 0)",
       }}
-      className={cn("rounded-2xl p-[1px]", className)}
+      className={cn(
+        "text-secondary-foreground rounded-2xl px-4 py-3 text-sm font-semibold backdrop-blur-xs",
+        className
+      )}
     >
-      <div className="bg-background/85 rounded-2xl">
-        <div
-          style={{
-            background:
-              "linear-gradient(180deg, rgba(10, 11, 23, 0.4) 0%, rgba(50, 40, 84, 0.4) 100%);",
-          }}
-          className="text-secondary-foreground rounded-2xl px-4 py-3 text-sm font-semibold"
-        >
-          {children}
-        </div>
-      </div>
+      {children}
     </div>
   )
 }

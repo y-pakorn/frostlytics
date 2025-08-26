@@ -100,7 +100,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           >
             <SidebarProvider>
               <AppSidebar />
-              <div className="relative min-h-screen w-full">
+              <div className="relative flex min-h-screen w-full flex-col">
                 <img
                   className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
                   src={images.bg}

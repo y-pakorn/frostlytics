@@ -6,7 +6,6 @@ import { Search } from "lucide-react"
 
 import { navItems } from "@/config/nav"
 
-import { Button } from "./ui/button"
 import { Input } from "./ui/input"
 import { WalletButton } from "./wallet-button"
 

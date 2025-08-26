@@ -85,8 +85,8 @@
   @media (width >= --theme(--breakpoint-sm)) {
     max-width: none;
   }
-  @media (width >= 1400px) {
-    max-width: 1400px;
+  @media (width >= 1150px) {
+    max-width: 1150px;
   }
 }
 
