@@ -1,4 +1,5 @@
 import "@/styles/globals.css"
+import "@mysten/dapp-kit/dist/index.css"
 
 import type { Metadata, Viewport } from "next"
 import { JetBrains_Mono } from "next/font/google"

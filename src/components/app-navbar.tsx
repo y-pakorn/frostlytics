@@ -8,6 +8,7 @@ import { navItems } from "@/config/nav"
 
 import { Button } from "./ui/button"
 import { Input } from "./ui/input"
+import { WalletButton } from "./wallet-button"
 
 const NAV_HEIGHT = "64px"
 
@@ -32,15 +33,7 @@ export function AppNavbar() {
           <Input placeholder="Search" className="pl-10" />
           <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
         </div>
-        <Button
-          variant="outline"
-          className="rounded-full"
-          onClick={() => {
-            console.log("connect wallet")
-          }}
-        >
-          Connect Wallet
-        </Button>
+        <WalletButton />
       </div>
     </nav>
   )
