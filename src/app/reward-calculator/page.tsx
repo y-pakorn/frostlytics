@@ -17,7 +17,34 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
 import { GradientBorderCard } from "@/components/gradient-border-card"
+
+const validators = [
+  {
+    name: "Mysten Labs 0",
+    id: "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
+    totalStaked: "25,515,385.3516",
+    votingWeight: "0.45",
+    apy: "0.67",
+    commission: "80",
+  },
+  {
+    name: "Mysten Labs 1",
+    id: "0x1f11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
+    totalStaked: "13,842,910.1247",
+    votingWeight: "0.32",
+    apy: "0.89",
+    commission: "75",
+  },
+]
 
 const MAIN_SECTION_WIDTH = "383px"
 
@@ -202,7 +229,59 @@ export default function RewardCalculatorPage() {
           </form>
         </Form>
       </div>
-      <div className="w-full flex-1"></div>
+      <div className="w-full flex-1">
+        <h2 className="my-6 text-lg font-bold">Matched Validator</h2>
+        <Table className="flex-1">
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name/ID</TableHead>
+              <TableHead>APY</TableHead>
+              <TableHead>Voting Weight</TableHead>
+              <TableHead>Commission</TableHead>
+              <TableHead>Total Staked</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {result ? (
+              validators.map((validator) => {
+                return (
+                  <TableRow key={validator.id}>
+                    <TableCell>
+                      <div className="font-medium">{validator.name}</div>
+                      <div className="text-tertiary font-mono text-sm">
+                        {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-accent-blue font-bold">
+                      {validator.apy}%
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.votingWeight}
+                      <span className="text-tertiary">%</span>
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.commission}
+                      <span className="text-tertiary">%</span>
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.totalStaked} WAL
+                    </TableCell>
+                  </TableRow>
+                )
+              })
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={5}
+                  className="text-tertiary h-[360px] text-center"
+                >
+                  Start calculate reward to view validators suggestion
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
     </div>
   )
 }

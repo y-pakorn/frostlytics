@@ -273,69 +273,67 @@ export default function Home() {
         </Button>
         <Button variant="purple">Manage your staking</Button>
       </div>
-      <div className="flex items-center gap-2">
-        <Table className="flex-1">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name/ID</TableHead>
-              <TableHead>APY</TableHead>
-              <TableHead>Voting Weight</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
-              <TableHead className="text-foreground rounded-tl-3xl text-end">
-                Your Staking
-              </TableHead>
-              <TableHead className="text-foreground text-end">Action</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {validators.map((validator) => {
-              const s = staked[validator.id]
-              return (
-                <TableRow key={validator.id}>
-                  <TableCell>
-                    <div className="font-medium">{validator.name}</div>
-                    <div className="text-tertiary font-mono text-sm">
-                      {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-accent-blue font-bold">
-                    {validator.apy}%
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.votingWeight}
-                    <span className="text-tertiary">%</span>
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.commission}
-                    <span className="text-tertiary">%</span>
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.totalStaked} WAL
-                  </TableCell>
-                  <TableCell className="text-end">
-                    {s ? (
-                      <>
-                        <div className="font-bold">{s.amount} WAL</div>
-                        <div className="text-tertiary font-semibold">
-                          ${s.value}
-                        </div>
-                      </>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Button variant="purpleSecondary" size="sm">
-                      Unstake
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              )
-            })}
-          </TableBody>
-        </Table>
-      </div>
+      <Table className="flex-1">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Name/ID</TableHead>
+            <TableHead>APY</TableHead>
+            <TableHead>Voting Weight</TableHead>
+            <TableHead>Commission</TableHead>
+            <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
+            <TableHead className="text-foreground rounded-tl-3xl text-end">
+              Your Staking
+            </TableHead>
+            <TableHead className="text-foreground text-end">Action</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {validators.map((validator) => {
+            const s = staked[validator.id]
+            return (
+              <TableRow key={validator.id}>
+                <TableCell>
+                  <div className="font-medium">{validator.name}</div>
+                  <div className="text-tertiary font-mono text-sm">
+                    {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
+                  </div>
+                </TableCell>
+                <TableCell className="text-accent-blue font-bold">
+                  {validator.apy}%
+                </TableCell>
+                <TableCell className="text-secondary">
+                  {validator.votingWeight}
+                  <span className="text-tertiary">%</span>
+                </TableCell>
+                <TableCell className="text-secondary">
+                  {validator.commission}
+                  <span className="text-tertiary">%</span>
+                </TableCell>
+                <TableCell className="text-secondary">
+                  {validator.totalStaked} WAL
+                </TableCell>
+                <TableCell className="text-end">
+                  {s ? (
+                    <>
+                      <div className="font-bold">{s.amount} WAL</div>
+                      <div className="text-tertiary font-semibold">
+                        ${s.value}
+                      </div>
+                    </>
+                  ) : (
+                    "-"
+                  )}
+                </TableCell>
+                <TableCell className="text-end">
+                  <Button variant="purpleSecondary" size="sm">
+                    Unstake
+                  </Button>
+                </TableCell>
+              </TableRow>
+            )
+          })}
+        </TableBody>
+      </Table>
     </div>
   )
 }
