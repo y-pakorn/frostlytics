@@ -12,7 +12,8 @@ import {
 import type { WalletAccount } from "@mysten/wallet-standard"
 import BigNumber from "bignumber.js"
 import { blo } from "blo"
-import { ChevronDown, ExternalLink, LogOut } from "lucide-react"
+import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react"
+import { toast } from "sonner"
 
 import { images } from "@/config/image"
 import { links } from "@/config/link"
@@ -20,7 +21,7 @@ import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 
-import { Button } from "./ui/button"
+import { Button, buttonVariants } from "./ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -108,27 +109,24 @@ function ConnectWalletButton({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-[250px]">
-        <Link href={links.account(currentAccount.address)} target="_blank">
-          <DropdownMenuItem>
-            <img
-              src={blo(currentAccount.address as any)}
-              alt="logo"
-              className="size-10 shrink-0 rounded-full"
-            />
-            <div>
-              {name && <div className="truncate font-mono">{name}</div>}
-              <div
-                className={cn(
-                  "truncate font-mono",
-                  name && "text-secondary-foreground"
-                )}
-              >
-                {`${currentAccount.address.slice(0, 6)}...${currentAccount.address.slice(-4)}`}
-              </div>
+        <DropdownMenuItem>
+          <img
+            src={blo(currentAccount.address as any)}
+            alt="logo"
+            className="size-10 shrink-0 rounded-full"
+          />
+          <div>
+            {name && <div className="truncate font-mono">{name}</div>}
+            <div
+              className={cn(
+                "truncate font-mono",
+                name && "text-secondary-foreground"
+              )}
+            >
+              {`${currentAccount.address.slice(0, 6)}...${currentAccount.address.slice(-4)}`}
             </div>
-            <ExternalLink className="ml-auto" />
-          </DropdownMenuItem>
-        </Link>
+          </div>
+        </DropdownMenuItem>
         <DropdownMenuLabel>Tokens</DropdownMenuLabel>
         <DropdownMenuItem>
           <img src={images.sui} alt="sui" className="size-6" />
@@ -151,6 +149,22 @@ function ConnectWalletButton({
           )}
         </DropdownMenuItem>
 
+        <DropdownMenuSeparator />
+        <Link href={links.account(currentAccount.address)} target="_blank">
+          <DropdownMenuItem>
+            <ExternalLink />
+            View on SuiScan
+          </DropdownMenuItem>
+        </Link>
+        <DropdownMenuItem
+          onSelect={() => {
+            navigator.clipboard.writeText(currentAccount.address)
+            toast.success("Copied to clipboard")
+          }}
+        >
+          <Copy />
+          Copy Address
+        </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive" onSelect={() => disconnect()}>
           <LogOut />
