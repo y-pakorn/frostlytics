@@ -1,7 +1,7 @@
 import "@/styles/globals.css"
 
 import type { Metadata, Viewport } from "next"
-import { Geist_Mono } from "next/font/google"
+import { JetBrains_Mono } from "next/font/google"
 import localFont from "next/font/local"
 import { GoogleAnalytics } from "@next/third-parties/google"
 import { Analytics } from "@vercel/analytics/next"
@@ -14,13 +14,14 @@ import { SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { AppNavbar } from "@/components/app-navbar"
 import { AppSidebar } from "@/components/app-sidebar"
+import { Providers } from "@/components/providers"
 import { ThemeProvider } from "@/components/theme-provider"
 
 const sans = localFont({
   src: "./mosvita-vf.ttf",
   variable: "--font-sans",
 })
-const mono = Geist_Mono({
+const mono = JetBrains_Mono({
   subsets: ["latin"],
   variable: "--font-mono",
 })
@@ -90,25 +91,27 @@ export default function RootLayout({ children }: RootLayoutProps) {
           mono.variable
         )}
       >
-        <ThemeProvider
-          attribute="class"
-          forcedTheme="dark"
-          disableTransitionOnChange
-        >
-          <SidebarProvider>
-            <AppSidebar />
-            <div className="relative min-h-screen w-full">
-              <img
-                className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
-                src={images.bg}
-                alt="Background"
-              />
-              <AppNavbar />
-              <div className="container flex-1 py-6">{children}</div>
-            </div>
-          </SidebarProvider>
-          <Toaster />
-        </ThemeProvider>
+        <Providers>
+          <ThemeProvider
+            attribute="class"
+            forcedTheme="dark"
+            disableTransitionOnChange
+          >
+            <SidebarProvider>
+              <AppSidebar />
+              <div className="relative min-h-screen w-full">
+                <img
+                  className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
+                  src={images.bg}
+                  alt="Background"
+                />
+                <AppNavbar />
+                <div className="container flex-1 py-6">{children}</div>
+              </div>
+            </SidebarProvider>
+            <Toaster />
+          </ThemeProvider>
+        </Providers>
         <Analytics />
       </body>
       {env.NEXT_PUBLIC_GA_ID && (
