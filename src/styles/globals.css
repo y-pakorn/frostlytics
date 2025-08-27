@@ -30,6 +30,7 @@
   --color-accent-purple: var(--accent-purple);
   --color-accent-purple-light: var(--accent-purple-light);
   --color-accent-purple-dark: var(--accent-purple-dark);
+  --color-accent-purple-deep: var(--accent-purple-deep);
   --color-placeholder: var(--placeholder);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -51,6 +52,7 @@
   --color-sidebar-ring: var(--sidebar-ring);
   --color-nav: var(--nav);
   --color-nav-foreground: var(--nav-foreground);
+  --color-disabled: var(--disabled);
   --color-tertiary: var(--tertiary);
   --color-tertiary-foreground: var(--tertiary-foreground);
   --color-quaternary: var(--quaternary);
@@ -165,6 +167,7 @@
   --accent-purple: hsla(255, 100%, 74%, 1);
   --accent-purple-light: hsla(249, 94%, 76%, 1);
   --accent-purple-dark: hsla(256, 85%, 58%, 1);
+  --accent-purple-deep: hsla(257, 69%, 22%, 1);
   --placeholder: hsla(220, 4%, 54%, 1);
   --destructive: oklch(0.704 0.191 22.216);
   --border: hsla(220, 8%, 24%, 1);
@@ -185,6 +188,7 @@
   --sidebar-border: transparent;
   --sidebar-ring: oklch(0.439 0 0);
 
+  --disabled: hsla(220, 4%, 54%, 1);
   --tertiary: hsla(220, 4%, 60%, 1);
   --tertiary-foreground: hsla(220, 8%, 35%, 1);
   --quaternary-foreground: hsla(220, 6%, 47%, 1);
