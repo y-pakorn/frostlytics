@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+import { useSearchParams } from "next/navigation"
 import { ChevronDown, Search, TrendingUp } from "lucide-react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
 
@@ -83,6 +85,10 @@ const stakedData = [
 ]
 
 export default function Home() {
+  const searchParams = useSearchParams()
+  const tab: "staking" | "ecosystem" =
+    searchParams.get("tab") === "ecosystem" ? "ecosystem" : "staking"
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-4 md:flex-row">
@@ -176,164 +182,183 @@ export default function Home() {
         </GradientBorderCard>
       </div>
       <div className="flex items-center gap-2">
-        <Button variant="active">Staking</Button>
-        <Button variant="inactive">Ecosystem</Button>
+        <Button variant={tab === "staking" ? "active" : "inactive"} size="sm">
+          Staking
+        </Button>
+        <Button
+          disabled
+          variant={tab === "ecosystem" ? "active" : "inactive"}
+          size="sm"
+        >
+          Ecosystem
+        </Button>
       </div>
-      <div className="flex items-center gap-2">
-        <div className="shrink-0 space-y-2">
-          <GradientBorderCard>
-            <div>Shards</div>
-            <div className="text-foreground text-base font-bold">1,000</div>
-            <div>Individual Data Partitions</div>
-          </GradientBorderCard>
+      {tab === "staking" && (
+        <div className="space-y-6">
           <div className="flex items-center gap-2">
-            <GradientBorderCard>
-              <div>Storage Price</div>
-              <div className="text-foreground text-base font-bold">11,000</div>
-              <div>Frost/MiB/Epoch</div>
+            <div className="shrink-0 space-y-2">
+              <GradientBorderCard>
+                <div>Shards</div>
+                <div className="text-foreground text-base font-bold">1,000</div>
+                <div>Individual Data Partitions</div>
+              </GradientBorderCard>
+              <div className="flex items-center gap-2">
+                <GradientBorderCard>
+                  <div>Storage Price</div>
+                  <div className="text-foreground text-base font-bold">
+                    11,000
+                  </div>
+                  <div>Frost/MiB/Epoch</div>
+                </GradientBorderCard>
+                <GradientBorderCard>
+                  <div>Write Price</div>
+                  <div className="text-foreground text-base font-bold">
+                    20,000
+                  </div>
+                  <div>Frost/MiB</div>
+                </GradientBorderCard>
+              </div>
+            </div>
+            <GradientBorderCard className="h-full w-full">
+              <div>Total Storage Usage</div>
+              <div className="text-foreground text-xl">311,572 TB</div>
+              <ChartContainer
+                className="mt-2 max-h-[100px] w-full"
+                config={{
+                  value: {
+                    color: "var(--color-accent-purple)",
+                    label: "Storage Usage (TB)",
+                  },
+                }}
+              >
+                <LineChart data={stakedData}>
+                  <CartesianGrid vertical={false} />
+                  <YAxis hide domain={["dataMin", "dataMax"]} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--color-value)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
             </GradientBorderCard>
-            <GradientBorderCard>
-              <div>Write Price</div>
-              <div className="text-foreground text-base font-bold">20,000</div>
-              <div>Frost/MiB</div>
+            <GradientBorderCard className="h-full w-full">
+              <div>Total Paid Fee</div>
+              <div className="text-foreground text-xl">1048.16 WAL</div>
+              <ChartContainer
+                className="mt-2 max-h-[100px] w-full"
+                config={{
+                  value: {
+                    color: "var(--color-accent-purple)",
+                    label: "Total Paid Fee (WAL)",
+                  },
+                }}
+              >
+                <LineChart data={stakedData}>
+                  <CartesianGrid vertical={false} />
+                  <YAxis hide domain={["dataMin", "dataMax"]} />
+                  <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="value"
+                    stroke="var(--color-value)"
+                    strokeWidth={2}
+                    dot={false}
+                  />
+                </LineChart>
+              </ChartContainer>
             </GradientBorderCard>
           </div>
-        </div>
-        <GradientBorderCard className="h-full w-full">
-          <div>Total Storage Usage</div>
-          <div className="text-foreground text-xl">311,572 TB</div>
-          <ChartContainer
-            className="mt-2 max-h-[100px] w-full"
-            config={{
-              value: {
-                color: "var(--color-accent-purple)",
-                label: "Storage Usage (TB)",
-              },
-            }}
-          >
-            <LineChart data={stakedData}>
-              <CartesianGrid vertical={false} />
-              <YAxis hide domain={["dataMin", "dataMax"]} />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-value)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ChartContainer>
-        </GradientBorderCard>
-        <GradientBorderCard className="h-full w-full">
-          <div>Total Paid Fee</div>
-          <div className="text-foreground text-xl">1048.16 WAL</div>
-          <ChartContainer
-            className="mt-2 max-h-[100px] w-full"
-            config={{
-              value: {
-                color: "var(--color-accent-purple)",
-                label: "Total Paid Fee (WAL)",
-              },
-            }}
-          >
-            <LineChart data={stakedData}>
-              <CartesianGrid vertical={false} />
-              <YAxis hide domain={["dataMin", "dataMax"]} />
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Line
-                type="monotone"
-                dataKey="value"
-                stroke="var(--color-value)"
-                strokeWidth={2}
-                dot={false}
-              />
-            </LineChart>
-          </ChartContainer>
-        </GradientBorderCard>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="font-semibold">All Operators</div>
-        <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
-          200
-        </div>
-        <div className="flex-1" />
-        <div className="relative md:w-[330px]">
-          <Input placeholder="Enter Operator Name" className="pl-10" />
-          <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
-        </div>
-        <Button variant="outline">
-          All Operators <ChevronDown className="size-4" />
-        </Button>
-        <Button variant="purple">Manage your staking</Button>
-      </div>
-      <Table className="flex-1">
-        <TableHeader>
-          <TableRow>
-            <TableHead>Name/ID</TableHead>
-            <TableHead>APY</TableHead>
-            <TableHead>Voting Weight</TableHead>
-            <TableHead>Commission</TableHead>
-            <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
-            <TableHead className="text-foreground rounded-tl-3xl text-end">
-              Your Staking
-            </TableHead>
-            <TableHead className="text-foreground text-end">Action</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {validators.map((validator) => {
-            const s = staked[validator.id]
-            return (
-              <TableRow key={validator.id}>
-                <TableCell>
-                  <div className="font-medium">{validator.name}</div>
-                  <div className="text-tertiary font-mono text-sm">
-                    {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
-                  </div>
-                </TableCell>
-                <TableCell className="text-accent-blue font-bold">
-                  {validator.apy}%
-                </TableCell>
-                <TableCell className="text-secondary">
-                  {validator.votingWeight}
-                  <span className="text-tertiary">%</span>
-                </TableCell>
-                <TableCell className="text-secondary">
-                  {validator.commission}
-                  <span className="text-tertiary">%</span>
-                </TableCell>
-                <TableCell className="text-secondary">
-                  {validator.totalStaked} WAL
-                </TableCell>
-                <TableCell className="text-end">
-                  {s ? (
-                    <>
-                      <div className="font-bold">{s.amount} WAL</div>
-                      <div className="text-tertiary font-semibold">
-                        ${s.value}
-                      </div>
-                    </>
-                  ) : (
-                    "-"
-                  )}
-                </TableCell>
-                <TableCell className="text-end">
-                  <Button variant="purpleSecondary" size="sm">
-                    Unstake
-                  </Button>
-                </TableCell>
+          <div className="flex items-center gap-2">
+            <div className="font-semibold">All Operators</div>
+            <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
+              200
+            </div>
+            <div className="flex-1" />
+            <div className="relative md:w-[330px]">
+              <Input placeholder="Enter Operator Name" className="pl-10" />
+              <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+            </div>
+            <Button variant="outline">
+              All Operators <ChevronDown className="size-4" />
+            </Button>
+            <Button variant="purple">Manage your staking</Button>
+          </div>
+          <Table className="flex-1">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Name/ID</TableHead>
+                <TableHead>APY</TableHead>
+                <TableHead>Voting Weight</TableHead>
+                <TableHead>Commission</TableHead>
+                <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
+                <TableHead className="text-foreground rounded-tl-3xl text-end">
+                  Your Staking
+                </TableHead>
+                <TableHead className="text-foreground text-end">
+                  Action
+                </TableHead>
               </TableRow>
-            )
-          })}
-        </TableBody>
-      </Table>
+            </TableHeader>
+            <TableBody>
+              {validators.map((validator) => {
+                const s = staked[validator.id]
+                return (
+                  <TableRow key={validator.id}>
+                    <TableCell>
+                      <div className="font-medium">{validator.name}</div>
+                      <div className="text-tertiary font-mono text-sm">
+                        {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-accent-blue font-bold">
+                      {validator.apy}%
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.votingWeight}
+                      <span className="text-tertiary">%</span>
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.commission}
+                      <span className="text-tertiary">%</span>
+                    </TableCell>
+                    <TableCell className="text-secondary">
+                      {validator.totalStaked} WAL
+                    </TableCell>
+                    <TableCell className="text-end">
+                      {s ? (
+                        <>
+                          <div className="font-bold">{s.amount} WAL</div>
+                          <div className="text-tertiary font-semibold">
+                            ${s.value}
+                          </div>
+                        </>
+                      ) : (
+                        "-"
+                      )}
+                    </TableCell>
+                    <TableCell className="text-end">
+                      <Button variant="purpleSecondary" size="sm">
+                        Unstake
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                )
+              })}
+            </TableBody>
+          </Table>
+        </div>
+      )}
+      {tab === "ecosystem" && <div className="space-y-6"></div>}
     </div>
   )
 }

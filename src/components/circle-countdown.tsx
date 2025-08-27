@@ -29,10 +29,22 @@ export function CircleCountdown({
           const outerRadius = 50 // 50% of viewBox (circle edge)
           const innerRadius = outerRadius - tickLength
 
-          const x1 = 50 + innerRadius * Math.cos((angle * Math.PI) / 180)
-          const y1 = 50 + innerRadius * Math.sin((angle * Math.PI) / 180)
-          const x2 = 50 + outerRadius * Math.cos((angle * Math.PI) / 180)
-          const y2 = 50 + outerRadius * Math.sin((angle * Math.PI) / 180)
+          const x1 =
+            Math.round(
+              (50 + innerRadius * Math.cos((angle * Math.PI) / 180)) * 1000
+            ) / 1000
+          const y1 =
+            Math.round(
+              (50 + innerRadius * Math.sin((angle * Math.PI) / 180)) * 1000
+            ) / 1000
+          const x2 =
+            Math.round(
+              (50 + outerRadius * Math.cos((angle * Math.PI) / 180)) * 1000
+            ) / 1000
+          const y2 =
+            Math.round(
+              (50 + outerRadius * Math.sin((angle * Math.PI) / 180)) * 1000
+            ) / 1000
 
           return (
             <line
