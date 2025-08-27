@@ -11,7 +11,7 @@ export function GradientBorderCard({
     <div
       style={{
         background:
-          "linear-gradient(180deg, hsla(237, 37%, 6%, 0.4) 0%, hsla(254, 36%, 24%, 0.4) 100%)",
+          "linear-gradient(180deg, hsla(237, 37%, 6%, 0.2) 0%, hsla(254, 36%, 24%, 0.2) 100%)",
         boxShadow: "0px 0px 0px 1px hsla(190, 33%, 8%, 1)",
         border: "1px solid hsla(0, 0%, 17%, 0)",
       }}
