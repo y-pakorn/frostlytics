@@ -88,7 +88,9 @@ export const useStaking = () => {
       epoch: content.epoch as number,
       epochDurationMs: parseFloat(content.epoch_duration),
       firstEpochStartMs: parseFloat(content.first_epoch_start),
-      epochChangeDoneMs: parseFloat(content.epoch_state.fields.pos0),
+      epochChangeDoneMs: content.epoch_state.fields.pos0
+        ? parseFloat(content.epoch_state.fields.pos0)
+        : Date.now(),
       nShards: content.n_shards as number,
     }
   }, [data.data])

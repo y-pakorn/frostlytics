@@ -1,3 +1,4 @@
+import dayjs from "dayjs"
 import _ from "lodash"
 import numbro from "numbro"
 
@@ -24,4 +25,5 @@ export const formatter = {
       optionalMantissa: true,
       postfix: percent ? "%" : "",
     }),
+  date: (v?: any) => dayjs(v).format("DD MMM YYYY hh:mm A"),
 }
