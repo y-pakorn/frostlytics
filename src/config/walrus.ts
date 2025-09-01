@@ -1,10 +1,6 @@
 export const walrus = {
-  stakingInner:
-    "0x5849e7cdbdaad46b6c68a5462ed1fc58c302862785769b450c882679bc452999",
-  systemInner:
-    "0xc5e430c7c517e99da14e67928b360f3260de47cb61f55338cdd9119f519c282c",
-  poolTable:
-    "0x23ec98c791548aad0712822afab68a2a8c2a548b346193873cc80eb2f66d5b5e",
+  staking: "0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904",
+  system: "0x2134d52768ea07e8c43570ef975eb3e4c27a39fa6396bef985b5abc58d03ddd2",
   walToken:
     "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
   suiToken: "0x2::sui::SUI",

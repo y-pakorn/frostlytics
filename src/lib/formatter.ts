@@ -9,4 +9,11 @@ export const formatter = {
       trimMantissa: true,
       optionalMantissa: true,
     }),
+  percentage: (v?: any, mantissa = 2) =>
+    numbro(v * 100).format({
+      mantissa,
+      thousandSeparated: true,
+      trimMantissa: true,
+      optionalMantissa: true,
+    }) + "%",
 }

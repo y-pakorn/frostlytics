@@ -5,10 +5,15 @@ import {
   SuiClient,
   SuiObjectDataOptions,
 } from "@mysten/sui/client"
+import { SuiGraphQLClient } from "@mysten/sui/graphql"
 import _ from "lodash"
 
 export const suiClient = new SuiClient({
   url: getFullnodeUrl("mainnet"),
+})
+
+export const suiGraphQLClient = new SuiGraphQLClient({
+  url: "https://sui-testnet.mystenlabs.com/graphql",
 })
 
 export const recursiveGetDynamicFields = cache(
