@@ -1,9 +1,35 @@
 "use client"
 
-import { ChevronDown, Search, TrendingUp } from "lucide-react"
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import {
+  ColumnDef,
+  ColumnFiltersState,
+  flexRender,
+  getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  SortingState,
+  useReactTable,
+} from "@tanstack/react-table"
+import _ from "lodash"
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  Copy,
+  Search,
+  TrendingUp,
+} from "lucide-react"
 import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
+import { toast } from "sonner"
 
+import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
+import { formatter } from "@/lib/formatter"
+import { cn } from "@/lib/utils"
+import { useOperatorsWithSharesAndBaseApy } from "@/hooks/use-operators"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
@@ -11,6 +37,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Input } from "@/components/ui/input"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -21,25 +48,6 @@ import {
 } from "@/components/ui/table"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
-
-const validators = [
-  {
-    name: "Mysten Labs 0",
-    id: "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
-    totalStaked: "25,515,385.3516",
-    votingWeight: "0.45",
-    apy: "0.67",
-    commission: "80",
-  },
-  {
-    name: "Studio Mirai",
-    id: "0xb07ab3db6b190fe6e32e499e7c79499786174689ae835485c178da0e9a977180",
-    totalStaked: "25,291,177.7264",
-    votingWeight: "0.45",
-    apy: "0.72",
-    commission: "45",
-  },
-]
 
 const staked = {
   "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd": {
@@ -83,6 +91,158 @@ const stakedData = [
 ]
 
 export default function Home() {
+  const operators = useOperatorsWithSharesAndBaseApy()
+
+  const columns = useMemo(
+    () =>
+      [
+        {
+          header: "Name/ID",
+          accessorKey: "name",
+          enableSorting: false,
+          cell: ({ row }) => {
+            const operator = row.original
+            return (
+              <div>
+                <div className="line-clamp-1 inline-flex w-min items-center gap-1 truncate font-medium">
+                  {operator.name}
+                  {operator.isCommittee && (
+                    <Badge variant="accentPurple" size="sm" className="">
+                      Committee
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
+                  {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
+                  <Button
+                    size="iconXs"
+                    variant="ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(operator.id)
+                      toast.success("Copied to clipboard")
+                    }}
+                  >
+                    <Copy />
+                  </Button>
+                </div>
+              </div>
+            )
+          },
+        },
+        {
+          header: "APY",
+          id: "apyWithCommission",
+          accessorKey: "apyWithCommission",
+          enableSorting: true,
+          cell: ({ row }) => {
+            return (
+              <div className="text-accent-blue font-bold">
+                {formatter.percentage(row.original.apyWithCommission)}
+              </div>
+            )
+          },
+        },
+        {
+          header: "Voting Weight",
+          accessorKey: "pct",
+          enableSorting: true,
+          cell: ({ row }) => {
+            return (
+              <div>
+                {formatter.percentage(row.original.pct, { percent: false })}
+                <span className="text-tertiary">%</span>
+              </div>
+            )
+          },
+        },
+        {
+          header: "Commission",
+          accessorKey: "commissionRate",
+          enableSorting: true,
+          sortDescFirst: false,
+          cell: ({ row }) => {
+            return (
+              <div>
+                {formatter.percentage(row.original.commissionRate, {
+                  percent: false,
+                })}
+                <span className="text-tertiary">%</span>
+              </div>
+            )
+          },
+        },
+        {
+          id: "staked",
+          header: "Total Staked",
+          accessorKey: "staked",
+          enableSorting: true,
+          cell: ({ row }) => {
+            if (!row.original.staked)
+              return <div className="text-tertiary">-</div>
+            return (
+              <div>{formatter.numberReadable(row.original.staked)} WAL</div>
+            )
+          },
+        },
+        {
+          id: "yourStake",
+          header: "Your Stake",
+          accessorKey: "yourStake",
+          enableSorting: false,
+          cell: ({ row }) => {
+            const s = staked[row.original.id]
+            if (!s) return <div className="text-tertiary text-end">-</div>
+            return (
+              <div className="text-end">{formatter.number(s?.amount)} WAL</div>
+            )
+          },
+        },
+        {
+          id: "action",
+          header: "Action",
+          accessorKey: "action",
+          enableSorting: false,
+          cell: ({ row }) => {
+            return (
+              <div className="text-end">
+                <Button variant="purpleSecondary" size="xs">
+                  Unstake
+                </Button>
+              </div>
+            )
+          },
+        },
+      ] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[],
+    [staked]
+  )
+
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "staked",
+      desc: true,
+    },
+  ])
+  const [globalFilter, setGlobalFilter] = useState<any>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
+
+  const table = useReactTable({
+    data: operators.data || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getRowId: (row) => row.id,
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      globalFilter,
+      columnFilters,
+    },
+    sortDescFirst: true,
+  })
+
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-4 md:flex-row">
@@ -274,73 +434,95 @@ export default function Home() {
           </div>
           <div className="flex-1" />
           <div className="relative md:w-[330px]">
-            <Input placeholder="Enter Operator Name" className="pl-10" />
+            <Input
+              placeholder="Enter Operator Name"
+              className="pl-10"
+              onChange={(e) => table.setGlobalFilter(e.target.value)}
+            />
             <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
           </div>
           <Button variant="outline">
             All Operators <ChevronDown className="size-4" />
           </Button>
-          <Button variant="purple">Manage your staking</Button>
+          <Link href="/profile">
+            <Button variant="purple">Manage your staking</Button>
+          </Link>
         </div>
-        <Table className="flex-1">
+        <Table className="max-w-auto">
           <TableHeader>
-            <TableRow>
-              <TableHead>Name/ID</TableHead>
-              <TableHead>APY</TableHead>
-              <TableHead>Voting Weight</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead className="rounded-tr-3xl">Total Staked</TableHead>
-              <TableHead className="text-foreground rounded-tl-3xl text-end">
-                Your Staking
-              </TableHead>
-              <TableHead className="text-foreground text-end">Action</TableHead>
-            </TableRow>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  const sorted = header.column.getIsSorted()
+                  const canSort = header.column.getCanSort()
+
+                  const Icon =
+                    sorted === "asc"
+                      ? ChevronUp
+                      : sorted === "desc"
+                        ? ChevronDown
+                        : ChevronsUpDown
+                  return (
+                    <TableHead
+                      key={header.id}
+                      style={{ width: `${header.getSize()}px` }}
+                      className={cn(canSort && "cursor-default select-none")}
+                      onClick={() => canSort && header.column.toggleSorting()}
+                    >
+                      <div className="flex items-center gap-1">
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                        {header.column.getCanSort() && (
+                          <Button variant="ghost" size="iconXs">
+                            <Icon />
+                          </Button>
+                        )}
+                      </div>
+                    </TableHead>
+                  )
+                })}
+              </TableRow>
+            ))}
           </TableHeader>
           <TableBody>
-            {validators.map((validator) => {
-              const s = staked[validator.id]
-              return (
-                <TableRow key={validator.id}>
-                  <TableCell>
-                    <div className="font-medium">{validator.name}</div>
-                    <div className="text-tertiary font-mono text-sm">
-                      {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-accent-blue font-bold">
-                    {validator.apy}%
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.votingWeight}
-                    <span className="text-tertiary">%</span>
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.commission}
-                    <span className="text-tertiary">%</span>
-                  </TableCell>
-                  <TableCell className="text-secondary">
-                    {validator.totalStaked} WAL
-                  </TableCell>
-                  <TableCell className="text-end">
-                    {s ? (
-                      <>
-                        <div className="font-bold">{s.amount} WAL</div>
-                        <div className="text-tertiary font-semibold">
-                          ${s.value}
-                        </div>
-                      </>
-                    ) : (
-                      "-"
-                    )}
-                  </TableCell>
-                  <TableCell className="text-end">
-                    <Button variant="purpleSecondary" size="sm">
-                      Unstake
-                    </Button>
+            {operators.isPending ? (
+              _.range(10).map((i) => (
+                <TableRow key={i}>
+                  <TableCell colSpan={columns.length}>
+                    <Skeleton className="h-3/4 w-full" />
                   </TableCell>
                 </TableRow>
-              )
-            })}
+              ))
+            ) : table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>

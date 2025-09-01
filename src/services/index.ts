@@ -94,7 +94,7 @@ export const getAllOperators = cache(async () => {
   return pools
 })
 
-export const getSharesAndBaseApy = cache(async () => {
+export const getAllOperatorsWithSharesAndBaseApy = cache(async () => {
   const systemInner = await suiClient
     .getDynamicFields({
       parentId: walrus.system,
@@ -168,7 +168,7 @@ export const getSharesAndBaseApy = cache(async () => {
   // Step 4: Calculate raw APR (simple interest)
   const baseApr = epochRewardRate * epochsPerYear
 
-  const operatorWithApy = _.chain(operators)
+  const operatorsWithApy = _.chain(operators)
     .map((o) => {
       const share = sharesById[o.id]!
       if (!share) return null
@@ -204,12 +204,12 @@ export const getSharesAndBaseApy = cache(async () => {
     totalStaked,
     baseApy,
     baseApr,
-    operatorWithApy,
+    operators: operatorsWithApy,
   }
 })
 
-export const getSharesAndBaseApyCached = unstable_cache(
-  getSharesAndBaseApy,
+export const getAllOperatorsWithSharesAndBaseApyCached = unstable_cache(
+  getAllOperatorsWithSharesAndBaseApy,
   ["shares-and-base-apy"],
   {
     revalidate: 86400, // 24 hours

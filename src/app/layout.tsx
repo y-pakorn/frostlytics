@@ -11,7 +11,7 @@ import { env } from "@/env.mjs"
 import { images } from "@/config/image"
 import { siteConfig } from "@/config/site"
 import { cn } from "@/lib/utils"
-import { SidebarProvider } from "@/components/ui/sidebar"
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar"
 import { Toaster } from "@/components/ui/sonner"
 import { AppNavbar } from "@/components/app-navbar"
 import { AppSidebar } from "@/components/app-sidebar"
@@ -100,7 +100,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
           >
             <SidebarProvider>
               <AppSidebar />
-              <div className="relative flex min-h-screen w-full flex-col">
+              <SidebarInset className="relative flex min-h-screen w-full flex-col overflow-hidden">
                 <img
                   className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
                   src={images.bg}
@@ -108,7 +108,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 />
                 <AppNavbar />
                 <div className="container flex-1 py-6">{children}</div>
-              </div>
+              </SidebarInset>
             </SidebarProvider>
             <Toaster />
           </ThemeProvider>

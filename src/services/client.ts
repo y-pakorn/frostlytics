@@ -4,8 +4,15 @@ import {
   getFullnodeUrl,
   SuiClient,
   SuiObjectDataOptions,
+  SuiObjectResponse,
 } from "@mysten/sui/client"
 import { SuiGraphQLClient } from "@mysten/sui/graphql"
+import {
+  create,
+  indexedResolver,
+  keyResolver,
+  windowedFiniteBatchScheduler,
+} from "@yornaath/batshit"
 import _ from "lodash"
 
 export const suiClient = new SuiClient({
@@ -13,16 +20,22 @@ export const suiClient = new SuiClient({
 })
 
 export const suiGraphQLClient = new SuiGraphQLClient({
-  url: "https://sui-testnet.mystenlabs.com/graphql",
+  url: "https://sui-mainnet.mystenlabs.com/graphql",
 })
 
 export const recursiveGetDynamicFields = cache(
-  async ({ parentId }: { parentId: string }) => {
+  async ({
+    parentId,
+    client = suiClient,
+  }: {
+    parentId: string
+    client?: SuiClient
+  }) => {
     const limit = 50
     const data: DynamicFieldInfo[] = []
     let cursor = null
     while (true) {
-      const fields = await suiClient.getDynamicFields({
+      const fields = await client.getDynamicFields({
         parentId,
         limit: 50,
         cursor,
@@ -45,16 +58,18 @@ export const recursiveGetMultiObjects = cache(
   async ({
     objectIds,
     options,
+    client = suiClient,
   }: {
     objectIds: string[]
     options?: SuiObjectDataOptions
+    client?: SuiClient
   }) => {
     const limit = 50
     return Promise.all(
       _.chain(objectIds)
         .chunk(limit)
         .map(async (chunk) => {
-          return suiClient.multiGetObjects({
+          return client.multiGetObjects({
             ids: chunk,
             options,
           })
@@ -63,3 +78,20 @@ export const recursiveGetMultiObjects = cache(
     ).then((d) => _.flatMap(d))
   }
 )
+
+export const batchGetObject = create<
+  SuiObjectResponse[],
+  string,
+  SuiObjectResponse
+>({
+  fetcher: async (ids) => {
+    return await suiClient.multiGetObjects({
+      ids,
+      options: {
+        showContent: true,
+      },
+    })
+  },
+  resolver: (it, q) => it.find((i) => i.data?.objectId === q)!,
+  scheduler: windowedFiniteBatchScheduler({ windowMs: 50, maxBatchSize: 50 }),
+})
