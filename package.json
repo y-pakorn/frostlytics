@@ -12,8 +12,8 @@
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.1",
-    "@mysten/dapp-kit": "^0.17.5",
-    "@mysten/sui": "^1.35.0",
+    "@mysten/dapp-kit": "^0.17.6",
+    "@mysten/sui": "^1.37.5",
     "@mysten/wallet-standard": "^0.16.12",
     "@mysten/walrus": "^0.2.1",
     "@next/third-parties": "^15.3.5",

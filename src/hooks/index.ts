@@ -1,4 +1,7 @@
-import { useQuery } from "@tanstack/react-query"
+import { useMemo } from "react"
+import { useSuiClient } from "@mysten/dapp-kit"
+import { SuiObjectResponse } from "@mysten/sui/client"
+import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
@@ -8,12 +11,13 @@ import {
   batchGetObject,
   recursiveGetDynamicFields,
   recursiveGetMultiObjects,
-  suiClient,
 } from "@/services/client"
 
-export const useSystemInner = () => {
+export const useSystemInner = <D = SuiObjectResponse>(
+  props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
+) => {
+  const suiClient = useSuiClient()
   return useQuery({
-    staleTime: Infinity,
     queryKey: ["system-inner"],
     queryFn: async () => {
       const id = await suiClient
@@ -21,14 +25,42 @@ export const useSystemInner = () => {
           parentId: walrus.system,
         })
         .then((d) => d.data[0].objectId)
-      return batchGetObject.fetch(id)
+      return suiClient.getObject({
+        id,
+        options: {
+          showContent: true,
+        },
+      })
     },
+    ...props,
   })
 }
 
-export const useStakingInner = () => {
+export const useSystem = () => {
+  const data = useSystemInner()
+  return useMemo(() => {
+    if (!data.data) return null
+    const content = (data.data?.data?.content as any).fields.value.fields
+    return {
+      epoch: content.committee.fields.epoch as number,
+      nShards: content.committee.fields.n_shards as number,
+      storagePrice: parseFloat(content.storage_price_per_unit_size),
+      writePrice: parseFloat(content.write_price_per_unit_size),
+      totalCapacityTB: new BigNumber(content.total_capacity_size)
+        .shiftedBy(-12)
+        .toNumber(),
+      usedCapacityTB: new BigNumber(content.used_capacity_size)
+        .shiftedBy(-12)
+        .toNumber(),
+    }
+  }, [data.data])
+}
+
+export const useStakingInner = <D = SuiObjectResponse>(
+  props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
+) => {
+  const suiClient = useSuiClient()
   return useQuery({
-    staleTime: Infinity,
     queryKey: ["staking-inner"],
     queryFn: async () => {
       const id = await suiClient
@@ -36,12 +68,35 @@ export const useStakingInner = () => {
           parentId: walrus.staking,
         })
         .then((d) => d.data[0].objectId)
-      return batchGetObject.fetch(id)
+      return suiClient.getObject({
+        id,
+        options: {
+          showContent: true,
+        },
+      })
     },
+    ...props,
   })
 }
 
-export const usePoolOperators = () => {
+export const useStaking = () => {
+  const data = useStakingInner()
+  return useMemo(() => {
+    if (!data.data) return null
+    const content = (data.data?.data?.content as any).fields.value.fields
+    return {
+      epoch: content.epoch as number,
+      epochDurationMs: parseFloat(content.epoch_duration),
+      firstEpochStartMs: parseFloat(content.first_epoch_start),
+      epochChangeDoneMs: parseFloat(content.epoch_state.fields.pos0),
+      nShards: content.n_shards as number,
+    }
+  }, [data.data])
+}
+
+export const usePoolOperators = (
+  props: Partial<UseQueryOptions<PoolOperator[], Error>> = {}
+) => {
   return useQuery<PoolOperator[]>({
     queryKey: ["pools"],
     queryFn: async () => {
@@ -94,15 +149,18 @@ export const usePoolOperators = () => {
         })
       )
     },
+    ...props,
   })
 }
 
-export const useOperatorsWithSharesAndBaseApy = () => {
+export const useOperatorsWithSharesAndBaseApy = (
+  props: Partial<UseQueryOptions<OperatorWithSharesAndBaseApy[], Error>> = {}
+) => {
   const poolOperators = usePoolOperators()
   const stakingInner = useStakingInner()
   const systemInner = useSystemInner()
 
-  return useQuery<OperatorWithSharesAndBaseApy[]>({
+  return useQuery({
     queryKey: ["operators-with-shares-and-base-apy"],
     enabled: !!poolOperators.data && !!stakingInner.data && !!systemInner.data,
     queryFn: async () => {
@@ -206,6 +264,42 @@ export const useOperatorsWithSharesAndBaseApy = () => {
         .value()
 
       return operatorsWithApy
+    },
+    ...props,
+  })
+}
+
+export const useStakedWal = ({ address }: { address?: string }) => {
+  const suiClient = useSuiClient()
+  return useQuery({
+    queryKey: ["staked-wal", address],
+    queryFn: async () => {
+      if (!address) return null
+      const staked = await suiClient.getOwnedObjects({
+        owner: address,
+        filter: {
+          StructType: walrus.stakedWal,
+        },
+        options: {
+          showContent: true,
+        },
+      })
+      return staked.data.map((s) => {
+        const content = s.data?.content as any
+        return {
+          activationEpoch: content.fields.activation_epoch,
+          nodeId: content.fields.node_id,
+          id: s.data?.objectId!,
+          amount: new BigNumber(content.fields.principal)
+            .shiftedBy(-walrus.decimals)
+            .toNumber(),
+          withdrawEpoch:
+            content.fields.state.fields.withdraw_epoch || undefined,
+          type: content.fields.state.variant.toLowerCase() as
+            | "staked"
+            | "withdrawing",
+        }
+      })
     },
   })
 }

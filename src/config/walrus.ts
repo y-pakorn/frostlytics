@@ -6,6 +6,8 @@ export const walrus = {
     "0xac7d19db6d6b36f58736f9f923956d7d0a3d218b8225504a151b3f8c9aae1203",
   walToken:
     "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
+  stakedWal:
+    "0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77::staked_wal::StakedWal",
   suiToken: "0x2::sui::SUI",
   decimals: 9,
   denominator: 10 ** 9,

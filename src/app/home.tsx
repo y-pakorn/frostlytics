@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { useCurrentAccount } from "@mysten/dapp-kit"
 import {
   ColumnDef,
   ColumnFiltersState,
@@ -28,7 +29,6 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
-import { useOperatorsWithSharesAndBaseApy } from "@/hooks/use-operators"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -48,13 +48,12 @@ import {
 } from "@/components/ui/table"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
-
-const staked = {
-  "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd": {
-    amount: "42",
-    value: "115",
-  },
-} as Record<string, { amount: string; value: string }>
+import {
+  useOperatorsWithSharesAndBaseApy,
+  useStakedWal,
+  useStaking,
+  useSystem,
+} from "@/hooks"
 
 const apyData = [
   { date: "Jan 10, 2025", value: 15 },
@@ -92,6 +91,20 @@ const stakedData = [
 
 export default function Home() {
   const operators = useOperatorsWithSharesAndBaseApy()
+  const system = useSystem()
+  const staking = useStaking()
+
+  const account = useCurrentAccount()
+  const stakedWal = useStakedWal({ address: account?.address })
+  const stakedWalByNodeId = useMemo(() => {
+    return _.chain(stakedWal.data)
+      .groupBy("nodeId")
+      .mapValues((v) => ({
+        amount: _.sumBy(v, "amount"),
+        count: v.length,
+      }))
+      .value()
+  }, [stakedWal])
 
   const columns = useMemo(
     () =>
@@ -106,9 +119,9 @@ export default function Home() {
               <div>
                 <div className="line-clamp-1 inline-flex w-min items-center gap-1 truncate font-medium">
                   {operator.name}
-                  {operator.isCommittee && (
-                    <Badge variant="accentPurple" size="sm" className="">
-                      Committee
+                  {!operator.isCommittee && (
+                    <Badge variant="outline" size="sm" className="">
+                      Not Committee
                     </Badge>
                   )}
                 </div>
@@ -186,34 +199,43 @@ export default function Home() {
         },
         {
           id: "yourStake",
-          header: "Your Stake",
-          accessorKey: "yourStake",
-          enableSorting: false,
+          header: () => <div className="ml-auto text-end">Your Stake</div>,
+          accessorFn: (row) => stakedWalByNodeId[row.id]?.amount,
+          enableSorting: true,
+          sortDescFirst: true,
+          sortUndefined: "last",
           cell: ({ row }) => {
-            const s = staked[row.original.id]
+            const s = stakedWalByNodeId[row.original.id]
             if (!s) return <div className="text-tertiary text-end">-</div>
             return (
-              <div className="text-end">{formatter.number(s?.amount)} WAL</div>
+              <div className="text-end">
+                <div className="font-bold">
+                  {formatter.number(s.amount)} WAL
+                </div>
+                <div className="text-tertiary font-semibold">
+                  {s.count} positions
+                </div>
+              </div>
             )
           },
         },
         {
           id: "action",
-          header: "Action",
+          header: () => <div className="ml-auto text-end">Action</div>,
           accessorKey: "action",
           enableSorting: false,
           cell: ({ row }) => {
             return (
               <div className="text-end">
                 <Button variant="purpleSecondary" size="xs">
-                  Unstake
+                  Stake
                 </Button>
               </div>
             )
           },
         },
       ] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[],
-    [staked]
+    [stakedWalByNodeId]
   )
 
   const [sorting, setSorting] = useState<SortingState>([
@@ -348,22 +370,36 @@ export default function Home() {
           <div className="shrink-0 space-y-2">
             <GradientBorderCard>
               <div>Shards</div>
-              <div className="text-foreground text-base font-bold">1,000</div>
+              {system ? (
+                <div className="text-foreground text-base font-bold">
+                  {formatter.number(system.nShards)}
+                </div>
+              ) : (
+                <Skeleton className="h-6 w-24" />
+              )}
               <div>Individual Data Partitions</div>
             </GradientBorderCard>
             <div className="flex items-center gap-2">
               <GradientBorderCard>
                 <div>Storage Price</div>
-                <div className="text-foreground text-base font-bold">
-                  11,000
-                </div>
+                {system ? (
+                  <div className="text-foreground text-base font-bold">
+                    {formatter.number(system.storagePrice)}
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-18" />
+                )}
                 <div>Frost/MiB/Epoch</div>
               </GradientBorderCard>
               <GradientBorderCard>
                 <div>Write Price</div>
-                <div className="text-foreground text-base font-bold">
-                  20,000
-                </div>
+                {system ? (
+                  <div className="text-foreground text-base font-bold">
+                    {formatter.number(system.writePrice)}
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-18" />
+                )}
                 <div>Frost/MiB</div>
               </GradientBorderCard>
             </div>
