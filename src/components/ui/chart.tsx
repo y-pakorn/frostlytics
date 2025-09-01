@@ -118,6 +118,7 @@ function ChartTooltipContent({
   hideIndicator = false,
   label,
   labelFormatter,
+  valueFormatter,
   labelClassName,
   formatter,
   color,
@@ -130,6 +131,7 @@ function ChartTooltipContent({
     indicator?: "line" | "dot" | "dashed"
     nameKey?: string
     labelKey?: string
+    valueFormatter?: (value: any) => string
   }) {
   const { config } = useChart()
 
@@ -239,7 +241,9 @@ function ChartTooltipContent({
                     </div>
                     {item.value && (
                       <span className="text-foreground ml-2 font-mono font-medium tabular-nums">
-                        {item.value.toLocaleString()}
+                        {valueFormatter
+                          ? valueFormatter(item.value)
+                          : item.value.toLocaleString()}
                       </span>
                     )}
                   </div>

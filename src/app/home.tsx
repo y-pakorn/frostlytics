@@ -92,10 +92,10 @@ const stakedData = [
 export default function Home() {
   const operators = useOperatorsWithSharesAndBaseApy()
   const system = useSystem()
-  const staking = useStaking()
 
   const account = useCurrentAccount()
   const stakedWal = useStakedWal({ address: account?.address })
+
   const stakedWalByNodeId = useMemo(() => {
     return _.chain(stakedWal.data)
       .groupBy("nodeId")
@@ -105,6 +105,15 @@ export default function Home() {
       }))
       .value()
   }, [stakedWal])
+
+  const apy = useMemo(() => {
+    if (!operators.data) return null
+    return {
+      average:
+        _.sumBy(operators.data, "apyWithCommission") / operators.data.length,
+      max: _.maxBy(operators.data, "apyWithCommission")!.apyWithCommission,
+    }
+  }, [operators])
 
   const columns = useMemo(
     () =>
@@ -274,30 +283,55 @@ export default function Home() {
             <div>Average Staking APY%</div>
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="text-foreground text-2xl font-bold">
-                  22% APY
-                </div>
-                <div>MAX APY% 60%</div>
+                {apy ? (
+                  <div className="text-foreground text-2xl font-bold">
+                    {formatter.percentage(apy.average, {
+                      mantissa: 3,
+                    })}{" "}
+                    APY
+                  </div>
+                ) : (
+                  <Skeleton className="h-6 w-24" />
+                )}
+                {apy ? (
+                  <div>
+                    MAX APY{" "}
+                    {formatter.percentage(apy.max, {
+                      mantissa: 3,
+                    })}
+                  </div>
+                ) : (
+                  <Skeleton className="mt-1 h-4 w-18" />
+                )}
               </div>
               <ChartContainer
                 config={{
-                  value: {
+                  apyWithCommission: {
                     color: "var(--color-success-foreground)",
                     label: "APY%",
                   },
                 }}
                 className="h-[56px] w-[83px]"
               >
-                <LineChart data={apyData}>
+                <LineChart data={operators.data}>
                   <ChartTooltip
                     cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
+                    content={
+                      <ChartTooltipContent
+                        hideLabel
+                        valueFormatter={(value) =>
+                          formatter.percentage(value, {
+                            mantissa: 3,
+                          })
+                        }
+                      />
+                    }
                   />
                   <YAxis hide domain={["dataMin", "dataMax"]} />
                   <Line
                     type="monotone"
-                    dataKey="value"
-                    stroke="var(--color-value)"
+                    dataKey="apyWithCommission"
+                    stroke="var(--color-apyWithCommission)"
                     strokeWidth={2}
                     dot={false}
                   />
