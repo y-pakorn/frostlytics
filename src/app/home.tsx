@@ -36,7 +36,21 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -97,6 +111,21 @@ const stakedData = [
   { date: "Aug 10, 2025", value: 12 },
 ]
 
+const operatorTypeFilters = [
+  {
+    label: "All Operators",
+    value: undefined,
+  },
+  {
+    label: "Committee",
+    value: true,
+  },
+  {
+    label: "Not-Committee",
+    value: false,
+  },
+]
+
 export default function Home() {
   const operators = useOperatorsWithSharesAndBaseApy()
   const operatorMetadatas = useOperatorMetadatas()
@@ -132,6 +161,7 @@ export default function Home() {
           header: "Name/ID",
           accessorKey: "name",
           enableSorting: false,
+          filterFn: "isCommittee" as any,
           cell: ({ row }) => {
             const operator = row.original
             const metadata = operatorMetadatas.data?.[operator.id]
@@ -325,6 +355,11 @@ export default function Home() {
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
+    filterFns: {
+      isCommittee: (row, columnId, filterValue) => {
+        return row.original.isCommittee === filterValue
+      },
+    },
     state: {
       sorting,
       globalFilter,
@@ -332,6 +367,8 @@ export default function Home() {
     },
     sortDescFirst: true,
   })
+
+  console.log(columnFilters)
 
   return (
     <div className="space-y-6">
@@ -559,22 +596,56 @@ export default function Home() {
         <div className="flex items-center gap-2">
           <div className="font-semibold">All Operators</div>
           <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
-            200
+            {table.getRowCount()}
           </div>
           <div className="flex-1" />
           <div className="relative md:w-[330px]">
             <Input
-              placeholder="Enter Operator Name"
-              className="pl-10"
+              className="h-9 pl-10"
               onChange={(e) => table.setGlobalFilter(e.target.value)}
+              placeholder="Enter Operator Name"
             />
             <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
           </div>
-          <Button variant="outline">
-            All Operators <ChevronDown className="size-4" />
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                {
+                  operatorTypeFilters.find(
+                    (item) => item.value === columnFilters[0]?.value
+                  )?.label
+                }{" "}
+                <ChevronDown className="size-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent>
+              <DropdownMenuLabel>Filter by operator type</DropdownMenuLabel>
+              <DropdownMenuSeparator />
+              <DropdownMenuRadioGroup value={String(columnFilters[0]?.value)}>
+                {operatorTypeFilters.map((item) => (
+                  <DropdownMenuRadioItem
+                    key={item.label}
+                    value={String(item.value)}
+                    onSelect={() => {
+                      if (item.value === undefined) {
+                        table.setColumnFilters([])
+                        return
+                      }
+                      table.setColumnFilters([
+                        { id: "name", value: item.value },
+                      ])
+                    }}
+                  >
+                    {item.label}
+                  </DropdownMenuRadioItem>
+                ))}
+              </DropdownMenuRadioGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <Link href="/profile">
-            <Button variant="purple">Manage your staking</Button>
+            <Button variant="purple" size="sm">
+              Manage your staking
+            </Button>
           </Link>
         </div>
         <Table className="max-w-auto">
