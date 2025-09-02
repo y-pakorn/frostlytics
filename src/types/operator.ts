@@ -23,6 +23,7 @@ export interface OperatorWithSharesAndBaseApy extends PoolOperator {
   apyWithCommission: number
   pct: number
   weight: number
+  metadata?: OperatorMetadata
 }
 
 export interface OperatorMetadataWithId extends OperatorMetadata {

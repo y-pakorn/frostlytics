@@ -71,6 +71,7 @@ import { GradientBorderCard } from "@/components/gradient-border-card"
 import { Icons } from "@/components/icons"
 import { StakeDialog } from "@/components/stake-dialog"
 import {
+  useFullOperators,
   useOperatorMetadatas,
   useOperatorsWithSharesAndBaseApy,
   useStakedWal,
@@ -128,8 +129,7 @@ const operatorTypeFilters = [
 ]
 
 export default function Home() {
-  const operators = useOperatorsWithSharesAndBaseApy()
-  const operatorMetadatas = useOperatorMetadatas()
+  const fullOperators = useFullOperators()
 
   const system = useSystem()
 
@@ -147,13 +147,13 @@ export default function Home() {
   }, [stakedWal])
 
   const apy = useMemo(() => {
-    if (!operators.data) return null
+    if (!fullOperators) return null
     return {
       average:
-        _.sumBy(operators.data, "apyWithCommission") / operators.data.length,
-      max: _.maxBy(operators.data, "apyWithCommission")!.apyWithCommission,
+        _.sumBy(fullOperators, "apyWithCommission") / fullOperators.length,
+      max: _.maxBy(fullOperators, "apyWithCommission")!.apyWithCommission,
     }
-  }, [operators])
+  }, [fullOperators])
 
   const columns = useMemo(
     () =>
@@ -165,7 +165,7 @@ export default function Home() {
           filterFn: "isCommittee" as any,
           cell: ({ row }) => {
             const operator = row.original
-            const metadata = operatorMetadatas.data?.[operator.id]
+            const metadata = operator.metadata
             return (
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -336,7 +336,7 @@ export default function Home() {
           },
         },
       ] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[],
-    [stakedWalByNodeId, operatorMetadatas]
+    [stakedWalByNodeId]
   )
 
   const [sorting, setSorting] = useState<SortingState>([
@@ -349,7 +349,7 @@ export default function Home() {
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
 
   const table = useReactTable({
-    data: operators.data || [],
+    data: fullOperators || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -410,7 +410,7 @@ export default function Home() {
                 }}
                 className="h-[56px] w-[83px]"
               >
-                <LineChart data={operators.data}>
+                <LineChart data={fullOperators}>
                   <ChartTooltip
                     cursor={false}
                     content={
@@ -690,7 +690,7 @@ export default function Home() {
             ))}
           </TableHeader>
           <TableBody>
-            {operators.isPending ? (
+            {!fullOperators ? (
               _.range(10).map((i) => (
                 <TableRow key={i}>
                   <TableCell colSpan={columns.length}>

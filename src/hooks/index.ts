@@ -267,6 +267,18 @@ export const useOperatorsWithSharesAndBaseApy = (
   })
 }
 
+export const useFullOperators = () => {
+  const operatorsWithSharesAndBaseApy = useOperatorsWithSharesAndBaseApy()
+  const operatorMetadatas = useOperatorMetadatas()
+
+  return useMemo(() => {
+    return operatorsWithSharesAndBaseApy.data?.map((o) => ({
+      ...o,
+      metadata: operatorMetadatas.data?.[o.id],
+    })) as OperatorWithSharesAndBaseApy[] | undefined
+  }, [operatorsWithSharesAndBaseApy.data, operatorMetadatas.data])
+}
+
 export const useStakedWal = ({ address }: { address?: string }) => {
   return useQuery({
     queryKey: ["staked-wal", address],
