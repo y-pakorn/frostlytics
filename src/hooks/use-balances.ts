@@ -11,7 +11,7 @@ export const useBalances = () => {
       {
         method: "getBalance",
         params: {
-          owner: currentAccount!.address,
+          owner: currentAccount?.address || "",
           coinType: walrus.walToken,
         },
         options: {
@@ -24,7 +24,7 @@ export const useBalances = () => {
       {
         method: "getBalance",
         params: {
-          owner: currentAccount!.address,
+          owner: currentAccount?.address || "",
           coinType: walrus.suiToken,
         },
         options: {
