@@ -37,6 +37,7 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -46,9 +47,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Icons } from "@/components/icons"
 import {
+  useOperatorMetadatas,
   useOperatorsWithSharesAndBaseApy,
   useStakedWal,
   useStaking,
@@ -91,6 +99,8 @@ const stakedData = [
 
 export default function Home() {
   const operators = useOperatorsWithSharesAndBaseApy()
+  const operatorMetadatas = useOperatorMetadatas()
+
   const system = useSystem()
 
   const account = useCurrentAccount()
@@ -124,30 +134,74 @@ export default function Home() {
           enableSorting: false,
           cell: ({ row }) => {
             const operator = row.original
+            const metadata = operatorMetadatas.data?.[operator.id]
             return (
-              <div>
-                <div className="line-clamp-1 inline-flex w-min items-center gap-1 truncate font-medium">
-                  {operator.name}
-                  {!operator.isCommittee && (
-                    <Badge variant="outline" size="sm" className="">
-                      Not Committee
-                    </Badge>
-                  )}
-                </div>
-                <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
-                  {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
-                  <Button
-                    size="iconXs"
-                    variant="ghost"
-                    onClick={() => {
-                      navigator.clipboard.writeText(operator.id)
-                      toast.success("Copied to clipboard")
-                    }}
-                  >
-                    <Copy />
-                  </Button>
-                </div>
-              </div>
+              <Tooltip>
+                <TooltipTrigger>
+                  <div className="flex w-min items-center gap-2">
+                    {metadata?.imageUrl ? (
+                      <img
+                        src={metadata.imageUrl}
+                        alt={operator.name}
+                        className="size-8 shrink-0 rounded-full"
+                      />
+                    ) : (
+                      <Icons.avatar className="size-8 shrink-0 rounded-full" />
+                    )}
+                    <div>
+                      <div className="line-clamp-1 inline-flex w-full items-center justify-start gap-1 truncate font-medium">
+                        {operator.name}
+                        {!operator.isCommittee && (
+                          <Badge variant="outline" size="sm" className="">
+                            Not Committee
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
+                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
+                        <Button
+                          size="iconXs"
+                          variant="ghost"
+                          onClick={() => {
+                            navigator.clipboard.writeText(operator.id)
+                            toast.success("Copied to clipboard")
+                          }}
+                        >
+                          <Copy />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-[250px] space-y-2">
+                  <div className="flex items-center gap-2">
+                    {metadata?.imageUrl ? (
+                      <img
+                        src={metadata.imageUrl}
+                        alt={operator.name}
+                        className="size-6 shrink-0 rounded-full"
+                      />
+                    ) : (
+                      <Icons.avatar className="size-6 shrink-0 rounded-full" />
+                    )}
+                    <div>
+                      <div className="line-clamp-1 truncate font-medium">
+                        {operator.name}
+                      </div>
+                      <div className="text-tertiary font-mono text-xs">
+                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}
+                      </div>
+                    </div>
+                  </div>
+                  <Separator />
+                  <div className="space-y-1">
+                    <div className="text-tertiary font-bold">Description</div>
+                    <div className="text-secondary">
+                      {metadata?.description || "-"}
+                    </div>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             )
           },
         },
@@ -244,7 +298,7 @@ export default function Home() {
           },
         },
       ] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[],
-    [stakedWalByNodeId]
+    [stakedWalByNodeId, operatorMetadatas]
   )
 
   const [sorting, setSorting] = useState<SortingState>([

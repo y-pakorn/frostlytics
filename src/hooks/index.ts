@@ -5,7 +5,11 @@ import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
-import { OperatorWithSharesAndBaseApy, PoolOperator } from "@/types/operator"
+import {
+  OperatorMetadataWithId,
+  OperatorWithSharesAndBaseApy,
+  PoolOperator,
+} from "@/types/operator"
 import { walrus } from "@/config/walrus"
 import {
   batchGetObject,
@@ -18,6 +22,7 @@ export const useSystemInner = <D = SuiObjectResponse>(
 ) => {
   const suiClient = useSuiClient()
   return useQuery({
+    staleTime: Infinity,
     queryKey: ["system-inner"],
     queryFn: async () => {
       const id = await suiClient
@@ -25,12 +30,7 @@ export const useSystemInner = <D = SuiObjectResponse>(
           parentId: walrus.system,
         })
         .then((d) => d.data[0].objectId)
-      return suiClient.getObject({
-        id,
-        options: {
-          showContent: true,
-        },
-      })
+      return batchGetObject.fetch(id)
     },
     ...props,
   })
@@ -61,6 +61,7 @@ export const useStakingInner = <D = SuiObjectResponse>(
 ) => {
   const suiClient = useSuiClient()
   return useQuery({
+    staleTime: Infinity,
     queryKey: ["staking-inner"],
     queryFn: async () => {
       const id = await suiClient
@@ -68,12 +69,7 @@ export const useStakingInner = <D = SuiObjectResponse>(
           parentId: walrus.staking,
         })
         .then((d) => d.data[0].objectId)
-      return suiClient.getObject({
-        id,
-        options: {
-          showContent: true,
-        },
-      })
+      return batchGetObject.fetch(id)
     },
     ...props,
   })
@@ -303,5 +299,22 @@ export const useStakedWal = ({ address }: { address?: string }) => {
         }
       })
     },
+  })
+}
+
+export const useOperatorMetadatas = <D = _.Dictionary<OperatorMetadataWithId>>(
+  props: Partial<
+    UseQueryOptions<_.Dictionary<OperatorMetadataWithId>, Error, D>
+  > = {}
+) => {
+  return useQuery({
+    staleTime: Infinity,
+    queryKey: ["operator-metadatas"],
+    queryFn: async () => {
+      return await fetch("/api/profiles")
+        .then((res) => res.json())
+        .then((data) => _.keyBy(data.operators, "id"))
+    },
+    ...props,
   })
 }

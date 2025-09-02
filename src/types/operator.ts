@@ -9,11 +9,12 @@ export interface PoolOperator {
   latestEpoch: number
   activationEpoch: number
   commissionRate: number
-  metadata?: {
-    description: string
-    imageUrl: string
-    projectUrl: string
-  }
+}
+
+export interface OperatorMetadata {
+  description: string
+  imageUrl: string
+  projectUrl: string
 }
 
 export interface OperatorWithSharesAndBaseApy extends PoolOperator {
@@ -22,4 +23,8 @@ export interface OperatorWithSharesAndBaseApy extends PoolOperator {
   apyWithCommission: number
   pct: number
   weight: number
+}
+
+export interface OperatorMetadataWithId extends OperatorMetadata {
+  id: string
 }
