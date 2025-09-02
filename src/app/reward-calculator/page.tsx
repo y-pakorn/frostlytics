@@ -2,11 +2,23 @@
 
 import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
+import {
+  ColumnDef,
+  flexRender,
+  getCoreRowModel,
+  useReactTable,
+} from "@tanstack/react-table"
+import _ from "lodash"
+import { ChevronDown, Copy } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { NumericFormat } from "react-number-format"
+import { toast } from "sonner"
 import z from "zod"
 
+import { OperatorWithSharesAndBaseApy } from "@/types/operator"
+import { images } from "@/config/image"
 import { formatter } from "@/lib/formatter"
+import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   Form,
@@ -17,6 +29,8 @@ import {
   FormMessage,
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -25,26 +39,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { GradientBorderCard } from "@/components/gradient-border-card"
-
-const validators = [
-  {
-    name: "Mysten Labs 0",
-    id: "0xf11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
-    totalStaked: "25,515,385.3516",
-    votingWeight: "0.45",
-    apy: "0.67",
-    commission: "80",
-  },
-  {
-    name: "Mysten Labs 1",
-    id: "0x1f11fef95c8c5a17c2cbc51c15483e38585cf996110b8d50b8e1957442dc736fd",
-    totalStaked: "13,842,910.1247",
-    votingWeight: "0.32",
-    apy: "0.89",
-    commission: "75",
-  },
-]
+import { Icons } from "@/components/icons"
+import { useFullOperators } from "@/hooks"
 
 const MAIN_SECTION_WIDTH = "383px"
 
@@ -54,7 +56,147 @@ const rewardFormSchema = z.object({
   day: z.coerce.number().gt(0, "Staking period must be greater than 0"),
 })
 
+const columns = [
+  {
+    header: "Name/ID",
+    accessorKey: "name",
+    enableSorting: false,
+    filterFn: "isCommittee" as any,
+    cell: ({ row }) => {
+      const operator = row.original
+      const metadata = operator.metadata
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className="flex w-[250px] items-center gap-2">
+              {metadata?.imageUrl ? (
+                <img
+                  src={metadata.imageUrl}
+                  alt={operator.name}
+                  className="size-8 shrink-0 rounded-full"
+                  onError={(e) => (e.currentTarget.src = images.avatar)}
+                />
+              ) : (
+                <Icons.avatar className="size-8 shrink-0 rounded-full" />
+              )}
+              <div className="min-w-0">
+                <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
+                  <div className="truncate">{operator.name}</div>
+                  {!operator.isCommittee && (
+                    <Badge variant="outline" size="sm" className="shrink-0">
+                      Not Committee
+                    </Badge>
+                  )}
+                </div>
+                <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
+                  {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
+                  <Button
+                    size="iconXs"
+                    variant="ghost"
+                    onClick={() => {
+                      navigator.clipboard.writeText(operator.id)
+                      toast.success("Copied to clipboard")
+                    }}
+                  >
+                    <Copy />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </TooltipTrigger>
+          <TooltipContent className="max-w-[250px] space-y-2">
+            <div className="flex items-center gap-2">
+              {metadata?.imageUrl ? (
+                <img
+                  src={metadata.imageUrl}
+                  alt={operator.name}
+                  className="size-6 shrink-0 rounded-full"
+                />
+              ) : (
+                <Icons.avatar className="size-6 shrink-0 rounded-full" />
+              )}
+              <div className="min-w-0">
+                <div className="line-clamp-1 truncate font-medium">
+                  {operator.name}
+                </div>
+                <div className="text-tertiary font-mono text-xs">
+                  {operator.id.slice(0, 8)}...{operator.id.slice(-8)}
+                </div>
+              </div>
+            </div>
+            <Separator />
+            <div className="space-y-1">
+              <div className="text-tertiary font-bold">Description</div>
+              <div className="text-secondary">
+                {metadata?.description || "-"}
+              </div>
+            </div>
+          </TooltipContent>
+        </Tooltip>
+      )
+    },
+  },
+  {
+    header: () => (
+      <div className="flex items-center gap-1">
+        APY <ChevronDown className="size-4" />
+      </div>
+    ),
+    id: "apyWithCommission",
+    accessorKey: "apyWithCommission",
+    enableSorting: true,
+    cell: ({ row }) => {
+      return (
+        <div className="text-accent-blue font-bold">
+          {formatter.percentage(row.original.apyWithCommission)}
+        </div>
+      )
+    },
+  },
+  {
+    header: "Voting Weight",
+    accessorKey: "pct",
+    enableSorting: true,
+    cell: ({ row }) => {
+      return (
+        <div>
+          {formatter.percentage(row.original.pct, { percent: false })}
+          <span className="text-tertiary">%</span>
+        </div>
+      )
+    },
+  },
+  {
+    header: "Commission",
+    accessorKey: "commissionRate",
+    enableSorting: true,
+    sortDescFirst: false,
+    cell: ({ row }) => {
+      return (
+        <div>
+          {formatter.percentage(row.original.commissionRate, {
+            percent: false,
+          })}
+          <span className="text-tertiary">%</span>
+        </div>
+      )
+    },
+  },
+  {
+    id: "staked",
+    header: "Total Staked",
+    accessorKey: "staked",
+    enableSorting: true,
+    cell: ({ row }) => {
+      if (!row.original.staked) return <div className="text-tertiary">-</div>
+      return <div>{formatter.numberReadable(row.original.staked)} WAL</div>
+    },
+  },
+] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[]
+
 export default function RewardCalculatorPage() {
+  const fullOperators = useFullOperators()
+
   const form = useForm<z.infer<typeof rewardFormSchema>>({
     resolver: zodResolver(rewardFormSchema),
   })
@@ -65,6 +207,7 @@ export default function RewardCalculatorPage() {
     weekly: number
     monthly: number
     day: number
+    operators: OperatorWithSharesAndBaseApy[]
   } | null>(null)
 
   const onSubmit = ({ apy, amount, day }: z.infer<typeof rewardFormSchema>) => {
@@ -77,8 +220,18 @@ export default function RewardCalculatorPage() {
     const daily = total / day
     const weekly = daily * 7
     const monthly = daily * 30.44
-    setResult({ total, daily, weekly, monthly, day })
+    const operators = _.chain(fullOperators)
+      .filter((o) => o.apyWithCommission * 1000 >= apy)
+      .orderBy("apyWithCommission", "desc")
+      .value()
+    setResult({ total, daily, weekly, monthly, day, operators })
   }
+
+  const table = useReactTable({
+    data: result?.operators || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+  })
 
   return (
     <div
@@ -89,7 +242,7 @@ export default function RewardCalculatorPage() {
         } as React.CSSProperties
       }
     >
-      <div className="w-[var(--main-section-width)] space-y-4">
+      <div className="w-[var(--main-section-width)] shrink-0 space-y-4">
         <div className="space-y-1.5">
           <h1 className="text-accent-purple-light text-4xl font-semibold">
             Reward Calculator
@@ -229,58 +382,68 @@ export default function RewardCalculatorPage() {
           </form>
         </Form>
       </div>
-      <div className="w-full flex-1">
+      <div className="min-w-0 flex-1">
         <h2 className="my-6 text-lg font-bold">Matched Validator</h2>
-        <Table className="flex-1">
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name/ID</TableHead>
-              <TableHead>APY</TableHead>
-              <TableHead>Voting Weight</TableHead>
-              <TableHead>Commission</TableHead>
-              <TableHead>Total Staked</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {result ? (
-              validators.map((validator) => {
-                return (
-                  <TableRow key={validator.id}>
-                    <TableCell>
-                      <div className="font-medium">{validator.name}</div>
-                      <div className="text-tertiary font-mono text-sm">
-                        {validator.id.slice(0, 8)}...{validator.id.slice(-8)}
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-accent-blue font-bold">
-                      {validator.apy}%
-                    </TableCell>
-                    <TableCell className="text-secondary">
-                      {validator.votingWeight}
-                      <span className="text-tertiary">%</span>
-                    </TableCell>
-                    <TableCell className="text-secondary">
-                      {validator.commission}
-                      <span className="text-tertiary">%</span>
-                    </TableCell>
-                    <TableCell className="text-secondary">
-                      {validator.totalStaked} WAL
-                    </TableCell>
+        <div className="w-full overflow-x-auto">
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => (
+                    <TableHead
+                      key={header.id}
+                      style={{ width: `${header.getSize()}px` }}
+                    >
+                      {header.isPlaceholder
+                        ? null
+                        : flexRender(
+                            header.column.columnDef.header,
+                            header.getContext()
+                          )}
+                    </TableHead>
+                  ))}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {!result ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-disabled h-[350px] text-center"
+                  >
+                    Start calculate reward to view Operators suggestion.
+                  </TableCell>
+                </TableRow>
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    data-state={row.getIsSelected() && "selected"}
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
                   </TableRow>
-                )
-              })
-            ) : (
-              <TableRow>
-                <TableCell
-                  colSpan={5}
-                  className="text-tertiary h-[360px] text-center"
-                >
-                  Start calculate reward to view validators suggestion
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
+                ))
+              ) : (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.length}
+                    className="text-disabled h-[350px] text-center"
+                  >
+                    No matched operators found.
+                  </TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
     </div>
   )
