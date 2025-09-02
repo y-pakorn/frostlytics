@@ -137,8 +137,8 @@ export default function Home() {
             const metadata = operatorMetadatas.data?.[operator.id]
             return (
               <Tooltip>
-                <TooltipTrigger>
-                  <div className="flex w-min items-center gap-2">
+                <TooltipTrigger asChild>
+                  <div className="flex w-[250px] items-center gap-2">
                     {metadata?.imageUrl ? (
                       <img
                         src={metadata.imageUrl}
@@ -148,11 +148,15 @@ export default function Home() {
                     ) : (
                       <Icons.avatar className="size-8 shrink-0 rounded-full" />
                     )}
-                    <div>
-                      <div className="line-clamp-1 inline-flex w-full items-center justify-start gap-1 truncate font-medium">
-                        {operator.name}
+                    <div className="min-w-0">
+                      <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
+                        <div className="truncate">{operator.name}</div>
                         {!operator.isCommittee && (
-                          <Badge variant="outline" size="sm" className="">
+                          <Badge
+                            variant="outline"
+                            size="sm"
+                            className="shrink-0"
+                          >
                             Not Committee
                           </Badge>
                         )}
@@ -184,7 +188,7 @@ export default function Home() {
                     ) : (
                       <Icons.avatar className="size-6 shrink-0 rounded-full" />
                     )}
-                    <div>
+                    <div className="min-w-0">
                       <div className="line-clamp-1 truncate font-medium">
                         {operator.name}
                       </div>
