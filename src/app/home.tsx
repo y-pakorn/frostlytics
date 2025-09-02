@@ -144,6 +144,7 @@ export default function Home() {
                         src={metadata.imageUrl}
                         alt={operator.name}
                         className="size-8 shrink-0 rounded-full"
+                        onError={(e) => (e.currentTarget.src = images.avatar)}
                       />
                     ) : (
                       <Icons.avatar className="size-8 shrink-0 rounded-full" />
