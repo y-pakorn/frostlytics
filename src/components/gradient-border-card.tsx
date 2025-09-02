@@ -16,7 +16,7 @@ export function GradientBorderCard({
         border: "1px solid hsla(0, 0%, 17%, 0)",
       }}
       className={cn(
-        "text-secondary-foreground rounded-2xl px-4 py-3 text-sm font-semibold backdrop-blur-xs",
+        "text-secondary-foreground min-w-0 rounded-2xl px-4 py-3 text-sm font-semibold backdrop-blur-xs",
         className
       )}
     >

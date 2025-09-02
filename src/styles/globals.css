@@ -11,6 +11,7 @@
   --radius-xl: calc(var(--radius) + 4px);
 
   --color-background: var(--background);
+  --color-background-overlay: var(--background-overlay);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -148,6 +149,7 @@
 
 .dark {
   --background: hsla(244, 100%, 3%, 0.9);
+  --background-overlay: hsla(220, 16%, 16%, 0.5);
   --foreground: hsla(0, 0%, 97%, 1);
   --card: oklch(0.205 0 0);
   --card-foreground: oklch(0.985 0 0);

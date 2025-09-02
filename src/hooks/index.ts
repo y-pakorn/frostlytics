@@ -15,12 +15,13 @@ import {
   batchGetObject,
   recursiveGetDynamicFields,
   recursiveGetMultiObjects,
+  recursiveGetOwnedObjects,
+  suiClient,
 } from "@/services/client"
 
 export const useSystemInner = <D = SuiObjectResponse>(
   props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
 ) => {
-  const suiClient = useSuiClient()
   return useQuery({
     staleTime: Infinity,
     queryKey: ["system-inner"],
@@ -59,7 +60,6 @@ export const useSystem = () => {
 export const useStakingInner = <D = SuiObjectResponse>(
   props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
 ) => {
-  const suiClient = useSuiClient()
   return useQuery({
     staleTime: Infinity,
     queryKey: ["staking-inner"],
@@ -268,21 +268,17 @@ export const useOperatorsWithSharesAndBaseApy = (
 }
 
 export const useStakedWal = ({ address }: { address?: string }) => {
-  const suiClient = useSuiClient()
   return useQuery({
     queryKey: ["staked-wal", address],
     queryFn: async () => {
       if (!address) return null
-      const staked = await suiClient.getOwnedObjects({
+      const staked = await recursiveGetOwnedObjects({
         owner: address,
         filter: {
           StructType: walrus.stakedWal,
         },
-        options: {
-          showContent: true,
-        },
       })
-      return staked.data.map((s) => {
+      return staked.map((s) => {
         const content = s.data?.content as any
         return {
           activationEpoch: content.fields.activation_epoch,

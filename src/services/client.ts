@@ -1,8 +1,10 @@
 import { cache } from "react"
 import {
+  CoinStruct,
   DynamicFieldInfo,
   getFullnodeUrl,
   SuiClient,
+  SuiObjectDataFilter,
   SuiObjectDataOptions,
   SuiObjectResponse,
 } from "@mysten/sui/client"
@@ -95,3 +97,69 @@ export const batchGetObject = create<
   resolver: (it, q) => it.find((i) => i.data?.objectId === q)!,
   scheduler: windowedFiniteBatchScheduler({ windowMs: 50, maxBatchSize: 50 }),
 })
+
+export const recursiveGetCoins = cache(
+  async ({
+    owner,
+    coinType,
+    client = suiClient,
+  }: {
+    owner: string
+    coinType: string
+    client?: SuiClient
+  }) => {
+    const limit = 50
+    const data: CoinStruct[] = []
+    let cursor = null
+    while (true) {
+      const coins = await client.getCoins({
+        owner,
+        coinType,
+        limit: 1000,
+        cursor,
+      })
+
+      data.push(...coins.data)
+
+      if (!coins.hasNextPage) {
+        break
+      }
+    }
+
+    return data
+  }
+)
+
+export const recursiveGetOwnedObjects = cache(
+  async ({
+    owner,
+    filter,
+    client = suiClient,
+  }: {
+    owner: string
+    filter?: SuiObjectDataFilter
+    client?: SuiClient
+  }) => {
+    const data: SuiObjectResponse[] = []
+    let cursor = null
+    while (true) {
+      const objects = await client.getOwnedObjects({
+        owner,
+        filter,
+        limit: 1000,
+        cursor,
+        options: {
+          showContent: true,
+        },
+      })
+
+      data.push(...objects.data)
+
+      if (!objects.hasNextPage) {
+        break
+      }
+    }
+
+    return data
+  }
+)

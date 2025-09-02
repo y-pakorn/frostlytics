@@ -20,6 +20,7 @@ import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
+import { useBalances } from "@/hooks/use-balances"
 
 import { Button, buttonVariants } from "./ui/button"
 import {
@@ -65,32 +66,7 @@ function ConnectWalletButton({
   const { data: name } = useResolveSuiNSName(currentAccount.address)
   const { mutate: disconnect } = useDisconnectWallet()
 
-  const [walBalance, suiBalance] = useSuiClientQueries({
-    queries: [
-      {
-        method: "getBalance",
-        params: {
-          owner: currentAccount.address,
-          coinType: walrus.walToken,
-        },
-        options: {
-          select: (data) =>
-            new BigNumber(data.totalBalance).div(walrus.denominator),
-        },
-      },
-      {
-        method: "getBalance",
-        params: {
-          owner: currentAccount.address,
-          coinType: walrus.suiToken,
-        },
-        options: {
-          select: (data) =>
-            new BigNumber(data.totalBalance).div(walrus.denominator),
-        },
-      },
-    ],
-  })
+  const { walBalance, suiBalance } = useBalances()
 
   return (
     <DropdownMenu>

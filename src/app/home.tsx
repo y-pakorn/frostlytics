@@ -69,6 +69,7 @@ import {
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { Icons } from "@/components/icons"
+import { StakeDialog } from "@/components/stake-dialog"
 import {
   useOperatorMetadatas,
   useOperatorsWithSharesAndBaseApy,
@@ -325,9 +326,11 @@ export default function Home() {
           cell: ({ row }) => {
             return (
               <div className="text-end">
-                <Button variant="purpleSecondary" size="xs">
-                  Stake
-                </Button>
+                <StakeDialog operator={row.original}>
+                  <Button variant="purpleSecondary" size="xs">
+                    Stake
+                  </Button>
+                </StakeDialog>
               </div>
             )
           },
@@ -367,8 +370,6 @@ export default function Home() {
     },
     sortDescFirst: true,
   })
-
-  console.log(columnFilters)
 
   return (
     <div className="space-y-6">
