@@ -18,6 +18,7 @@ import {
   recursiveGetOwnedObjects,
   suiClient,
 } from "@/services/client"
+import { StakedWal, StakedWalWithStatus } from "@/types"
 
 export const useSystemInner = <D = SuiObjectResponse>(
   props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
@@ -282,7 +283,11 @@ export const useFullOperators = () => {
   }, [operatorsWithSharesAndBaseApy.data, operatorMetadatas.data])
 }
 
-export const useStakedWal = ({ address }: { address?: string }) => {
+export const useStakedWal = ({
+  address,
+}: { address?: string } & Partial<
+  UseQueryOptions<StakedWal[], Error>
+> = {}) => {
   return useQuery({
     queryKey: ["staked-wal", address],
     queryFn: async () => {
@@ -308,9 +313,34 @@ export const useStakedWal = ({ address }: { address?: string }) => {
             | "staked"
             | "withdrawing",
         }
-      })
+      }) satisfies StakedWal[]
     },
   })
+}
+
+export const useStakedWalWithStatus = ({ address }: { address?: string }) => {
+  const stakedWal = useStakedWal({ address })
+  const staking = useStaking()
+
+  return useMemo(() => {
+    if (!stakedWal.data || !staking) return null
+    return stakedWal.data.map((s) => ({
+      ...s,
+      status: s.withdrawEpoch
+        ? s.withdrawEpoch <= staking.epoch
+          ? "claimable"
+          : "withdrawing"
+        : "staked",
+      canWithdrawRightNow:
+        s.withdrawEpoch <= staking.epoch
+          ? true
+          : s.activationEpoch > staking.epoch + 1 ||
+              (s.activationEpoch === staking.epoch + 1 &&
+                !staking.isAfterMidpoint)
+            ? true
+            : false,
+    })) satisfies StakedWalWithStatus[]
+  }, [stakedWal.data, staking])
 }
 
 export const useOperatorMetadatas = <D = _.Dictionary<OperatorMetadataWithId>>(
