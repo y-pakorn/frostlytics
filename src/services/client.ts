@@ -108,14 +108,13 @@ export const recursiveGetCoins = cache(
     coinType: string
     client?: SuiClient
   }) => {
-    const limit = 50
     const data: CoinStruct[] = []
     let cursor = null
     while (true) {
       const coins = await client.getCoins({
         owner,
         coinType,
-        limit: 1000,
+        limit: 50,
         cursor,
       })
 
@@ -146,7 +145,7 @@ export const recursiveGetOwnedObjects = cache(
       const objects = await client.getOwnedObjects({
         owner,
         filter,
-        limit: 1000,
+        limit: 50,
         cursor,
         options: {
           showContent: true,
