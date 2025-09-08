@@ -3,20 +3,21 @@ import BigNumber from "bignumber.js"
 
 import { walrus } from "@/config/walrus"
 
-export const useBalances = () => {
+export const useBalances = ({ address }: { address?: string } = {}) => {
   const currentAccount = useCurrentAccount()
+  const usedAddress = address || currentAccount?.address
 
   const [walBalance, suiBalance] = useSuiClientQueries({
     queries: [
       {
         method: "getBalance",
         params: {
-          owner: currentAccount?.address || "",
+          owner: usedAddress || "",
           coinType: walrus.walToken,
         },
         options: {
-          queryKey: ["wal-balance", currentAccount?.address],
-          enabled: !!currentAccount?.address,
+          queryKey: ["wal-balance", usedAddress],
+          enabled: !!usedAddress,
           select: (data) =>
             new BigNumber(data.totalBalance).div(walrus.denominator),
         },
@@ -24,12 +25,12 @@ export const useBalances = () => {
       {
         method: "getBalance",
         params: {
-          owner: currentAccount?.address || "",
+          owner: usedAddress || "",
           coinType: walrus.suiToken,
         },
         options: {
-          queryKey: ["sui-balance", currentAccount?.address],
-          enabled: !!currentAccount?.address,
+          queryKey: ["sui-balance", usedAddress],
+          enabled: !!usedAddress,
           select: (data) =>
             new BigNumber(data.totalBalance).div(walrus.denominator),
         },

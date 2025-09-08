@@ -58,6 +58,7 @@
   --color-tertiary-foreground: var(--tertiary-foreground);
   --color-quaternary: var(--quaternary);
   --color-quaternary-foreground: var(--quaternary-foreground);
+  --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-error-foreground: var(--error-foreground);
 
@@ -195,6 +196,7 @@
   --tertiary-foreground: hsla(220, 8%, 35%, 1);
   --quaternary-foreground: hsla(220, 6%, 47%, 1);
 
+  --success: hsla(156, 83%, 11%, 1);
   --success-foreground: hsla(150, 57%, 54%, 1);
   --error-foreground: hsla(350, 57%, 54%, 1);
 

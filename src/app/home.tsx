@@ -48,11 +48,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
 import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -71,15 +66,9 @@ import {
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { Icons } from "@/components/icons"
+import { OperatorHeader } from "@/components/operator-header"
 import { StakeDialog } from "@/components/stake-dialog"
-import {
-  useFullOperators,
-  useOperatorMetadatas,
-  useOperatorsWithSharesAndBaseApy,
-  useStakedWal,
-  useStaking,
-  useSystem,
-} from "@/hooks"
+import { useFullOperators, useStakedWal, useSystem } from "@/hooks"
 
 const apyData = [
   { date: "Jan 10, 2025", value: 15 },
@@ -167,83 +156,7 @@ export default function Home() {
           accessorKey: "name",
           enableSorting: false,
           filterFn: "isCommittee" as any,
-          cell: ({ row }) => {
-            const operator = row.original
-            const metadata = operator.metadata
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex w-[250px] items-center gap-2">
-                    {metadata?.imageUrl ? (
-                      <img
-                        src={metadata.imageUrl}
-                        alt={operator.name}
-                        className="size-8 shrink-0 rounded-full"
-                        onError={(e) => (e.currentTarget.src = images.avatar)}
-                      />
-                    ) : (
-                      <Icons.avatar className="size-8 shrink-0 rounded-full" />
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
-                        <div className="truncate">{operator.name}</div>
-                        {!operator.isCommittee && (
-                          <Badge
-                            variant="outline"
-                            size="sm"
-                            className="shrink-0"
-                          >
-                            Not Committee
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
-                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
-                        <Button
-                          size="iconXs"
-                          variant="ghost"
-                          onClick={() => {
-                            navigator.clipboard.writeText(operator.id)
-                            toast.success("Copied to clipboard")
-                          }}
-                        >
-                          <Copy />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-[250px] space-y-2">
-                  <div className="flex items-center gap-2">
-                    {metadata?.imageUrl ? (
-                      <img
-                        src={metadata.imageUrl}
-                        alt={operator.name}
-                        className="size-6 shrink-0 rounded-full"
-                      />
-                    ) : (
-                      <Icons.avatar className="size-6 shrink-0 rounded-full" />
-                    )}
-                    <div className="min-w-0">
-                      <div className="line-clamp-1 truncate font-medium">
-                        {operator.name}
-                      </div>
-                      <div className="text-tertiary font-mono text-xs">
-                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}
-                      </div>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="space-y-1">
-                    <div className="text-tertiary font-bold">Description</div>
-                    <div className="text-secondary">
-                      {metadata?.description || "-"}
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            )
-          },
+          cell: ({ row }) => <OperatorHeader operator={row.original} />,
         },
         {
           header: "APY",

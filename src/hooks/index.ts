@@ -304,6 +304,7 @@ export const useStakedWal = ({
           activationEpoch: content.fields.activation_epoch,
           nodeId: content.fields.node_id,
           id: s.data?.objectId!,
+          rawAmount: content.fields.principal,
           amount: new BigNumber(content.fields.principal)
             .shiftedBy(-walrus.decimals)
             .toNumber(),
@@ -339,6 +340,9 @@ export const useStakedWalWithStatus = ({ address }: { address?: string }) => {
                 !staking.isAfterMidpoint)
             ? true
             : false,
+      withdrawToEpoch: staking.isAfterMidpoint
+        ? staking.epoch + 2
+        : staking.epoch + 1,
     })) satisfies StakedWalWithStatus[]
   }, [stakedWal.data, staking])
 }

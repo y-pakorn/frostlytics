@@ -123,6 +123,8 @@ export const recursiveGetCoins = cache(
       if (!coins.hasNextPage) {
         break
       }
+
+      cursor = coins.nextCursor
     }
 
     return data
@@ -157,6 +159,8 @@ export const recursiveGetOwnedObjects = cache(
       if (!objects.hasNextPage) {
         break
       }
+
+      cursor = objects.nextCursor
     }
 
     return data
