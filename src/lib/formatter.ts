@@ -17,13 +17,17 @@ export const formatter = {
       lowPrecision: false,
       thousandSeparated: true,
     }),
-  percentage: (v?: any, { mantissa = 2, percent = true } = {}) =>
+  percentage: (
+    v?: any,
+    { mantissa = 2, percent = true, forceSign = false } = {}
+  ) =>
     numbro(v * 100).format({
       mantissa,
       thousandSeparated: true,
       trimMantissa: true,
       optionalMantissa: true,
       postfix: percent ? "%" : "",
+      forceSign: forceSign,
     }),
   date: (v?: any) => dayjs(v).format("DD MMM YYYY hh:mm A"),
 }

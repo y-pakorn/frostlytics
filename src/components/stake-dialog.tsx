@@ -258,11 +258,21 @@ export function StakeDialog({
                 <div className="text-secondary text-sm font-semibold">
                   <div>
                     Your staking reward will start in{" "}
-                    <span className="underline">epoch {staking.epoch + 1}</span>
+                    <span className="underline">
+                      epoch{" "}
+                      {staking.isAfterMidpoint
+                        ? staking.epoch + 2
+                        : staking.epoch + 1}
+                    </span>
                   </div>
                   <div className="text-tertiary font-medium">
                     Rewards for your stake will begin in{" "}
-                    <span className="underline">epoch {staking.epoch + 1}</span>{" "}
+                    <span className="underline">
+                      epoch{" "}
+                      {staking.isAfterMidpoint
+                        ? staking.epoch + 2
+                        : staking.epoch + 1}
+                    </span>{" "}
                     and only while the storage node serves as an active
                     committee member.
                   </div>

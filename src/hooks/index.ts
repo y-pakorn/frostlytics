@@ -80,14 +80,17 @@ export const useStaking = () => {
   return useMemo(() => {
     if (!data.data) return null
     const content = (data.data?.data?.content as any).fields.value.fields
+    const changeDoneMs = content.epoch_state.fields.pos0
+      ? parseFloat(content.epoch_state.fields.pos0)
+      : Date.now()
+    const duration = parseFloat(content.epoch_duration)
     return {
       epoch: content.epoch as number,
-      epochDurationMs: parseFloat(content.epoch_duration),
+      epochDurationMs: duration,
       firstEpochStartMs: parseFloat(content.first_epoch_start),
-      epochChangeDoneMs: content.epoch_state.fields.pos0
-        ? parseFloat(content.epoch_state.fields.pos0)
-        : Date.now(),
+      epochChangeDoneMs: changeDoneMs,
       nShards: content.n_shards as number,
+      isAfterMidpoint: changeDoneMs + duration / 2 < Date.now(),
     }
   }, [data.data])
 }

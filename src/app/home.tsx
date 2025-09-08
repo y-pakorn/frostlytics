@@ -29,6 +29,8 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
+import { useCirculatingSupply } from "@/hooks/use-circulating-supply"
+import { usePrices } from "@/hooks/use-prices"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -130,6 +132,8 @@ const operatorTypeFilters = [
 
 export default function Home() {
   const fullOperators = useFullOperators()
+  const prices = usePrices()
+  const circulatingSupply = useCirculatingSupply()
 
   const system = useSystem()
 
@@ -440,11 +444,34 @@ export default function Home() {
             <GradientBorderCard className="h-full">
               <div>WAL Price</div>
               <img src={images.wal} alt="WAL" className="my-1 size-6" />
-              <div className="flex items-center gap-1">
-                <div className="text-foreground font-bold">$0.045</div>
-                <TrendingUp className="text-success-foreground size-4" />
-                <div className="text-success-foreground">+1.2%</div>
-              </div>
+              {prices.data ? (
+                <div className="flex items-center gap-1">
+                  <div className="text-foreground font-bold">
+                    ${formatter.number(prices.data.wal.price)}
+                  </div>
+                  <TrendingUp
+                    className={cn(
+                      prices.data.wal.change24h >= 0
+                        ? "text-success-foreground"
+                        : "text-error-foreground scale-y-[-1]",
+                      "size-4"
+                    )}
+                  />
+                  <div
+                    className={cn(
+                      prices.data.wal.change24h >= 0
+                        ? "text-success-foreground"
+                        : "text-error-foreground"
+                    )}
+                  >
+                    {formatter.percentage(prices.data.wal.change24h, {
+                      forceSign: true,
+                    })}
+                  </div>
+                </div>
+              ) : (
+                <Skeleton className="h-5 w-24" />
+              )}
             </GradientBorderCard>
             <GradientBorderCard>
               <div>Total CEX Flow</div>
@@ -454,7 +481,13 @@ export default function Home() {
           <GradientBorderCard>
             <div className="flex items-center gap-2">
               <div>Circulating Supply</div>
-              <div className="text-foreground ml-auto font-bold">$1.38B</div>
+              {circulatingSupply.data ? (
+                <div className="text-foreground ml-auto font-bold">
+                  {formatter.numberReadable(circulatingSupply.data)} WAL
+                </div>
+              ) : (
+                <Skeleton className="ml-auto h-6 w-24" />
+              )}
             </div>
           </GradientBorderCard>
         </div>
