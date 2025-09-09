@@ -35,7 +35,7 @@ export default async function Image({ params }: { params: { addr: string } }) {
     ? name || `${params.addr.slice(0, 6)}..${params.addr.slice(-4)}`
     : "Invalid Address"
   const isAddress = displayName.startsWith("0x")
-  const baseImage = await fs.readFile("./og-template/profile.png")
+  const baseImage = await fs.readFile("og-template/profile.png")
 
   return new ImageResponse(
     (
