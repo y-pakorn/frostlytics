@@ -7,7 +7,7 @@ import {
 import { Transaction } from "@mysten/sui/transactions"
 import { useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
-import { Info, Loader2 } from "lucide-react"
+import { ExternalLink, Info, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { NumericFormat } from "react-number-format"
 import { toast } from "sonner"
@@ -15,6 +15,7 @@ import z from "zod"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
+import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
@@ -143,7 +144,15 @@ export function UnstakeDialog({
     })
     suiBalance.refetch()
     walBalance.refetch()
-    toast.success("Unstaked successfully")
+    toast.success("Unstaked successfully", {
+      description: result.digest,
+      action: {
+        label: <ExternalLink className="size-4" />,
+        onClick: () => {
+          window.open(links.transaction(result.digest), "_blank")
+        },
+      },
+    })
 
     setOpen(false)
     form.reset()
