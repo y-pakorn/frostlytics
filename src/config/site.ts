@@ -14,8 +14,4 @@ export const siteConfig = {
   },
   twitter: "@frostlytics",
   favicon: images.logo,
-  ogImages: {
-    default: "https://i.ibb.co/d0CkFknv/og-dashboard.png",
-    calculator: "https://i.ibb.co/cpqfgb1/og-calculator.png",
-  },
 }

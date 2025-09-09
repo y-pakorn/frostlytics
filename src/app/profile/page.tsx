@@ -1,3 +1,5 @@
+import { siteConfig } from "@/config/site"
+
 import { MyProfile } from "./my-profile"
 
 export const metadata = {
