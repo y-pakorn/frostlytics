@@ -124,8 +124,10 @@ export function UnstakeDialog({
     })
     toast.promise(txResultPromise, {
       loading: "Unstaking...",
-      success: "Unstaked successfully",
-      error: "Unstaking error",
+      error: (e: Error) => ({
+        message: "Unstaking error",
+        description: e.message,
+      }),
     })
     const txResult = await txResultPromise
     if (txResult.effects?.status.status !== "success") {

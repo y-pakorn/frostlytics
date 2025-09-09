@@ -4,6 +4,7 @@ import {
   useCurrentAccount,
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit"
+import { SuiTransactionBlockResponse } from "@mysten/sui/client"
 import { Transaction } from "@mysten/sui/transactions"
 import { useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
@@ -120,12 +121,20 @@ export function StakeDialog({
       })
       throw error
     })
-    const txResult = await suiClient.waitForTransaction({
+    const txResultPromise = suiClient.waitForTransaction({
       digest: result.digest,
       options: {
         showEffects: true,
       },
     })
+    toast.promise(txResultPromise, {
+      loading: "Staking...",
+      error: (e: Error) => ({
+        message: "Staking error",
+        description: e.message,
+      }),
+    })
+    const txResult = await txResultPromise
     if (txResult.effects?.status.status !== "success") {
       toast.error("Staking error", {
         description: txResult.effects?.status.error,

@@ -92,12 +92,20 @@ export function WithdrawDialog({
         })
         throw error
       })
-      const txResult = await suiClient.waitForTransaction({
+      const txResultPromise = suiClient.waitForTransaction({
         digest: result.digest,
         options: {
           showEffects: true,
         },
       })
+      toast.promise(txResultPromise, {
+        loading: "Withdrawing...",
+        error: (e: Error) => ({
+          message: "Withdraw error",
+          description: e.message,
+        }),
+      })
+      const txResult = await txResultPromise
       if (txResult.effects?.status.status !== "success") {
         toast.error("Withdraw error", {
           description: txResult.effects?.status.error,
