@@ -17,9 +17,11 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
+import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
 import { recursiveGetCoins, suiClient } from "@/services/client"
 import { useStaking } from "@/hooks"
+import { StakedWal, StakedWalWithStatus } from "@/types"
 
 import { GradientBorderCard } from "./gradient-border-card"
 import { OperatorHeader } from "./operator-header"
@@ -39,27 +41,30 @@ import { Skeleton } from "./ui/skeleton"
 const stakeFormSchema = z.object({
   amount: z.coerce
     .number()
-    .finite("Staking amount must be a finite number")
+    .finite("Unstaking amount must be a finite number")
     .gte(
       walrus.minimumStaking,
-      `Staking amount must be greater or equal to ${walrus.minimumStaking} WAL`
+      `Unstaking amount must be greater or equal to ${walrus.minimumStaking} WAL`
     ),
 })
 
-export function StakeDialog({
+export function UnstakeDialog({
   children,
   operator,
+  stakedWal,
+  estimatedReward,
 }: {
   children: React.ReactNode
-  operator: OperatorWithSharesAndBaseApy
+  stakedWal: StakedWalWithStatus
+  operator: OperatorWithSharesAndBaseApy | null
+  estimatedReward: number
 }) {
   const [open, setOpen] = useState(false)
 
+  const queryClient = useQueryClient()
   const account = useCurrentAccount()
   const { mutateAsync: signAndExecuteTransaction } =
     useSignAndExecuteTransaction()
-  const staking = useStaking()
-  const queryClient = useQueryClient()
   const { walBalance, suiBalance } = useBalances()
 
   const form = useForm<z.infer<typeof stakeFormSchema>>({
@@ -72,46 +77,37 @@ export function StakeDialog({
   const onSubmit = async (data: z.infer<typeof stakeFormSchema>) => {
     if (!account) return
 
-    if (!walBalance.data || walBalance.data.lt(data.amount)) {
+    if (data.amount > stakedWal.amount) {
       form.setError("amount", {
-        message: "Insufficient WAL balance",
+        message:
+          "Unstaking amount must be less than or equal to the estimated reward",
       })
       return
     }
-    const useAll = walBalance.data.eq(data.amount)
 
-    const walCoins = await recursiveGetCoins({
-      coinType: walrus.walToken,
-      owner: account!.address,
-    })
-
-    const rawAmount = new BigNumber(data.amount)
-      .shiftedBy(walrus.decimals)
-      .toString()
-    const tx = new Transaction()
-    const usedCoin = walCoins[0].coinObjectId
-    if (walCoins.length > 1) {
-      tx.mergeCoins(
-        walCoins[0].coinObjectId,
-        walCoins.slice(1).map((coin) => coin.coinObjectId)
-      )
+    if (data.amount < walrus.minimumStaking) {
+      form.setError("amount", {
+        message: `Unstaking amount must be greater than or equal to ${walrus.minimumStaking} WAL`,
+      })
+      return
     }
-    const splittedCoin = tx.splitCoins(usedCoin, [rawAmount])
-    const [stakedWal] = tx.moveCall({
+
+    const leftAmount = stakedWal.amount - data.amount
+    if (leftAmount !== 0 && leftAmount < walrus.minimumStaking) {
+      form.setError("amount", {
+        message: `The amount after unstaking must be greater than or equal to ${walrus.minimumStaking} WAL`,
+      })
+      return
+    }
+
+    const tx = new Transaction()
+    tx.moveCall({
       package: walrus.walrus,
       module: "staking",
-      function: "stake_with_pool",
-      arguments: [
-        tx.object(walrus.staking),
-        tx.object(splittedCoin),
-        tx.pure.id(operator.id),
-      ],
+      function: "request_withdraw_stake",
+      arguments: [tx.object(walrus.staking), tx.object(stakedWal.id)],
       typeArguments: [],
     })
-    tx.transferObjects([stakedWal], account.address)
-    if (!useAll) {
-      tx.transferObjects([usedCoin], account.address)
-    }
     const result = await signAndExecuteTransaction({
       transaction: tx,
     }).catch((error) => {
@@ -120,12 +116,18 @@ export function StakeDialog({
       })
       throw error
     })
-    const txResult = await suiClient.waitForTransaction({
+    const txResultPromise = suiClient.waitForTransaction({
       digest: result.digest,
       options: {
         showEffects: true,
       },
     })
+    toast.promise(txResultPromise, {
+      loading: "Unstaking...",
+      success: "Unstaked successfully",
+      error: "Unstaking error",
+    })
+    const txResult = await txResultPromise
     if (txResult.effects?.status.status !== "success") {
       toast.error("Staking error", {
         description: txResult.effects?.status.error,
@@ -139,7 +141,7 @@ export function StakeDialog({
     })
     suiBalance.refetch()
     walBalance.refetch()
-    toast.success("Staked successfully")
+    toast.success("Unstaked successfully")
 
     setOpen(false)
     form.reset()
@@ -149,41 +151,14 @@ export function StakeDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="gap-4">
-        <DialogTitle>Staking</DialogTitle>
+        <DialogTitle>Unstaking</DialogTitle>
         <GradientBorderCard className="space-y-3">
-          <OperatorHeader operator={operator} />
-          <div className="space-y-1">
-            {[
-              {
-                label: "Voting Weight",
-                value: formatter.percentage(operator.weight),
-              },
-              {
-                label: "APY",
-                value: formatter.percentage(operator.apy),
-              },
-              {
-                label: "Commission",
-                value: formatter.percentage(operator.commissionRate),
-              },
-              {
-                label: "Total Staked",
-                value: `${formatter.numberReadable(operator.staked)} WAL`,
-              },
-            ].map((item) => (
-              <div
-                key={item.label}
-                className="flex items-center justify-between"
-              >
-                <div className="text-accent-purple font-medium">
-                  {item.label}
-                </div>
-                <div className="text-foreground font-bold">{item.value}</div>
-              </div>
-            ))}
-          </div>
+          {operator ? (
+            <OperatorHeader operator={operator} />
+          ) : (
+            <Skeleton className="h-10 w-full" />
+          )}
         </GradientBorderCard>
-        <div className="text-lg font-bold">Stake</div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             <FormField
@@ -196,16 +171,15 @@ export function StakeDialog({
                     <NumericFormat
                       {...field}
                       customInput={Input}
-                      placeholder="Enter staking amount"
+                      placeholder={`Enter unstaking amount (minimum ${walrus.minimumStaking} WAL)`}
                       disabled={!walBalance.data || !account}
                     />
                   </FormControl>
-
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <div className="text-tertiary">Available</div>
                     <div className="flex-1" />
                     {formatter.number(
-                      walBalance.data || 0,
+                      stakedWal.amount || 0,
                       walrus.decimals
                     )}{" "}
                     <img
@@ -226,7 +200,9 @@ export function StakeDialog({
                             form.setValue(
                               "amount",
                               parseFloat(
-                                walBalance.data.multipliedBy(value).toFixed(9)
+                                new BigNumber(stakedWal.amount)
+                                  .multipliedBy(value)
+                                  .toFixed(walrus.decimals)
                               )
                             )
                             form.clearErrors("amount")
@@ -244,37 +220,39 @@ export function StakeDialog({
                 </FormItem>
               )}
             />
-            {!staking ? (
-              <Skeleton className="h-[110px] w-full" />
-            ) : (
-              <div className="flex gap-2 rounded-2xl border p-2">
-                <Button variant="outline" size="iconSm">
-                  <Info />
-                </Button>
-                <div className="text-secondary text-sm font-semibold">
-                  <div>
-                    Your staking reward will start in{" "}
-                    <span className="underline">
-                      epoch{" "}
-                      {staking.isAfterMidpoint
-                        ? staking.epoch + 2
-                        : staking.epoch + 1}
-                    </span>
+            <div className="bg-primary rounded-2xl p-4">
+              {[
+                {
+                  label: "Estimated Reward",
+                  value: (
+                    <>
+                      {formatter.number(estimatedReward, 4)}{" "}
+                      <span className="text-tertiary">WAL</span>
+                    </>
+                  ),
+                },
+                {
+                  label: "Effecting Epoch",
+                  value: `Epoch ${stakedWal.withdrawToEpoch}`,
+                },
+              ].map((item) => (
+                <div
+                  key={item.label}
+                  className="line-clamp-1 flex min-w-0 items-center justify-between"
+                >
+                  <div className="text-tertiary shrink-0 text-sm font-bold">
+                    {item.label}
                   </div>
-                  <div className="text-tertiary font-medium">
-                    Rewards for your stake will begin in{" "}
-                    <span className="underline">
-                      epoch{" "}
-                      {staking.isAfterMidpoint
-                        ? staking.epoch + 2
-                        : staking.epoch + 1}
-                    </span>{" "}
-                    and only while the storage node serves as an active
-                    committee member.
+                  <div
+                    className={cn(
+                      "text-foreground line-clamp-1 truncate font-medium break-all"
+                    )}
+                  >
+                    {item.value}
                   </div>
                 </div>
-              </div>
-            )}
+              ))}
+            </div>
             <Button
               type="submit"
               className="w-full"
@@ -284,10 +262,10 @@ export function StakeDialog({
               }
             >
               {!form.formState.isSubmitting ? (
-                "Stake"
+                "Unstake"
               ) : (
                 <>
-                  Staking <Loader2 className="animate-spin" />
+                  Unstaking <Loader2 className="animate-spin" />
                 </>
               )}
             </Button>

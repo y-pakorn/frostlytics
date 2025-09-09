@@ -54,6 +54,7 @@ import {
 } from "@/components/ui/table"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { OperatorHeader } from "@/components/operator-header"
+import { UnstakeDialog } from "@/components/unstake-dialog"
 import { WithdrawDialog } from "@/components/withdraw-dialog"
 import {
   useEstimatedReward,
@@ -206,9 +207,15 @@ export function Profile({
                   )
                 }
                 return (
-                  <Button variant="purpleSecondary" size="sm">
-                    Unstake
-                  </Button>
+                  <UnstakeDialog
+                    stakedWal={row.original}
+                    operator={validatorMap[row.original.nodeId] || null}
+                    estimatedReward={thisEstimatedReward}
+                  >
+                    <Button variant="purpleSecondary" size="sm">
+                      Unstake
+                    </Button>
+                  </UnstakeDialog>
                 )
               },
             },
@@ -308,7 +315,7 @@ export function Profile({
                 icon: Gem,
                 label: "Estimated Reward",
                 isLoading: estimatedReward.isPending,
-                value: formatter.number(estimatedReward.data?.total || 0),
+                value: formatter.number(estimatedReward.data?.total || 0, 4),
               },
             ].map(({ icon: Icon, label, value, isLoading }) => (
               <div
