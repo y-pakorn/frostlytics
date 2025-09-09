@@ -1,3 +1,5 @@
+import { Metadata } from "next"
+
 import { isValidAddress } from "@/lib/utils"
 import { getSuiNameCached } from "@/services"
 
@@ -7,13 +9,16 @@ export const generateMetadata = async ({
   params,
 }: {
   params: Promise<{ addr: string }>
-}) => {
+}): Promise<Metadata> => {
   const { addr } = await params
   const isValid = isValidAddress(addr)
 
   if (!isValid) {
     return {
       title: "Invalid Address",
+      openGraph: {
+        title: "Invalid Address",
+      },
     }
   }
 
@@ -22,6 +27,10 @@ export const generateMetadata = async ({
   return {
     title: `${displayName}`,
     description: `${displayName}'s profile on Walrus`,
+    openGraph: {
+      title: `${displayName}`,
+      description: `${displayName}'s profile on Walrus`,
+    },
   }
 }
 

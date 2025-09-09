@@ -11,6 +11,7 @@ export const size = {
   height: 550,
 }
 export const contentType = "image/png"
+export const alt = "Walrus Profile"
 export const revalidate = 86400 // 24 hours
 
 async function loadGoogleFont(font: string, text: string) {
@@ -35,11 +36,12 @@ export default async function Image({ params }: { params: { addr: string } }) {
     ? name || `${params.addr.slice(0, 6)}..${params.addr.slice(-4)}`
     : "Invalid Address"
   const isAddress = displayName.startsWith("0x")
-  const baseImage = await fs.readFile("./src/app/profile/[addr]/og-profile.png")
+  const baseImage = await fs.readFile(
+    path.join(process.cwd(), "/src/app/profile/[addr]/og-profile.png")
+  )
 
   return new ImageResponse(
     (
-      // ImageResponse JSX element
       <div
         style={{
           width: "100%",
@@ -67,7 +69,7 @@ export default async function Image({ params }: { params: { addr: string } }) {
       ...size,
       fonts: [
         {
-          name: "Font",
+          name: isAddress ? "JetBrains Mono" : "DM Sans",
           data: await loadGoogleFont(
             isAddress ? "JetBrains Mono" : "DM Sans",
             displayName
