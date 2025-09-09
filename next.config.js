@@ -1,7 +1,10 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   outputFileTracingIncludes: {
-    "/*": "og-template/**/*",
+    "/*": ["og-template/**/*"],
+  },
+  experimental: {
+    optimizeCss: true,
   },
 }
 
