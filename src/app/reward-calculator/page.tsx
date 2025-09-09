@@ -4,12 +4,22 @@ import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ColumnDef,
+  ColumnFiltersState,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getSortedRowModel,
+  SortingState,
   useReactTable,
 } from "@tanstack/react-table"
 import _ from "lodash"
-import { ChevronDown, Copy } from "lucide-react"
+import {
+  ChevronDown,
+  ChevronsUpDown,
+  ChevronUp,
+  Copy,
+  Search,
+} from "lucide-react"
 import { useForm } from "react-hook-form"
 import { NumericFormat } from "react-number-format"
 import { toast } from "sonner"
@@ -18,6 +28,7 @@ import z from "zod"
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { formatter } from "@/lib/formatter"
+import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -30,7 +41,6 @@ import {
 } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Separator } from "@/components/ui/separator"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
@@ -51,10 +61,13 @@ import { useFullOperators } from "@/hooks"
 const MAIN_SECTION_WIDTH = "383px"
 
 const rewardFormSchema = z.object({
-  apy: z.coerce.number().gt(0, "APY must be greater than 0"),
   amount: z.coerce.number().gt(0, "Staking amount must be greater than 0"),
   day: z.coerce.number().gt(0, "Staking period must be greater than 0"),
 })
+
+type OperatorWithReward = OperatorWithSharesAndBaseApy & {
+  reward: number
+}
 
 const columns = [
   {
@@ -154,35 +167,6 @@ const columns = [
     },
   },
   {
-    header: "Voting Weight",
-    accessorKey: "pct",
-    enableSorting: true,
-    cell: ({ row }) => {
-      return (
-        <div>
-          {formatter.percentage(row.original.pct, { percent: false })}
-          <span className="text-tertiary">%</span>
-        </div>
-      )
-    },
-  },
-  {
-    header: "Commission",
-    accessorKey: "commissionRate",
-    enableSorting: true,
-    sortDescFirst: false,
-    cell: ({ row }) => {
-      return (
-        <div>
-          {formatter.percentage(row.original.commissionRate, {
-            percent: false,
-          })}
-          <span className="text-tertiary">%</span>
-        </div>
-      )
-    },
-  },
-  {
     id: "staked",
     header: "Total Staked",
     accessorKey: "staked",
@@ -192,7 +176,16 @@ const columns = [
       return <div>{formatter.numberReadable(row.original.staked)} WAL</div>
     },
   },
-] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[]
+  {
+    id: "reward",
+    header: "Estimated Reward",
+    accessorKey: "reward",
+    enableSorting: true,
+    cell: ({ row }) => {
+      return <div>{formatter.numberReadable(row.original.reward, 4)} WAL</div>
+    },
+  },
+] satisfies ColumnDef<OperatorWithReward>[]
 
 export default function RewardCalculatorPage() {
   const fullOperators = useFullOperators()
@@ -202,35 +195,45 @@ export default function RewardCalculatorPage() {
   })
 
   const [result, setResult] = useState<{
-    total: number
-    daily: number
-    weekly: number
-    monthly: number
-    day: number
-    operators: OperatorWithSharesAndBaseApy[]
+    operators: OperatorWithReward[]
   } | null>(null)
 
-  const onSubmit = ({ apy, amount, day }: z.infer<typeof rewardFormSchema>) => {
-    // reward are compounded weekly
-    // Calculate the number of years for the staking period
-    const years = day / 365
-    // Compound weekly: n = 52, t = years
-    const total = amount * Math.pow(1 + apy / 100 / 52, 52 * years) - amount
-    // Calculate daily, weekly, and monthly rewards based on the *interest earned* (not total)
-    const daily = total / day
-    const weekly = daily * 7
-    const monthly = daily * 30.44
-    const operators = _.chain(fullOperators)
-      .filter((o) => o.apyWithCommission * 1000 >= apy)
-      .orderBy("apyWithCommission", "desc")
-      .value()
-    setResult({ total, daily, weekly, monthly, day, operators })
+  const onSubmit = ({ amount, day }: z.infer<typeof rewardFormSchema>) => {
+    const operators =
+      fullOperators?.map((o) => ({
+        ...o,
+        // Compound reward calculation for each operator
+        // reward = final amount - initial amount, compounded weekly
+        reward:
+          amount *
+            Math.pow(1 + o.apyWithCommission / 100 / 52, 52 * (day / 365)) -
+          amount,
+      })) || []
+    setResult({ operators })
   }
 
+  const [sorting, setSorting] = useState<SortingState>([
+    {
+      id: "reward",
+      desc: true,
+    },
+  ])
+  const [globalFilter, setGlobalFilter] = useState<any>([])
+  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
   const table = useReactTable({
     data: result?.operators || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    onColumnFiltersChange: setColumnFilters,
+    state: {
+      sorting,
+      globalFilter,
+      columnFilters,
+    },
   })
 
   return (
@@ -252,26 +255,9 @@ export default function RewardCalculatorPage() {
             period
           </p>
         </div>
-        <h2 className="text-lg font-bold">Staking Reward</h2>
+        <h2 className="text-lg font-bold">Reward Calculation</h2>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-            <FormField
-              control={form.control}
-              name="apy"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel asterisk>APY</FormLabel>
-                  <FormControl>
-                    <NumericFormat
-                      {...field}
-                      customInput={Input}
-                      placeholder="Enter preferable APY%"
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="amount"
@@ -329,7 +315,7 @@ export default function RewardCalculatorPage() {
                 </FormItem>
               )}
             />
-            <GradientBorderCard className="my-4">
+            {/* <GradientBorderCard className="my-4">
               <div className="space-y-2">
                 <div className="text-secondary">Total estimated reward</div>
                 <div className="flex items-center gap-2">
@@ -370,7 +356,7 @@ export default function RewardCalculatorPage() {
                   ))}
                 </div>
               </div>
-            </GradientBorderCard>
+            </GradientBorderCard> */}
             <Button
               type="submit"
               variant="purple"
@@ -383,25 +369,55 @@ export default function RewardCalculatorPage() {
         </Form>
       </div>
       <div className="min-w-0 flex-1">
-        <h2 className="my-6 text-lg font-bold">Matched Validator</h2>
+        <div className="flex items-center justify-between">
+          <h2 className="my-6 text-lg font-bold">Matched Validator</h2>
+          <div className="relative md:w-[330px]">
+            <Input
+              className="h-9 pl-10"
+              onChange={(e) => table.setGlobalFilter(e.target.value)}
+              placeholder="Enter Operator Name"
+            />
+            <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+          </div>
+        </div>
         <div className="w-full overflow-x-auto">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: `${header.getSize()}px` }}
-                    >
-                      {header.isPlaceholder
-                        ? null
-                        : flexRender(
-                            header.column.columnDef.header,
-                            header.getContext()
+                  {headerGroup.headers.map((header) => {
+                    const sorted = header.column.getIsSorted()
+                    const canSort = header.column.getCanSort()
+
+                    const Icon =
+                      sorted === "asc"
+                        ? ChevronUp
+                        : sorted === "desc"
+                          ? ChevronDown
+                          : ChevronsUpDown
+                    return (
+                      <TableHead
+                        key={header.id}
+                        style={{ width: `${header.getSize()}px` }}
+                        className={cn(canSort && "cursor-default select-none")}
+                        onClick={() => canSort && header.column.toggleSorting()}
+                      >
+                        <div className="flex items-center gap-1">
+                          {header.isPlaceholder
+                            ? null
+                            : flexRender(
+                                header.column.columnDef.header,
+                                header.getContext()
+                              )}
+                          {header.column.getCanSort() && (
+                            <Button variant="ghost" size="iconXs">
+                              <Icon />
+                            </Button>
                           )}
-                    </TableHead>
-                  ))}
+                        </div>
+                      </TableHead>
+                    )
+                  })}
                 </TableRow>
               ))}
             </TableHeader>
