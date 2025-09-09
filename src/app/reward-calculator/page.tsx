@@ -150,11 +150,7 @@ const columns = [
     },
   },
   {
-    header: () => (
-      <div className="flex items-center gap-1">
-        APY <ChevronDown className="size-4" />
-      </div>
-    ),
+    header: "APY",
     id: "apyWithCommission",
     accessorKey: "apyWithCommission",
     enableSorting: true,
