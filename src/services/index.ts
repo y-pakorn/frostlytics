@@ -1,4 +1,5 @@
 import { cache } from "react"
+import { unstable_cache } from "next/cache"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
@@ -77,3 +78,18 @@ export const getOperatorMetadata = cache(
     }
   }
 )
+
+export const getSuiName = cache(
+  async (address: string): Promise<string | null> => {
+    const name = await suiClient
+      .resolveNameServiceNames({
+        address,
+      })
+      .catch(() => null)
+    return name?.data?.[0] || null
+  }
+)
+
+export const getSuiNameCached = unstable_cache(getSuiName, ["sui-name"], {
+  revalidate: 86400, // 24 hours
+})

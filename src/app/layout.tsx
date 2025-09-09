@@ -55,9 +55,9 @@ export const metadata: Metadata = {
     siteName: siteConfig.name,
     images: [
       {
-        url: siteConfig.ogImage,
-        width: 1200,
-        height: 630,
+        url: siteConfig.ogImages.default,
+        width: 1048,
+        height: 551,
         alt: siteConfig.name,
       },
     ],
@@ -66,7 +66,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: siteConfig.name,
     description: siteConfig.description,
-    images: [siteConfig.ogImage],
+    images: [siteConfig.ogImages.default],
     creator: siteConfig.twitter,
   },
   icons: {
@@ -114,10 +114,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
           </ThemeProvider>
         </Providers>
         <Analytics />
+        {env.NEXT_PUBLIC_GA_ID && (
+          <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID} />
+        )}
       </body>
-      {env.NEXT_PUBLIC_GA_ID && (
-        <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID} />
-      )}
     </html>
   )
 }

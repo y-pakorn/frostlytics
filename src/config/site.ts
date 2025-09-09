@@ -6,7 +6,7 @@ export const siteConfig = {
   name: "Frostlytics",
   author: "Frostlytics",
   description:
-    "Frostlytics is a platform for analyzing the performance of the Frost network.",
+    "Frostlytics is a dashboard for staking and analyzing the performance of Walrus.",
   keywords: [],
   url: {
     base: env.NEXT_PUBLIC_APP_URL,
@@ -14,5 +14,8 @@ export const siteConfig = {
   },
   twitter: "@frostlytics",
   favicon: images.logo,
-  ogImage: `${env.NEXT_PUBLIC_APP_URL}/og.jpg`,
+  ogImages: {
+    default: "https://i.ibb.co/d0CkFknv/og-dashboard.png",
+    calculator: "https://i.ibb.co/cpqfgb1/og-calculator.png",
+  },
 }

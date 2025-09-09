@@ -1,15 +1,25 @@
-"use client"
+import { getSuiNameCached } from "@/services"
 
-import { use } from "react"
+import { ExternalProfile } from "./external-profile"
 
-import { Profile } from "../profile"
+export const generateMetadata = async ({
+  params,
+}: {
+  params: Promise<{ addr: string }>
+}) => {
+  const { addr } = await params
+  const name = await getSuiNameCached(addr)
+  const displayName = name || `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  return {
+    title: `${displayName}`,
+    description: `${displayName}'s profile on Walrus`,
+  }
+}
 
 export default function ProfilePage({
   params,
 }: {
   params: Promise<{ addr: string }>
 }) {
-  const { addr } = use(params)
-
-  return <Profile address={addr} readOnly />
+  return <ExternalProfile params={params} />
 }
