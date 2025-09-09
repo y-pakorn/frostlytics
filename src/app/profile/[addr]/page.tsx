@@ -23,7 +23,7 @@ export const generateMetadata = async ({
   }
 
   const name = await getSuiNameCached(addr)
-  const displayName = name || `${addr.slice(0, 6)}...${addr.slice(-4)}`
+  const displayName = name || addr
   return {
     title: `${displayName}`,
     description: `${displayName}'s profile on Walrus`,
