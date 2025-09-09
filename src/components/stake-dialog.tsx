@@ -26,7 +26,13 @@ import { useStaking } from "@/hooks"
 import { GradientBorderCard } from "./gradient-border-card"
 import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
 import {
   Form,
   FormControl,
@@ -168,6 +174,10 @@ export function StakeDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="gap-4">
         <DialogTitle>Staking</DialogTitle>
+        <DialogDescription className="sr-only">
+          You are about to stake your WAL to the operator. Please confirm the
+          details below.
+        </DialogDescription>
         <GradientBorderCard className="space-y-3">
           <OperatorHeader operator={operator} />
           <div className="space-y-1">

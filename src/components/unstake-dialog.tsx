@@ -27,7 +27,13 @@ import { StakedWal, StakedWalWithStatus } from "@/types"
 import { GradientBorderCard } from "./gradient-border-card"
 import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
-import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+  DialogTrigger,
+} from "./ui/dialog"
 import {
   Form,
   FormControl,
@@ -163,6 +169,10 @@ export function UnstakeDialog({
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="gap-4">
         <DialogTitle>Unstaking</DialogTitle>
+        <DialogDescription className="sr-only">
+          You are about to unstake your WAL from the operator. Please confirm
+          the details below.
+        </DialogDescription>
         <GradientBorderCard className="space-y-3">
           {operator ? (
             <OperatorHeader operator={operator} />
