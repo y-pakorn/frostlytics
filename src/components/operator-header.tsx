@@ -40,7 +40,7 @@ export const OperatorHeader = ({
           )}
           <div className="min-w-0">
             <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
-              <div className="truncate">{operator.name}</div>
+              <div className="text-foreground truncate">{operator.name}</div>
               {!operator.isCommittee && (
                 <Badge variant="outline" size="sm" className="shrink-0">
                   Not Committee

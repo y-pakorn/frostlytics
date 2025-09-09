@@ -1,9 +1,8 @@
-import { useMemo, useState } from "react"
+import { useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   useCurrentAccount,
   useSignAndExecuteTransaction,
-  useSuiClient,
 } from "@mysten/dapp-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import { useQueryClient } from "@tanstack/react-query"
@@ -23,15 +22,9 @@ import { recursiveGetCoins, suiClient } from "@/services/client"
 import { useStaking } from "@/hooks"
 
 import { GradientBorderCard } from "./gradient-border-card"
+import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "./ui/dialog"
+import { Dialog, DialogContent, DialogTitle, DialogTrigger } from "./ui/dialog"
 import {
   Form,
   FormControl,
@@ -158,12 +151,7 @@ export function StakeDialog({
       <DialogContent className="gap-4">
         <DialogTitle>Staking</DialogTitle>
         <GradientBorderCard className="space-y-3">
-          <div>
-            <div className="text-foreground text-lg font-bold">
-              {operator.name}
-            </div>
-            <div className="truncate font-mono font-normal">{operator.id}</div>
-          </div>
+          <OperatorHeader operator={operator} />
           <div className="space-y-1">
             {[
               {

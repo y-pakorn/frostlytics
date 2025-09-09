@@ -1,6 +1,8 @@
 import { useMemo } from "react"
 import { useSuiClient } from "@mysten/dapp-kit"
+import { bcs } from "@mysten/sui/bcs"
 import { SuiObjectResponse } from "@mysten/sui/client"
+import { Transaction } from "@mysten/sui/transactions"
 import { useQuery, UseQueryOptions } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
@@ -340,9 +342,10 @@ export const useStakedWalWithStatus = ({ address }: { address?: string }) => {
                 !staking.isAfterMidpoint)
             ? true
             : false,
-      withdrawToEpoch: staking.isAfterMidpoint
-        ? staking.epoch + 2
-        : staking.epoch + 1,
+      withdrawToEpoch:
+        s.withdrawEpoch || staking.isAfterMidpoint
+          ? staking.epoch + 2
+          : staking.epoch + 1,
     })) satisfies StakedWalWithStatus[]
   }, [stakedWal.data, staking])
 }
@@ -361,5 +364,64 @@ export const useOperatorMetadatas = <D = _.Dictionary<OperatorMetadataWithId>>(
         .then((data) => _.keyBy(data.operators, "id"))
     },
     ...props,
+  })
+}
+
+export const useEstimatedReward = ({
+  address,
+  stakedWals,
+}: {
+  address?: string
+  stakedWals?: StakedWalWithStatus[] | null
+}) => {
+  return useQuery({
+    queryKey: ["estimated-reward", address, stakedWals?.map((s) => s.nodeId)],
+    enabled: !!stakedWals && !!address,
+    queryFn: async () => {
+      if (!stakedWals || !address)
+        return {
+          total: 0,
+          rewards: {},
+        }
+      const tx = new Transaction()
+      stakedWals.forEach((s) => {
+        tx.moveCall({
+          package: walrus.walrus,
+          module: "staking",
+          function: "calculate_rewards",
+          arguments: [
+            tx.object(walrus.staking),
+            tx.pure.id(s.nodeId),
+            tx.pure.u64(s.rawAmount),
+            tx.pure.u32(s.activationEpoch),
+            tx.pure.u32(s.withdrawToEpoch),
+          ],
+        })
+      })
+      const result = await suiClient.devInspectTransactionBlock({
+        sender: address,
+        transactionBlock: tx,
+      })
+      const rewards = _.reduce(
+        result.results,
+        (acc, result, i) => {
+          const positionId = stakedWals[i].id
+          const value = result.returnValues?.[0]?.[0]
+          if (!value) return acc
+          return {
+            ...acc,
+            [positionId]: new BigNumber(bcs.u64().parse(new Uint8Array(value)))
+              .shiftedBy(-walrus.decimals)
+              .toNumber(),
+          }
+        },
+        {} as Record<string, number>
+      )
+      const total = _.chain(rewards).values().sum().value()
+      return {
+        total,
+        rewards,
+      }
+    },
   })
 }

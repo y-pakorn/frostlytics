@@ -54,7 +54,12 @@ import {
 } from "@/components/ui/table"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { OperatorHeader } from "@/components/operator-header"
-import { useFullOperators, useStakedWalWithStatus } from "@/hooks"
+import { WithdrawDialog } from "@/components/withdraw-dialog"
+import {
+  useEstimatedReward,
+  useFullOperators,
+  useStakedWalWithStatus,
+} from "@/hooks"
 import { StakedWalWithStatus } from "@/types"
 
 export function Profile({
@@ -79,6 +84,11 @@ export function Profile({
   const totalStakedBalance = useMemo(() => {
     return _.sumBy(stakedWalWithStatus, "amount")
   }, [stakedWalWithStatus])
+
+  const estimatedReward = useEstimatedReward({
+    address,
+    stakedWals: stakedWalWithStatus,
+  })
 
   const columns = useMemo(() => {
     return [
@@ -174,6 +184,8 @@ export function Profile({
               enableSorting: false,
               enableGlobalFilter: false,
               cell: ({ row }) => {
+                const thisEstimatedReward =
+                  estimatedReward.data?.rewards[row.original.id] || 0
                 if (row.original.status === "withdrawing") {
                   return (
                     <div className="text-disabled font-semibold">
@@ -183,9 +195,14 @@ export function Profile({
                 }
                 if (row.original.canWithdrawRightNow) {
                   return (
-                    <Button variant="errorSecondary" size="sm">
-                      Withdraw
-                    </Button>
+                    <WithdrawDialog
+                      stakedWal={[row.original]}
+                      estimatedReward={thisEstimatedReward}
+                    >
+                      <Button variant="errorSecondary" size="sm">
+                        Withdraw
+                      </Button>
+                    </WithdrawDialog>
                   )
                 }
                 return (
@@ -197,7 +214,7 @@ export function Profile({
             },
           ] satisfies ColumnDef<StakedWalWithStatus>[])),
     ] satisfies ColumnDef<StakedWalWithStatus>[]
-  }, [validatorMap])
+  }, [validatorMap, estimatedReward])
 
   const [sorting, setSorting] = useState<SortingState>([
     {
@@ -222,46 +239,6 @@ export function Profile({
       sorting,
       globalFilter,
       columnFilters,
-    },
-  })
-
-  const useEstimatedReward = useQuery({
-    queryKey: [
-      "estimated-reward",
-      address,
-      stakedWalWithStatus?.map((s) => s.nodeId),
-    ],
-    enabled: !!stakedWalWithStatus,
-    queryFn: async () => {
-      if (!stakedWalWithStatus) return 0
-      const tx = new Transaction()
-      stakedWalWithStatus.forEach((s) => {
-        tx.moveCall({
-          package: walrus.walrus,
-          module: "staking",
-          function: "calculate_rewards",
-          arguments: [
-            tx.object(walrus.staking),
-            tx.pure.id(s.nodeId),
-            tx.pure.u64(s.rawAmount),
-            tx.pure.u32(s.activationEpoch),
-            tx.pure.u32(s.withdrawToEpoch),
-          ],
-        })
-      })
-      const result = await suiClient.devInspectTransactionBlock({
-        sender: address,
-        transactionBlock: tx,
-      })
-      return _.reduce(
-        result.results,
-        (acc, result) => {
-          const value = result.returnValues?.[0]?.[0]
-          if (!value) return acc
-          return acc.plus(bcs.u64().parse(new Uint8Array(value)))
-        },
-        new BigNumber(0)
-      ).shiftedBy(-walrus.decimals)
     },
   })
 
@@ -330,8 +307,8 @@ export function Profile({
               {
                 icon: Gem,
                 label: "Estimated Reward",
-                isLoading: useEstimatedReward.isPending,
-                value: formatter.number(useEstimatedReward.data || 0),
+                isLoading: estimatedReward.isPending,
+                value: formatter.number(estimatedReward.data?.total || 0),
               },
             ].map(({ icon: Icon, label, value, isLoading }) => (
               <div
@@ -424,6 +401,26 @@ export function Profile({
           />
           <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
         </div>
+        <WithdrawDialog
+          stakedWal={
+            stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || []
+          }
+          estimatedReward={_.sumBy(
+            stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || [],
+            (s) => estimatedReward.data?.rewards[s.id] || 0
+          )}
+          isWithdrawAll
+        >
+          <Button
+            variant="purple"
+            size="sm"
+            disabled={
+              !stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow).length
+            }
+          >
+            Withdraw All
+          </Button>
+        </WithdrawDialog>
       </div>
       {stakedWalWithStatus?.length !== 0 ? (
         <Table className="flex-1">

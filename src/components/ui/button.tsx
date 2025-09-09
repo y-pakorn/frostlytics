@@ -24,6 +24,7 @@ const buttonVariants = cva(
           "bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80",
         ghost:
           "hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50",
+        error: "bg-error text-foreground shadow-xs hover:bg-error/90",
         errorSecondary:
           "bg-transparent text-error-foreground shadow-xs hover:bg-error-foreground/10",
         link: "text-primary underline-offset-4 hover:underline",
@@ -32,7 +33,7 @@ const buttonVariants = cva(
         default: "h-10 px-4",
         sm: "h-9 gap-1.5 px-3.5",
         xs: "h-7 gap-1 px-2.5 text-xs",
-        lg: "h-10 px-6",
+        lg: "h-11 px-6",
         icon: "size-9",
         iconSm: "size-6",
         iconXs: "size-5 [&_svg:not([class*='size-'])]:size-3",
