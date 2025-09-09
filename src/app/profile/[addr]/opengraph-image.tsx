@@ -1,5 +1,4 @@
 import fs from "fs/promises"
-import path from "path"
 import { ImageResponse } from "next/og"
 
 import { isValidAddress } from "@/lib/utils"
@@ -16,7 +15,7 @@ export const revalidate = 86400 // 24 hours
 
 async function loadGoogleFont(font: string, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${font}:wght@600&display=swap&text=${encodeURIComponent(text)}`
-  const css = await (await fetch(url)).text()
+  const css = await (await fetch(url, { cache: "force-cache" })).text()
   const resource = css.match(/src: url\((.+)\) format\('(opentype|truetype)'\)/)
 
   if (resource) {
@@ -36,9 +35,7 @@ export default async function Image({ params }: { params: { addr: string } }) {
     ? name || `${params.addr.slice(0, 6)}..${params.addr.slice(-4)}`
     : "Invalid Address"
   const isAddress = displayName.startsWith("0x")
-  const baseImage = await fs.readFile(
-    "./src/app/profile/[addr]/og-profile-template.png"
-  )
+  const baseImage = await fs.readFile("./og-template/profile.png")
 
   return new ImageResponse(
     (
