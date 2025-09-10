@@ -20,12 +20,14 @@ export const OperatorHeader = ({
   ...props
 }: {
   operator: OperatorWithSharesAndBaseApy
-} & ComponentProps<"div">) => {
+} & Omit<ComponentProps<typeof Link>, "href">) => {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <div
+        <Link
+          href={`/operator/${operator.id}`}
           className={cn("flex w-[250px] items-center gap-2", className)}
+          prefetch={false}
           {...props}
         >
           {operator.metadata?.imageUrl ? (
@@ -66,7 +68,7 @@ export const OperatorHeader = ({
               </Link>
             </div>
           </div>
-        </div>
+        </Link>
       </TooltipTrigger>
       <TooltipContent className="max-w-[250px] space-y-2">
         <div className="flex items-center gap-2">

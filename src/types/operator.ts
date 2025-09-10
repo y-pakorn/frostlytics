@@ -29,3 +29,7 @@ export interface OperatorWithSharesAndBaseApy extends PoolOperator {
 export interface OperatorMetadataWithId extends OperatorMetadata {
   id: string
 }
+
+export interface MinimalOperatorWithMetadata extends OperatorMetadataWithId {
+  name: string
+}

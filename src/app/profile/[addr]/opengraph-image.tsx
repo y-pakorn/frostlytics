@@ -29,13 +29,51 @@ async function loadGoogleFont(font: string, text: string) {
 }
 
 export default async function Image({ params }: { params: { addr: string } }) {
-  const name = await getSuiNameCached(params.addr)
   const isValid = isValidAddress(params.addr)
+  const baseImage = await fs.readFile("og-template/profile.png")
+  if (!isValid) {
+    return new ImageResponse(
+      (
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: `url(data:image/png;base64,${baseImage.toString("base64")})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            display: "flex",
+            fontSize: 52.4,
+            color: "white",
+          }}
+        >
+          <div
+            style={{
+              marginLeft: 33,
+              marginTop: 347,
+            }}
+          >
+            Invalid Address
+          </div>
+        </div>
+      ),
+      {
+        ...size,
+        fonts: [
+          {
+            name: "DM Sans",
+            data: await loadGoogleFont("DM Sans", "Invalid Address"),
+          },
+        ],
+      }
+    )
+  }
+
+  const name = await getSuiNameCached(params.addr)
   const displayName = isValid
     ? name || `${params.addr.slice(0, 6)}..${params.addr.slice(-4)}`
     : "Invalid Address"
   const isAddress = displayName.startsWith("0x")
-  const baseImage = await fs.readFile("og-template/profile.png")
 
   return new ImageResponse(
     (

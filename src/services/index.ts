@@ -3,7 +3,12 @@ import { unstable_cache } from "next/cache"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
-import { OperatorMetadata, PoolOperator } from "@/types/operator"
+import {
+  MinimalOperatorWithMetadata,
+  OperatorMetadata,
+  OperatorWithSharesAndBaseApy,
+  PoolOperator,
+} from "@/types/operator"
 import { walrus } from "@/config/walrus"
 
 import {
@@ -93,3 +98,34 @@ export const getSuiName = cache(
 export const getSuiNameCached = unstable_cache(getSuiName, ["sui-name"], {
   revalidate: 86400, // 24 hours
 })
+
+export const getMinimalOperatorWithMetadata = cache(
+  async (operatorId: string): Promise<MinimalOperatorWithMetadata | null> => {
+    const operatorObject = await batchGetObject.fetch(operatorId)
+
+    if (!operatorObject || !operatorObject.data) {
+      return null
+    }
+
+    const content = operatorObject.data?.content as any
+
+    const id = operatorObject.data?.objectId!
+    const name = content.fields.node_info.fields.name
+    const metadataId = content.fields.node_info.fields.metadata.fields.id.id
+    const metadata = await getOperatorMetadata(metadataId)
+
+    return {
+      id,
+      name,
+      ...metadata,
+    }
+  }
+)
+
+export const getMinimalOperatorsWithMetadataCached = unstable_cache(
+  getMinimalOperatorWithMetadata,
+  ["minimal-operators-with-metadata"],
+  {
+    revalidate: 86400, // 24 hours
+  }
+)
