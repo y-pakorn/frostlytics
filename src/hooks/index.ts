@@ -565,7 +565,7 @@ export const useOperatorTransactions = ({
     nodes {
       sender {
         address
-        suinsRegistrations(last: 1) {
+        suinsRegistrations(first: 1) {
           nodes {
             domain
           }
@@ -622,7 +622,7 @@ export const useOperatorTransactions = ({
           return {
             pageInfo: data.data.transactionBlocks.pageInfo,
             transactions: data.data.transactionBlocks.nodes.map((node: any) => {
-              const firstTx = _.find(
+              const firstTx = _.findLast(
                 node.kind.transactions.nodes,
                 (t) => "function" in t
               )
