@@ -418,15 +418,18 @@ export function Profile({
           )}
           isWithdrawAll
         >
-          <Button
-            variant="purple"
-            size="sm"
-            disabled={
-              !stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow).length
-            }
-          >
-            Withdraw All
-          </Button>
+          {!readOnly && (
+            <Button
+              variant="purple"
+              size="sm"
+              disabled={
+                !stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow)
+                  .length
+              }
+            >
+              Withdraw All
+            </Button>
+          )}
         </WithdrawDialog>
       </div>
       {stakedWalWithStatus?.length !== 0 ? (
