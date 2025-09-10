@@ -564,12 +564,7 @@ export const useOperatorTransactions = ({
   transactionBlocks(filter: $filter, last: $last, before: $before) {
     nodes {
       sender {
-        address
-        suinsRegistrations(first: 1) {
-          nodes {
-            domain
-          }
-        }
+        defaultSuinsName(format: DOT)
       }
       digest
       kind {
@@ -599,6 +594,11 @@ export const useOperatorTransactions = ({
           }
         }
         timestamp
+        transactionBlock {
+          sender {
+            address
+          }
+        }
       }
     }
     pageInfo {
@@ -626,12 +626,11 @@ export const useOperatorTransactions = ({
                 node.kind.transactions.nodes,
                 (t) => "function" in t
               )
-              const name = node.sender.suinsRegistrations.nodes[0]?.domain
 
               return {
                 digest: node.digest,
-                sender: node.sender.address,
-                name: name,
+                sender: node.effects.transactionBlock.sender.address,
+                name: node.sender?.defaultSuinsName,
                 txLabel: firstTx?.function.name,
                 txCount: node.kind.transactions.nodes.length,
                 timestamp: node.effects.timestamp,
