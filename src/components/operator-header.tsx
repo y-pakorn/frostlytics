@@ -54,18 +54,24 @@ export const OperatorHeader = ({
               <Button
                 size="iconXs"
                 variant="ghost"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault()
                   navigator.clipboard.writeText(operator.id)
                   toast.success("Copied to clipboard")
                 }}
               >
                 <Copy />
               </Button>
-              <Link href={links.object(operator.id)} target="_blank">
-                <Button variant="ghost" size="iconXs">
-                  <ExternalLink />
-                </Button>
-              </Link>
+              <Button
+                variant="ghost"
+                size="iconXs"
+                onClick={(e) => {
+                  e.preventDefault()
+                  window.open(links.object(operator.id), "_blank")
+                }}
+              >
+                <ExternalLink />
+              </Button>
             </div>
           </div>
         </Link>
