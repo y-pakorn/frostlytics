@@ -47,8 +47,10 @@ export const revalidate = 86400 // 24 hours
 
 export default async function OperatorPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ tab?: string }>
 }) {
   const { id } = await params
 
@@ -62,7 +64,7 @@ export default async function OperatorPage({
     return <OperatorNotFound />
   }
 
-  return <Operator operator={operator} />
+  return <Operator operator={operator} searchParams={searchParams} />
 }
 
 function InvalidOperator() {

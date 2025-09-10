@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { use, useMemo, useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
@@ -41,14 +42,20 @@ const tabs = [
 
 export function Operator({
   operator: operatorMetadata,
+  searchParams,
 }: {
   operator: MinimalOperatorWithMetadata
+  searchParams: Promise<{ tab?: string }>
 }) {
+  const { tab: defaultTab } = use(searchParams)
+
   const operator = useOperatorWithSharesAndBaseApy({
     id: operatorMetadata.id,
   })
 
-  const [tab, setTab] = useState<(typeof tabs)[number]["label"]>(tabs[0].label)
+  const [tab, setTab] = useState<(typeof tabs)[number]["label"]>(
+    tabs.find((t) => t.label === defaultTab)?.label || tabs[0].label
+  )
   const TabComponent = useMemo(() => {
     return tabs.find((t) => t.label === tab)!.component
   }, [tab])
@@ -290,7 +297,14 @@ export function Operator({
               <Button
                 key={t.label}
                 variant={t.label === tab ? "active" : "inactive"}
-                onClick={() => setTab(t.label)}
+                onClick={() => {
+                  setTab(t.label)
+                  window.history.replaceState(
+                    null,
+                    "",
+                    `/operator/${operatorMetadata.id}?tab=${t.label}`
+                  )
+                }}
               >
                 {t.label}
               </Button>
