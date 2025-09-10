@@ -28,6 +28,8 @@ const buttonVariants = cva(
         errorSecondary:
           "bg-transparent text-error-foreground shadow-xs hover:bg-error-foreground/10",
         link: "text-primary underline-offset-4 hover:underline",
+        outlineTransparent:
+          "bg-transparent border text-secondary-foreground hover:bg-primary/50",
       },
       size: {
         default: "h-10 px-4",
