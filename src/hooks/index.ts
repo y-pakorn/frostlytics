@@ -3,7 +3,12 @@ import { useSuiClient } from "@mysten/dapp-kit"
 import { bcs } from "@mysten/sui/bcs"
 import { SuiObjectResponse } from "@mysten/sui/client"
 import { Transaction } from "@mysten/sui/transactions"
-import { useQuery, UseQueryOptions } from "@tanstack/react-query"
+import {
+  useInfiniteQuery,
+  UseInfiniteQueryOptions,
+  useQuery,
+  UseQueryOptions,
+} from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
@@ -20,7 +25,14 @@ import {
   recursiveGetOwnedObjects,
   suiClient,
 } from "@/services/client"
-import { StakedWal, StakedWalWithStatus } from "@/types"
+import {
+  DelegationResponse,
+  DelegatorResponse,
+  OperatorTransaction,
+  OperatorTransactionResponse,
+  StakedWal,
+  StakedWalWithStatus,
+} from "@/types"
 
 export const useSystemInner = <D = SuiObjectResponse>(
   props: Partial<UseQueryOptions<SuiObjectResponse, Error, D>> = {}
@@ -129,6 +141,50 @@ export const usePoolOperators = (
           const shares = new BigNumber(content.fields.num_shares)
             .shiftedBy(-walrus.decimals)
             .toNumber()
+          const rewardsPool = new BigNumber(content.fields.rewards_pool)
+            .shiftedBy(-walrus.decimals)
+            .toNumber()
+          const commissionReceiver =
+            content.fields.commission_receiver.fields?.pos0
+          const governaceAuthorized =
+            content.fields.governance_authorized.fields?.pos0
+          const storagePrice = parseFloat(
+            content.fields.voting_params.fields.storage_price
+          )
+          const writePrice = parseFloat(
+            content.fields.voting_params.fields.write_price
+          )
+          const state = content.fields.state.variant
+          const commission = new BigNumber(content.fields.commission)
+            .shiftedBy(-walrus.decimals)
+            .toNumber()
+          const pendingSharesWithdraw = _.reduce(
+            content.fields.pending_shares_withdraw.fields.pos0.fields.contents,
+            (acc, item) => {
+              return acc.plus(item.fields.value)
+            },
+            new BigNumber(0)
+          )
+            .shiftedBy(-walrus.decimals)
+            .toNumber()
+          const pendingStake = _.reduce(
+            content.fields.pending_stake.fields.pos0.fields.contents,
+            (acc, item) => {
+              return acc.plus(item.fields.value)
+            },
+            new BigNumber(0)
+          )
+            .shiftedBy(-walrus.decimals)
+            .toNumber()
+          const preActiveWithdrawals = _.reduce(
+            content.fields.pre_active_withdrawals.fields.pos0.fields.contents,
+            (acc, item) => {
+              return acc.plus(item.fields.value)
+            },
+            new BigNumber(0)
+          )
+            .shiftedBy(-walrus.decimals)
+            .toNumber()
           const capacityTB = new BigNumber(
             content.fields.voting_params.fields.node_capacity
           )
@@ -149,10 +205,21 @@ export const usePoolOperators = (
             latestEpoch,
             activationEpoch,
             commissionRate,
+            rewardsPool,
+            commissionReceiver,
+            governaceAuthorized,
+            storagePrice,
+            writePrice,
+            state,
+            commission,
+            pendingSharesWithdraw,
+            pendingStake,
+            preActiveWithdrawals,
           }
         })
       )
     },
+    throwOnError: true,
     ...props,
   })
 }
@@ -271,6 +338,13 @@ export const useOperatorsWithSharesAndBaseApy = (
     },
     ...props,
   })
+}
+
+export const useOperatorWithSharesAndBaseApy = ({ id }: { id: string }) => {
+  const operatorsWithSharesAndBaseApy = useOperatorsWithSharesAndBaseApy()
+  return useMemo(() => {
+    return operatorsWithSharesAndBaseApy.data?.find((o) => o.id === id) || null
+  }, [operatorsWithSharesAndBaseApy.data, id])
 }
 
 export const useFullOperators = () => {
@@ -422,6 +496,160 @@ export const useEstimatedReward = ({
         total,
         rewards,
       }
+    },
+  })
+}
+
+export const useDelegators = <T = DelegatorResponse>({
+  operatorId,
+  pageIndex = 0,
+  ...props
+}: {
+  operatorId: string
+  pageIndex?: number
+} & Partial<UseQueryOptions<DelegatorResponse, Error, T>>) => {
+  return useQuery({
+    queryKey: ["delegators", operatorId, pageIndex],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const delegators = await fetch(
+        `/api/delegators?operatorId=${operatorId}&pageIndex=${pageIndex}`
+      )
+      return delegators.json()
+    },
+    ...props,
+  })
+}
+
+export const useDelegations = <T = DelegationResponse>({
+  operatorId,
+  pageIndex = 0,
+  ...props
+}: {
+  operatorId: string
+  pageIndex?: number
+} & Partial<UseQueryOptions<DelegationResponse, Error, T>>) => {
+  return useQuery({
+    queryKey: ["delegations", operatorId, pageIndex],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const delegations = await fetch(
+        `/api/delegations?operatorId=${operatorId}&pageIndex=${pageIndex}`
+      )
+      return delegations.json()
+    },
+    ...props,
+  })
+}
+
+export const useOperatorTransactions = ({
+  operatorId,
+}: {
+  operatorId: string
+}) => {
+  return useInfiniteQuery<OperatorTransactionResponse>({
+    queryKey: ["operator-transactions", operatorId],
+    getNextPageParam: (lastPage) => {
+      return lastPage.pageInfo.startCursor || undefined
+    },
+    initialPageParam: null,
+    queryFn: async ({ pageParam = null }) => {
+      const transactions = await fetch(
+        "https://sui-mainnet.mystenlabs.com/graphql",
+        {
+          method: "POST",
+          body: JSON.stringify({
+            query: `
+          query TransactionBlocks($filter: TransactionBlockFilter, $last: Int, $before: String) {
+  transactionBlocks(filter: $filter, last: $last, before: $before) {
+    nodes {
+      sender {
+        address
+        suinsRegistrations(last: 1) {
+          nodes {
+            domain
+          }
+        }
+      }
+      digest
+      kind {
+        ... on ProgrammableTransactionBlock {
+          transactions {
+            nodes {
+              ... on MoveCallTransaction {
+                function {
+                  name
+                  module {
+                    name
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      effects {
+        status
+        gasEffects {
+          gasSummary {
+            computationCost
+            nonRefundableStorageFee
+            storageCost
+            storageRebate
+          }
+        }
+        timestamp
+      }
+    }
+    pageInfo {
+      startCursor
+    }
+  }
+}
+          `,
+            variables: {
+              filter: {
+                changedObject: operatorId,
+              },
+              last: 20,
+              before: pageParam,
+            },
+          }),
+        }
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          return {
+            pageInfo: data.data.transactionBlocks.pageInfo,
+            transactions: data.data.transactionBlocks.nodes.map((node: any) => {
+              const firstTx = _.find(
+                node.kind.transactions.nodes,
+                (t) => "function" in t
+              )
+              const name = node.sender.suinsRegistrations.nodes[0]?.domain
+
+              return {
+                digest: node.digest,
+                sender: node.sender.address,
+                name: name,
+                txLabel: firstTx?.function.name,
+                txCount: node.kind.transactions.nodes.length,
+                timestamp: node.effects.timestamp,
+                gas:
+                  parseFloat(
+                    node.effects.gasEffects.gasSummary.computationCost
+                  ) +
+                  parseFloat(node.effects.gasEffects.gasSummary.storageCost) +
+                  parseFloat(node.effects.gasEffects.gasSummary.storageRebate) +
+                  parseFloat(
+                    node.effects.gasEffects.gasSummary.nonRefundableStorageFee
+                  ),
+                status: node.effects.status,
+              }
+            }),
+          }
+        })
+      return transactions
     },
   })
 }

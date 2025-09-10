@@ -9,6 +9,16 @@ export interface PoolOperator {
   latestEpoch: number
   activationEpoch: number
   commissionRate: number
+  rewardsPool: number
+  commissionReceiver?: string
+  governaceAuthorized?: string
+  storagePrice: number
+  writePrice: number
+  state: "Active" | (string & {})
+  commission: number
+  pendingSharesWithdraw: number
+  pendingStake: number
+  preActiveWithdrawals: number
 }
 
 export interface OperatorMetadata {

@@ -9,6 +9,9 @@ export const walrus = {
   stakedWal:
     "0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77::staked_wal::StakedWal",
   walrus: "0xfa65cb2d62f4d39e60346fb7d501c12538ca2bbc646eaa37ece2aec5f897814e",
+  suiNsRegistry:
+    "0x0f08060ed5dfdaff5d38fecf4954310e840adb5eacbf69c5d155cd3e9a8e1653",
+  suiNs: "0xd22b24490e0bae52676651b4f56660a5ff8022a2576e0089f79b3c88d44e08f0",
   suiToken: "0x2::sui::SUI",
   decimals: 9,
   denominator: 10 ** 9,

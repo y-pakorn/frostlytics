@@ -1,5 +1,7 @@
 import { cache } from "react"
 import { unstable_cache } from "next/cache"
+import { bcs } from "@mysten/sui/bcs"
+import { Transaction } from "@mysten/sui/transactions"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
@@ -18,56 +20,41 @@ import {
   suiClient,
 } from "./client"
 
-export const getAllOperators = cache(async (): Promise<PoolOperator[]> => {
-  const poolIds = await recursiveGetDynamicFields({
-    parentId: walrus.pool,
-  })
-  const poolObjects = await recursiveGetMultiObjects({
-    objectIds: poolIds.map((pool) => pool.objectId),
-    options: {
-      showContent: true,
-    },
-  })
+export const getAllOperators = cache(
+  async (): Promise<
+    {
+      id: string
+      name: string
+      metadataId: string
+    }[]
+  > => {
+    const poolIds = await recursiveGetDynamicFields({
+      parentId: walrus.pool,
+    })
+    const poolObjects = await recursiveGetMultiObjects({
+      objectIds: poolIds.map((pool) => pool.objectId),
+      options: {
+        showContent: true,
+      },
+    })
 
-  const pools = poolObjects.map((pool) => {
-    const content = pool.data?.content as any
+    const pools = poolObjects.map((pool) => {
+      const content = pool.data?.content as any
 
-    const id = pool.data?.objectId!
-    const name = content.fields.node_info.fields.name
-    const metadataId = content.fields.node_info.fields.metadata.fields.id.id
-    const address =
-      content.fields.node_info.fields.network_address.split(":")[0]
-    const staked = new BigNumber(content.fields.wal_balance)
-      .shiftedBy(-9)
-      .toNumber()
-    const shares = new BigNumber(content.fields.num_shares)
-      .shiftedBy(-9)
-      .toNumber()
-    const capacityTB = new BigNumber(
-      content.fields.voting_params.fields.node_capacity
-    )
-      .shiftedBy(-12)
-      .toNumber()
-    const latestEpoch = content.fields.latest_epoch
-    const activationEpoch = content.fields.activation_epoch
-    const commissionRate = content.fields.commission_rate
+      const id = pool.data?.objectId!
+      const name = content.fields.node_info.fields.name
+      const metadataId = content.fields.node_info.fields.metadata.fields.id.id
 
-    return {
-      id,
-      name,
-      metadataId,
-      address,
-      staked,
-      shares,
-      capacityTB,
-      latestEpoch,
-      activationEpoch,
-      commissionRate,
-    }
-  })
+      return {
+        id,
+        name,
+        metadataId,
+      }
+    })
 
-  return pools satisfies PoolOperator[]
-})
+    return pools
+  }
+)
 
 export const getOperatorMetadata = cache(
   async (metadataId: string): Promise<OperatorMetadata> => {
