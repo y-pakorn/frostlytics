@@ -7,8 +7,13 @@ import {
 } from "@mysten/dapp-kit"
 import { getFullnodeUrl } from "@mysten/sui/client"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
+import { Frown } from "lucide-react"
 
+import { images } from "@/config/image"
 import { siteConfig } from "@/config/site"
+import { useIsMobile } from "@/hooks/use-mobile"
+
+import { Icons } from "./icons"
 
 const { networkConfig } = createNetworkConfig({
   mainnet: { url: getFullnodeUrl("mainnet") },
@@ -24,6 +29,10 @@ const queryClient = new QueryClient({
 })
 
 export function Providers({ children }: { children: React.ReactNode }) {
+  const isMobile = useIsMobile()
+
+  if (isMobile) return <Mobile />
+
   return (
     <QueryClientProvider client={queryClient}>
       <SuiClientProvider networks={networkConfig} defaultNetwork="mainnet">
@@ -37,5 +46,25 @@ export function Providers({ children }: { children: React.ReactNode }) {
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
+  )
+}
+
+function Mobile() {
+  return (
+    <main className="text-secondary-foreground container flex h-screen flex-col items-center justify-center gap-4 text-center">
+      <img
+        className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
+        src={images.bg}
+        alt="Background"
+      />
+      <Frown className="text-accent-purple-dark size-11" />
+      <div className="space-y-1">
+        <h1 className="text-xl font-bold">Mobile Not Supported Yet</h1>
+        <p className="text-muted-foreground max-w-sm text-sm font-medium">
+          We are sorry, but mobile is not supported yet. Please use a desktop
+          browser to access and use the site.
+        </p>
+      </div>
+    </main>
   )
 }
