@@ -327,7 +327,9 @@ export default function Home() {
                 }}
                 className="h-[56px] w-[83px]"
               >
-                <LineChart data={fullOperators}>
+                <LineChart
+                  data={fullOperators?.filter((o) => o.apyWithCommission > 0)}
+                >
                   <ChartTooltip
                     cursor={false}
                     content={
