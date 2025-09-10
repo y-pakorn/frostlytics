@@ -56,8 +56,8 @@ export const renderOperator = async (label: string, imageUrl?: string) => {
           src={imageUrl || `data:image/png;base64,${avatar.toString("base64")}`}
           alt={label}
           style={{
-            height: 154,
-            width: 154,
+            height: 170,
+            width: 170,
             borderRadius: 9999,
             objectFit: "cover",
             position: "absolute",
