@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import {
   ColumnDef,
@@ -150,8 +150,11 @@ export function OperatorDelegations({
     if (delegations) setTotalPages(delegations.totalPages)
   }, [delegations])
 
+  const data = useMemo(() => {
+    return delegations?.delegations ?? []
+  }, [delegations])
   const table = useReactTable({
-    data: delegations?.delegations || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })

@@ -245,8 +245,11 @@ export default function RewardCalculator() {
     pageIndex: 0,
     pageSize: 10,
   })
+  const data = useMemo(() => {
+    return fullOperators || []
+  }, [fullOperators])
   const table = useReactTable({
-    data: fullOperators || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

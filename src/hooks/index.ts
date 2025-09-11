@@ -513,7 +513,7 @@ export const useDelegators = <T = DelegatorResponse>({
     staleTime: Infinity,
     queryFn: async () => {
       const delegators = await fetch(
-        `/api/delegators?operatorId=${operatorId}&pageIndex=${pageIndex}`
+        `/api/delegators/${operatorId}/${pageIndex}`
       )
       return delegators.json()
     },
@@ -534,7 +534,7 @@ export const useDelegations = <T = DelegationResponse>({
     staleTime: Infinity,
     queryFn: async () => {
       const delegations = await fetch(
-        `/api/delegations?operatorId=${operatorId}&pageIndex=${pageIndex}`
+        `/api/delegations/${operatorId}/${pageIndex}`
       )
       return delegations.json()
     },

@@ -12,6 +12,7 @@ export const size = {
 export const contentType = "image/png"
 export const alt = "Walrus Profile"
 export const revalidate = 86400 // 24 hours
+export const dynamic = "force-static"
 
 async function loadGoogleFont(font: string, text: string) {
   const url = `https://fonts.googleapis.com/css2?family=${font}:wght@600&display=swap&text=${encodeURIComponent(text)}`

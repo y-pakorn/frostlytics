@@ -6,7 +6,7 @@ import { env } from "@/env.mjs"
 import { isValidAddress } from "@/lib/utils"
 import { getSuiNameCached } from "@/services"
 
-const getDelegationsCached = unstable_cache(
+const getDelegatorsCached = unstable_cache(
   async ({
     operatorId,
     pageIndex = 0,
@@ -15,7 +15,7 @@ const getDelegationsCached = unstable_cache(
     pageIndex?: number
   }) => {
     const response = await fetch(
-      `https://api.blockberry.one/walrus-mainnet/v1/validators/${operatorId}/staking-history?page=${pageIndex}&size=20&orderBy=DESC&sortBy=TIMESTAMP`,
+      `https://api.blockberry.one/walrus-mainnet/v1/validators/${operatorId}/delegators?page=${pageIndex}&size=20&orderBy=DESC&sortBy=AMOUNT`,
       {
         headers: {
           "x-api-key": env.BLOCKBERRY_API_KEY,
@@ -24,29 +24,29 @@ const getDelegationsCached = unstable_cache(
     )
     const data = await response.json()
     return {
-      delegations: data.content.map((d: any) => [
+      delegators: data.content.map((d: any) => [
         d.owner,
         d.amount,
         d.activationEpoch,
-        d.timestamp,
-        d.state,
-        d.txDigest,
-      ]) as [string, number, number, number, string, string][],
+      ]) as [string, number, number][],
       totalPages: data.totalPages as number,
       total: data.totalElements as number,
     }
   },
-  ["delegations"],
+  ["delegators"],
   {
-    revalidate: 60, // 1 minute
+    revalidate: 3600, // 1 hours
   }
 )
 
-export async function GET(request: NextRequest) {
-  const operatorId = request.nextUrl.searchParams.get("operatorId")
-  const pageIndex = parseInt(
-    request.nextUrl.searchParams.get("pageIndex") || "0"
-  )
+export const revalidate = 3600 // 1 hours
+export const dynamic = "force-static"
+
+export async function GET(
+  request: NextRequest,
+  { params }: RouteContext<"/api/delegators/[operatorId]/[pageIndex]">
+) {
+  const { operatorId, pageIndex } = await params
 
   if (!operatorId || !isValidAddress(operatorId)) {
     return NextResponse.json(
@@ -59,13 +59,15 @@ export async function GET(request: NextRequest) {
     )
   }
 
-  const data = await getDelegationsCached({
+  const pageIndexInt = parseInt(pageIndex)
+
+  const data = await getDelegatorsCached({
     operatorId,
-    pageIndex,
+    pageIndex: pageIndexInt,
   })
 
   const namesIndividual = await Promise.all(
-    data.delegations.map(async (d) => [d[0], await getSuiNameCached(d[0])])
+    data.delegators.map(async (d) => [d[0], await getSuiNameCached(d[0])])
   ).then((d) =>
     _.chain(d)
       .filter((d) => !!d[1])
@@ -75,6 +77,6 @@ export async function GET(request: NextRequest) {
 
   return NextResponse.json({
     ...data,
-    delegations: data.delegations.map((d) => [...d, namesIndividual[d[0]]]),
+    delegators: data.delegators.map((d) => [...d, namesIndividual[d[0]]]),
   })
 }

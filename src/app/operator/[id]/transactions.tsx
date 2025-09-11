@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import Link from "next/link"
 import {
   ColumnDef,
@@ -136,9 +136,11 @@ export function OperatorTransactions({
   } = useOperatorTransactions({
     operatorId: operator.id,
   })
-
+  const data = useMemo(() => {
+    return transactions?.pages[pageIndex]?.transactions ?? []
+  }, [transactions, pageIndex])
   const table = useReactTable({
-    data: transactions?.pages[pageIndex]?.transactions || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
   })

@@ -264,9 +264,11 @@ export default function Home() {
   ])
   const [globalFilter, setGlobalFilter] = useState<any>([])
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-
+  const data = useMemo(() => {
+    return fullOperators || []
+  }, [fullOperators])
   const table = useReactTable({
-    data: fullOperators || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),

@@ -32,6 +32,9 @@ const getOperatorProfileCached = unstable_cache(
   }
 )
 
+export const revalidate = 86400 // 24 hours
+export const dynamic = "force-static"
+
 export async function GET() {
   try {
     const operators = await getOperatorProfileCached()
