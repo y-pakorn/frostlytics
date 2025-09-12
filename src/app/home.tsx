@@ -18,20 +18,26 @@ import {
   ChevronDown,
   ChevronsUpDown,
   ChevronUp,
-  Copy,
   Search,
   TrendingUp,
 } from "lucide-react"
-import { CartesianGrid, Line, LineChart, YAxis } from "recharts"
-import { toast } from "sonner"
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Line,
+  LineChart,
+  XAxis,
+  YAxis,
+} from "recharts"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
+import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useCirculatingSupply } from "@/hooks/use-circulating-supply"
 import { usePrices } from "@/hooks/use-prices"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
   ChartContainer,
@@ -48,7 +54,6 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -58,51 +63,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { CircleCountdown } from "@/components/circle-countdown"
 import { GradientBorderCard } from "@/components/gradient-border-card"
-import { Icons } from "@/components/icons"
 import { OperatorHeader } from "@/components/operator-header"
 import { StakeDialog } from "@/components/stake-dialog"
 import { useFullOperators, useStakedWal, useSystem } from "@/hooks"
-
-const apyData = [
-  { date: "Jan 10, 2025", value: 15 },
-  { date: "Jan 20, 2025", value: 25 },
-  { date: "Jan 30, 2025", value: 18 },
-  { date: "Feb 10, 2025", value: 30 },
-  { date: "Feb 20, 2025", value: 22 },
-  { date: "Feb 28, 2025", value: 28 },
-  { date: "Mar 10, 2025", value: 20 },
-  { date: "Mar 20, 2025", value: 27 },
-  { date: "Mar 30, 2025", value: 19 },
-  { date: "Apr 10, 2025", value: 31 },
-  { date: "Apr 20, 2025", value: 23 },
-  { date: "Apr 30, 2025", value: 29 },
-  { date: "May 10, 2025", value: 21 },
-  { date: "May 20, 2025", value: 26 },
-  { date: "May 30, 2025", value: 17 },
-  { date: "Jun 10, 2025", value: 32 },
-  { date: "Jun 20, 2025", value: 24 },
-  { date: "Jun 30, 2025", value: 28 },
-  { date: "Jul 10, 2025", value: 20 },
-  { date: "Jul 20, 2025", value: 27 },
-]
-const stakedData = [
-  { date: "Jan 10, 2025", value: 10 },
-  { date: "Feb 10, 2025", value: 10 },
-  { date: "Mar 10, 2025", value: 11 },
-  { date: "Apr 10, 2025", value: 11 },
-  { date: "May 10, 2025", value: 12 },
-  { date: "Jun 10, 2025", value: 12 },
-
-  { date: "Jul 10, 2025", value: 12 },
-  { date: "Aug 10, 2025", value: 12 },
-]
+import { HistoricalData } from "@/types"
 
 const operatorTypeFilters = [
   {
@@ -119,8 +85,16 @@ const operatorTypeFilters = [
   },
 ]
 
-export default function Home() {
+export default function Home({
+  historicalData,
+}: {
+  historicalData: HistoricalData[]
+}) {
   const fullOperators = useFullOperators()
+  const totalStakedWAL = useMemo(() => {
+    return fullOperators ? _.sumBy(fullOperators, "staked") : null
+  }, [fullOperators])
+
   const prices = usePrices()
   const circulatingSupply = useCirculatingSupply()
 
@@ -295,7 +269,7 @@ export default function Home() {
       <div className="flex flex-col items-center gap-4 md:flex-row">
         <CircleCountdown className="size-[256px] shrink-0" />
         <div className="shrink-0 space-y-2">
-          <GradientBorderCard>
+          <GradientBorderCard className="space-y-1">
             <div>Average Staking APY%</div>
             <div className="flex items-center justify-between gap-2">
               <div>
@@ -357,44 +331,38 @@ export default function Home() {
               </ChartContainer>
             </div>
           </GradientBorderCard>
-          <div className="flex items-center gap-2">
-            <GradientBorderCard className="h-full">
-              <div>WAL Price</div>
-              <img src={images.wal} alt="WAL" className="my-1 size-6" />
-              {prices.data ? (
-                <div className="flex items-center gap-1">
-                  <div className="text-foreground font-bold">
-                    ${formatter.number(prices.data.wal.price)}
-                  </div>
-                  <TrendingUp
-                    className={cn(
-                      prices.data.wal.change24h >= 0
-                        ? "text-success-foreground"
-                        : "text-error-foreground scale-y-[-1]",
-                      "size-4"
-                    )}
-                  />
-                  <div
-                    className={cn(
-                      prices.data.wal.change24h >= 0
-                        ? "text-success-foreground"
-                        : "text-error-foreground"
-                    )}
-                  >
-                    {formatter.percentage(prices.data.wal.change24h, {
-                      forceSign: true,
-                    })}
-                  </div>
+          <GradientBorderCard className="space-y-1">
+            <div>WAL Price</div>
+            <img src={images.wal} alt="WAL" className="my-1 size-6" />
+            {prices.data ? (
+              <div className="flex items-center gap-1">
+                <div className="text-foreground font-bold">
+                  ${formatter.number(prices.data.wal.price)}
                 </div>
-              ) : (
-                <Skeleton className="h-5 w-24" />
-              )}
-            </GradientBorderCard>
-            <GradientBorderCard>
-              <div>Total CEX Flow</div>
-              <div className="text-foreground mt-7 font-bold">13.25M WAL</div>
-            </GradientBorderCard>
-          </div>
+                <TrendingUp
+                  className={cn(
+                    prices.data.wal.change24h >= 0
+                      ? "text-success-foreground"
+                      : "text-error-foreground scale-y-[-1]",
+                    "size-4"
+                  )}
+                />
+                <div
+                  className={cn(
+                    prices.data.wal.change24h >= 0
+                      ? "text-success-foreground"
+                      : "text-error-foreground"
+                  )}
+                >
+                  {formatter.percentage(prices.data.wal.change24h, {
+                    forceSign: true,
+                  })}
+                </div>
+              </div>
+            ) : (
+              <Skeleton className="h-5 w-24" />
+            )}
+          </GradientBorderCard>
           <GradientBorderCard>
             <div className="flex items-center gap-2">
               <div>Circulating Supply</div>
@@ -410,31 +378,71 @@ export default function Home() {
         </div>
         <GradientBorderCard className="h-full w-full">
           <div>Total Staked</div>
-          <div className="text-foreground text-xl">2,200,444 WAL</div>
+          {totalStakedWAL ? (
+            <div className="text-foreground text-xl">
+              {formatter.number(totalStakedWAL)} WAL
+            </div>
+          ) : (
+            <Skeleton className="h-7 w-48" />
+          )}
           <ChartContainer
-            className="mt-2 max-h-[170px] w-full"
+            className="mt-2 max-h-[180px] w-full"
             config={{
-              value: {
+              totalStakedWAL: {
                 color: "var(--color-accent-blue)",
                 label: "Staked",
               },
             }}
           >
-            <LineChart data={stakedData}>
+            <AreaChart
+              data={historicalData}
+              margin={{ bottom: 0, left: 0, right: 0, top: 0 }}
+            >
+              <defs>
+                <linearGradient id="totalStakedWAL" x1="0" y1="0" x2="0" y2="1">
+                  <stop
+                    offset="5%"
+                    stopColor="var(--color-totalStakedWAL)"
+                    stopOpacity={0.7}
+                  />
+                  <stop
+                    offset="95%"
+                    stopColor="var(--color-totalStakedWAL)"
+                    stopOpacity={0.05}
+                  />
+                </linearGradient>
+              </defs>
               <CartesianGrid vertical={false} />
               <YAxis hide domain={["dataMin", "dataMax"]} />
+              <XAxis
+                dataKey="timestamp"
+                tickLine={false}
+                axisLine={false}
+                tickMargin={8}
+                minTickGap={32}
+                tickFormatter={(value) => dayjs(value).format("MMM D")}
+              />
               <ChartTooltip
                 cursor={false}
-                content={<ChartTooltipContent hideLabel />}
+                content={
+                  <ChartTooltipContent
+                    hideLabel
+                    includeDate={{
+                      key: "timestamp",
+                      formatter: (value) => dayjs(value).format("MMM D, YYYY"),
+                    }}
+                  />
+                }
               />
-              <Line
+              <Area
                 type="monotone"
-                dataKey="value"
-                stroke="var(--color-value)"
+                dataKey="totalStakedWAL"
+                stroke="var(--color-totalStakedWAL)"
+                fill="url(#totalStakedWAL)"
                 strokeWidth={2}
                 dot={false}
               />
-            </LineChart>
+            </AreaChart>
           </ChartContainer>
         </GradientBorderCard>
       </div>
@@ -449,7 +457,7 @@ export default function Home() {
       <div className="space-y-6">
         <div className="flex items-center gap-2">
           <div className="shrink-0 space-y-2">
-            <GradientBorderCard>
+            <GradientBorderCard className="space-y-1">
               <div>Shards</div>
               {system ? (
                 <div className="text-foreground text-base font-bold">
@@ -461,7 +469,7 @@ export default function Home() {
               <div>Individual Data Partitions</div>
             </GradientBorderCard>
             <div className="flex items-center gap-2">
-              <GradientBorderCard>
+              <GradientBorderCard className="space-y-1">
                 <div>Storage Price</div>
                 {system ? (
                   <div className="text-foreground text-base font-bold">
@@ -472,7 +480,7 @@ export default function Home() {
                 )}
                 <div>Frost/MiB/Epoch</div>
               </GradientBorderCard>
-              <GradientBorderCard>
+              <GradientBorderCard className="space-y-1">
                 <div>Write Price</div>
                 {system ? (
                   <div className="text-foreground text-base font-bold">
@@ -487,60 +495,134 @@ export default function Home() {
           </div>
           <GradientBorderCard className="h-full w-full">
             <div>Total Storage Usage</div>
-            <div className="text-foreground text-xl">311,572 TB</div>
+            {system ? (
+              <div className="text-foreground text-xl">
+                {formatter.number(system.usedCapacityTB)} TB{" "}
+                <span className="text-tertiary">
+                  / {formatter.number(system.totalCapacityTB)} TB
+                </span>
+              </div>
+            ) : (
+              <Skeleton className="h-7 w-48" />
+            )}
             <ChartContainer
-              className="mt-2 max-h-[100px] w-full"
+              className="mt-2 max-h-[120px] w-full"
               config={{
-                value: {
+                storageUsedTB: {
                   color: "var(--color-accent-purple)",
                   label: "Storage Usage (TB)",
                 },
               }}
             >
-              <LineChart data={stakedData}>
+              <AreaChart
+                data={historicalData}
+                margin={{ bottom: 0, left: 0, right: 0, top: 0 }}
+              >
+                <defs>
+                  <linearGradient
+                    id="storageUsedTB"
+                    x1="0"
+                    y1="0"
+                    x2="0"
+                    y2="1"
+                  >
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-storageUsedTB)"
+                      stopOpacity={0.7}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-storageUsedTB)"
+                      stopOpacity={0.05}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} />
                 <YAxis hide domain={["dataMin", "dataMax"]} />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
+                  content={
+                    <ChartTooltipContent
+                      hideLabel
+                      includeDate={{
+                        key: "timestamp",
+                        formatter: (value) =>
+                          dayjs(value).format("MMM D, YYYY"),
+                      }}
+                    />
+                  }
                 />
-                <Line
+                <Area
                   type="monotone"
-                  dataKey="value"
-                  stroke="var(--color-value)"
+                  dataKey="storageUsedTB"
+                  stroke="var(--color-storageUsedTB)"
+                  fill="url(#storageUsedTB)"
                   strokeWidth={2}
                   dot={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           </GradientBorderCard>
           <GradientBorderCard className="h-full w-full">
-            <div>Total Paid Fee</div>
-            <div className="text-foreground text-xl">1048.16 WAL</div>
+            <div>{"Today's Paid Fee"}</div>
+            <div className="text-foreground text-xl">
+              {formatter.number(
+                historicalData[historicalData.length - 1]?.paidFeesUSD
+              )}{" "}
+              USD
+            </div>
             <ChartContainer
-              className="mt-2 max-h-[100px] w-full"
+              className="mt-2 max-h-[120px] w-full"
               config={{
-                value: {
+                paidFeesUSD: {
                   color: "var(--color-accent-purple)",
-                  label: "Total Paid Fee (WAL)",
+                  label: "Total Paid Fee (USD)",
                 },
               }}
             >
-              <LineChart data={stakedData}>
+              <AreaChart
+                data={historicalData}
+                margin={{ bottom: 0, left: 0, right: 0, top: 0 }}
+              >
+                <defs>
+                  <linearGradient id="paidFeesUSD" x1="0" y1="0" x2="0" y2="1">
+                    <stop
+                      offset="5%"
+                      stopColor="var(--color-paidFeesUSD)"
+                      stopOpacity={0.7}
+                    />
+                    <stop
+                      offset="95%"
+                      stopColor="var(--color-paidFeesUSD)"
+                      stopOpacity={0.05}
+                    />
+                  </linearGradient>
+                </defs>
                 <CartesianGrid vertical={false} />
                 <YAxis hide domain={["dataMin", "dataMax"]} />
                 <ChartTooltip
                   cursor={false}
-                  content={<ChartTooltipContent hideLabel />}
+                  content={
+                    <ChartTooltipContent
+                      hideLabel
+                      includeDate={{
+                        key: "timestamp",
+                        formatter: (value) =>
+                          dayjs(value).format("MMM D, YYYY"),
+                      }}
+                    />
+                  }
                 />
-                <Line
+                <Area
                   type="monotone"
-                  dataKey="value"
-                  stroke="var(--color-value)"
+                  dataKey="paidFeesUSD"
+                  fill="url(#paidFeesUSD)"
+                  stroke="var(--color-paidFeesUSD)"
                   strokeWidth={2}
                   dot={false}
                 />
-              </LineChart>
+              </AreaChart>
             </ChartContainer>
           </GradientBorderCard>
         </div>

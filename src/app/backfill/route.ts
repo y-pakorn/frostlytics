@@ -1,3 +1,4 @@
+import { revalidatePath, revalidateTag } from "next/cache"
 import { NextRequest, NextResponse } from "next/server"
 import { graphql } from "@mysten/sui/graphql/schemas/latest"
 import BigNumber from "bignumber.js"
@@ -331,6 +332,9 @@ export async function GET(request: NextRequest) {
       }
     }
   }
+
+  revalidateTag("historical-data")
+  revalidatePath("/", "page")
 
   return NextResponse.json({
     message: "OK",

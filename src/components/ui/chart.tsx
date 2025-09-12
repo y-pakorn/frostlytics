@@ -124,6 +124,7 @@ function ChartTooltipContent({
   color,
   nameKey,
   labelKey,
+  includeDate,
 }: React.ComponentProps<typeof RechartsPrimitive.Tooltip> &
   React.ComponentProps<"div"> & {
     hideLabel?: boolean
@@ -132,6 +133,11 @@ function ChartTooltipContent({
     nameKey?: string
     labelKey?: string
     valueFormatter?: (value: any) => string
+    includeDate?: {
+      key: string
+      formatter?: (value: any) => string
+      className?: string
+    }
   }) {
   const { config } = useChart()
 
@@ -176,6 +182,7 @@ function ChartTooltipContent({
   }
 
   const nestLabel = payload.length === 1 && indicator !== "dot"
+  const date = includeDate ? payload?.[0]?.payload?.[includeDate.key] : null
 
   return (
     <div
@@ -252,6 +259,16 @@ function ChartTooltipContent({
             </div>
           )
         })}
+        {date && (
+          <div
+            className={cn(
+              "text-secondary text-sm font-medium",
+              includeDate?.className
+            )}
+          >
+            {includeDate?.formatter ? includeDate.formatter(date) : date}
+          </div>
+        )}
       </div>
     </div>
   )

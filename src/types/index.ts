@@ -51,3 +51,10 @@ export interface OperatorTransactionResponse {
     startCursor: string | null
   }
 }
+
+export interface HistoricalData {
+  timestamp: string
+  paidFeesUSD: number | null
+  totalStakedWAL: number | null
+  storageUsedTB: number | null
+}
