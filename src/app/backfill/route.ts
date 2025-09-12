@@ -273,10 +273,12 @@ const backfillByDate = async (
   return true
 }
 
+export const dynamic = "force-dynamic"
+
 export async function GET(request: NextRequest) {
   const authHeader = request.headers.get("authorization")
   if (
-    process.env.MODE !== "development" ||
+    process.env.MODE !== "development" &&
     authHeader !== `Bearer ${process.env.CRON_SECRET}`
   ) {
     return NextResponse.json({
