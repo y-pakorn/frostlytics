@@ -324,7 +324,7 @@ export function Profile({
                   <div>Staking Period</div>
                 </div>
               )}
-              {tier?.reportImageUrl && stakingPeriod && (
+              {!readOnly && tier?.reportImageUrl && stakingPeriod && (
                 <ReportCardDialog
                   imageUrl={tier.reportImageUrl}
                   address={address}
