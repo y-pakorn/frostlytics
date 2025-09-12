@@ -1,0 +1,178 @@
+{
+  "id": "72fc34d4-02a9-4756-b292-0afaff3683a9",
+  "prevId": "bbdf9342-e422-45ff-9f58-06c87f1073ad",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aggregated_daily": {
+      "name": "aggregated_daily",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "active_count": {
+          "name": "active_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "committee_count": {
+          "name": "committee_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "n_shard": {
+          "name": "n_shard",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staked_wal": {
+          "name": "staked_wal",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_usage_tb": {
+          "name": "storage_usage_tb",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_storage_tb": {
+          "name": "total_storage_tb",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_fees_usd": {
+          "name": "paid_fees_usd",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_ad__timestamp": {
+          "name": "idx_ad__timestamp",
+          "columns": [
+            {
+              "expression": "timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.operator_daily": {
+      "name": "operator_daily",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "operator_id": {
+          "name": "operator_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staked_wal": {
+          "name": "staked_wal",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_od_operator_id": {
+          "name": "idx_od_operator_id",
+          "columns": [
+            {
+              "expression": "operator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_od_timestamp": {
+          "name": "idx_od_timestamp",
+          "columns": [
+            {
+              "expression": "timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}
