@@ -4,11 +4,10 @@ import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
-import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { cn } from "@/lib/utils"
 
-import { Icons } from "./icons"
+import { SafeImage } from "./safe-image"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
 import { Separator } from "./ui/separator"
@@ -30,16 +29,11 @@ export const OperatorHeader = ({
           prefetch={false}
           {...props}
         >
-          {operator.metadata?.imageUrl ? (
-            <img
-              src={operator.metadata.imageUrl}
-              alt={operator.name}
-              className="size-8 shrink-0 rounded-full"
-              onError={(e) => (e.currentTarget.src = images.avatar)}
-            />
-          ) : (
-            <Icons.avatar className="size-8 shrink-0 rounded-full" />
-          )}
+          <SafeImage
+            src={operator.metadata?.imageUrl}
+            alt={operator.name}
+            className="size-8 shrink-0 rounded-full"
+          />
           <div className="min-w-0">
             <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
               <div className="text-foreground truncate">{operator.name}</div>
@@ -78,16 +72,11 @@ export const OperatorHeader = ({
       </TooltipTrigger>
       <TooltipContent className="max-w-[250px] space-y-2">
         <div className="flex items-center gap-2">
-          {operator.metadata?.imageUrl ? (
-            <img
-              src={operator.metadata.imageUrl}
-              alt={operator.name}
-              className="size-6 shrink-0 rounded-full"
-              onError={(e) => (e.currentTarget.src = images.avatar)}
-            />
-          ) : (
-            <Icons.avatar className="size-6 shrink-0 rounded-full" />
-          )}
+          <SafeImage
+            src={operator.metadata?.imageUrl}
+            alt={operator.name}
+            className="size-6 shrink-0 rounded-full"
+          />
           <div className="min-w-0">
             <div className="line-clamp-1 truncate font-medium">
               {operator.name}
