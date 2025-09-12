@@ -1,0 +1,1 @@
+ALTER TABLE "aggregated_daily" ADD COLUMN "operator_count" integer;

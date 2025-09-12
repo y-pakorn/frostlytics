@@ -1,0 +1,202 @@
+{
+  "id": "d6bb2026-6fe0-4821-8ada-588547fbe77e",
+  "prevId": "a4b03fb3-f143-4c90-ae51-0516106964a0",
+  "version": "7",
+  "dialect": "postgresql",
+  "tables": {
+    "public.aggregated_daily": {
+      "name": "aggregated_daily",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "epoch": {
+          "name": "epoch",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "active_count": {
+          "name": "active_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "committee_count": {
+          "name": "committee_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "operator_count": {
+          "name": "operator_count",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "n_shard": {
+          "name": "n_shard",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "staked_wal": {
+          "name": "staked_wal",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_usage_tb": {
+          "name": "storage_usage_tb",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "total_storage_tb": {
+          "name": "total_storage_tb",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "storage_price": {
+          "name": "storage_price",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "write_price": {
+          "name": "write_price",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "paid_fees_usd": {
+          "name": "paid_fees_usd",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_ad__timestamp": {
+          "name": "idx_ad__timestamp",
+          "columns": [
+            {
+              "expression": "timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    },
+    "public.operator_daily": {
+      "name": "operator_daily",
+      "schema": "",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "uuid",
+          "primaryKey": true,
+          "notNull": true,
+          "default": "gen_random_uuid()"
+        },
+        "operator_id": {
+          "name": "operator_id",
+          "type": "varchar(66)",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "timestamp": {
+          "name": "timestamp",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true
+        },
+        "staked_wal": {
+          "name": "staked_wal",
+          "type": "numeric",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "weight": {
+          "name": "weight",
+          "type": "integer",
+          "primaryKey": false,
+          "notNull": false
+        }
+      },
+      "indexes": {
+        "idx_od_operator_id": {
+          "name": "idx_od_operator_id",
+          "columns": [
+            {
+              "expression": "operator_id",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        },
+        "idx_od_timestamp": {
+          "name": "idx_od_timestamp",
+          "columns": [
+            {
+              "expression": "timestamp",
+              "isExpression": false,
+              "asc": true,
+              "nulls": "last"
+            }
+          ],
+          "isUnique": false,
+          "concurrently": false,
+          "method": "btree",
+          "with": {}
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {},
+      "uniqueConstraints": {},
+      "policies": {},
+      "checkConstraints": {},
+      "isRLSEnabled": false
+    }
+  },
+  "enums": {},
+  "schemas": {},
+  "sequences": {},
+  "roles": {},
+  "policies": {},
+  "views": {},
+  "_meta": {
+    "columns": {},
+    "schemas": {},
+    "tables": {}
+  }
+}

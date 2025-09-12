@@ -1,0 +1,1 @@
+ALTER TABLE "aggregated_daily" ADD COLUMN "epoch" integer;

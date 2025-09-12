@@ -22,7 +22,7 @@ export const suiClient = new SuiClient({
 })
 
 export const suiGraphQLClient = new SuiGraphQLClient({
-  url: "https://sui-mainnet.mystenlabs.com/graphql",
+  url: "https://graphql.mainnet.sui.io/graphql",
 })
 
 export const recursiveGetDynamicFields = cache(
