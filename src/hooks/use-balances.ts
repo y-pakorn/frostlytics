@@ -1,5 +1,6 @@
-import { useMemo } from "react"
+import { useEffect, useMemo } from "react"
 import { useCurrentAccount, useSuiClientQueries } from "@mysten/dapp-kit"
+import { useQuery } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
 
 import { walrus } from "@/config/walrus"
@@ -7,8 +8,8 @@ import { walrus } from "@/config/walrus"
 export const useBalances = ({ address }: { address?: string } = {}) => {
   const currentAccount = useCurrentAccount()
   const usedAddress = useMemo(
-    () => address || currentAccount?.address,
-    [address, currentAccount]
+    () => address || currentAccount?.address || "",
+    [address, currentAccount?.address]
   )
 
   const [walBalance, suiBalance] = useSuiClientQueries({
@@ -16,34 +17,34 @@ export const useBalances = ({ address }: { address?: string } = {}) => {
       {
         method: "getBalance",
         params: {
-          owner: usedAddress || "",
+          owner: usedAddress,
           coinType: walrus.walToken,
-        },
-        options: {
-          queryKey: ["wal-balance", usedAddress],
-          enabled: !!usedAddress,
-          select: (data) =>
-            new BigNumber(data.totalBalance).div(walrus.denominator),
         },
       },
       {
         method: "getBalance",
         params: {
-          owner: usedAddress || "",
+          owner: usedAddress,
           coinType: walrus.suiToken,
-        },
-        options: {
-          queryKey: ["sui-balance", usedAddress],
-          enabled: !!usedAddress,
-          select: (data) =>
-            new BigNumber(data.totalBalance).div(walrus.denominator),
         },
       },
     ],
   })
 
+  const memoizedWalBalance = useMemo(() => {
+    return walBalance.data
+      ? new BigNumber(walBalance.data.totalBalance).div(walrus.denominator)
+      : null
+  }, [walBalance])
+
+  const memoizedSuiBalance = useMemo(() => {
+    return suiBalance.data
+      ? new BigNumber(suiBalance.data.totalBalance).div(walrus.denominator)
+      : null
+  }, [suiBalance])
+
   return {
-    walBalance,
-    suiBalance,
+    walBalance: memoizedWalBalance,
+    suiBalance: memoizedSuiBalance,
   }
 }

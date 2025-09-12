@@ -85,6 +85,9 @@ export function Profile({
   }, [validators])
 
   const { walBalance } = useBalances({ address })
+  useEffect(() => {
+    console.log("RERENDER Wal Balance")
+  }, [walBalance])
   const totalStakedBalance = useMemo(() => {
     return _.sumBy(stakedWalWithStatus, "amount")
   }, [stakedWalWithStatus])
@@ -317,8 +320,8 @@ export function Profile({
               {
                 icon: Wallet,
                 label: "WAL Balance",
-                isLoading: walBalance.isPending,
-                value: formatter.number(walBalance.data || 0),
+                isLoading: walBalance === null,
+                value: formatter.number(walBalance || 0),
               },
               {
                 icon: PackageCheck,

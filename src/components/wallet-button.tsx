@@ -7,22 +7,19 @@ import {
   useCurrentAccount,
   useDisconnectWallet,
   useResolveSuiNSName,
-  useSuiClientQueries,
 } from "@mysten/dapp-kit"
 import type { WalletAccount } from "@mysten/wallet-standard"
-import BigNumber from "bignumber.js"
 import { blo } from "blo"
 import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react"
 import { toast } from "sonner"
 
 import { images } from "@/config/image"
 import { links } from "@/config/link"
-import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
 
-import { Button, buttonVariants } from "./ui/button"
+import { Button } from "./ui/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -106,9 +103,9 @@ function ConnectWalletButton({
         <DropdownMenuLabel>Tokens</DropdownMenuLabel>
         <DropdownMenuItem>
           <img src={images.sui} alt="sui" className="size-6" />
-          {suiBalance?.data ? (
+          {suiBalance ? (
             <span className="ml-auto font-semibold">
-              {formatter.number(suiBalance.data)} SUI
+              {formatter.number(suiBalance)} SUI
             </span>
           ) : (
             <Skeleton className="ml-auto h-6 w-16" />
@@ -116,9 +113,9 @@ function ConnectWalletButton({
         </DropdownMenuItem>
         <DropdownMenuItem>
           <img src={images.wal} alt="wal" className="size-6" />
-          {walBalance?.data ? (
+          {walBalance ? (
             <span className="ml-auto font-semibold">
-              {formatter.number(walBalance.data)} WAL
+              {formatter.number(walBalance)} WAL
             </span>
           ) : (
             <Skeleton className="ml-auto h-6 w-16" />

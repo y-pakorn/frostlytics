@@ -7,7 +7,7 @@ import {
 import { Transaction } from "@mysten/sui/transactions"
 import { useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
-import { ExternalLink, Info, Loader2 } from "lucide-react"
+import { ExternalLink, Loader2 } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { NumericFormat } from "react-number-format"
 import { toast } from "sonner"
@@ -20,9 +20,8 @@ import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
-import { recursiveGetCoins, suiClient } from "@/services/client"
-import { useStaking } from "@/hooks"
-import { StakedWal, StakedWalWithStatus } from "@/types"
+import { suiClient } from "@/services/client"
+import { StakedWalWithStatus } from "@/types"
 
 import { GradientBorderCard } from "./gradient-border-card"
 import { OperatorHeader } from "./operator-header"
@@ -148,8 +147,14 @@ export function UnstakeDialog({
       queryKey: ["staked-wal", account.address],
       exact: true,
     })
-    suiBalance.refetch()
-    walBalance.refetch()
+    queryClient.refetchQueries({
+      queryKey: ["sui-balance", account.address],
+      exact: true,
+    })
+    queryClient.refetchQueries({
+      queryKey: ["wal-balance", account.address],
+      exact: true,
+    })
     toast.success("Unstaked successfully", {
       description: result.digest,
       action: {
@@ -193,7 +198,7 @@ export function UnstakeDialog({
                       {...field}
                       customInput={Input}
                       placeholder={`Enter unstaking amount (minimum ${walrus.minimumStaking} WAL)`}
-                      disabled={!walBalance.data || !account}
+                      disabled={!walBalance || !account}
                     />
                   </FormControl>
                   <div className="flex items-center gap-2 text-sm font-medium">
@@ -216,7 +221,7 @@ export function UnstakeDialog({
                         variant="outline"
                         type="button"
                         onClick={() => {
-                          if (walBalance.data) {
+                          if (walBalance) {
                             field.onChange()
                             form.setValue(
                               "amount",
@@ -231,7 +236,7 @@ export function UnstakeDialog({
                         }}
                         size="sm"
                         className="flex-1"
-                        disabled={!walBalance.data || !account}
+                        disabled={!walBalance || !account}
                       >
                         {formatter.percentage(value)}
                       </Button>
@@ -278,9 +283,7 @@ export function UnstakeDialog({
               type="submit"
               className="w-full"
               variant="purple"
-              disabled={
-                form.formState.isSubmitting || !walBalance.data || !account
-              }
+              disabled={form.formState.isSubmitting || !walBalance || !account}
             >
               {!form.formState.isSubmitting ? (
                 "Unstake"

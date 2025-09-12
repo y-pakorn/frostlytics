@@ -80,13 +80,13 @@ export function StakeDialog({
   const onSubmit = async (data: z.infer<typeof stakeFormSchema>) => {
     if (!account) return
 
-    if (!walBalance.data || walBalance.data.lt(data.amount)) {
+    if (!walBalance || walBalance.lt(data.amount)) {
       form.setError("amount", {
         message: "Insufficient WAL balance",
       })
       return
     }
-    const useAll = walBalance.data.eq(data.amount)
+    const useAll = walBalance.eq(data.amount)
 
     const walCoins = await recursiveGetCoins({
       coinType: walrus.walToken,
@@ -153,8 +153,14 @@ export function StakeDialog({
       queryKey: ["staked-wal", account.address],
       exact: true,
     })
-    suiBalance.refetch()
-    walBalance.refetch()
+    queryClient.refetchQueries({
+      queryKey: ["sui-balance", account.address],
+      exact: true,
+    })
+    queryClient.refetchQueries({
+      queryKey: ["wal-balance", account.address],
+      exact: true,
+    })
     toast.success("Staked successfully", {
       description: result.digest,
       action: {
@@ -225,17 +231,14 @@ export function StakeDialog({
                       {...field}
                       customInput={Input}
                       placeholder="Enter staking amount"
-                      disabled={!walBalance.data || !account}
+                      disabled={!walBalance || !account}
                     />
                   </FormControl>
 
                   <div className="flex items-center gap-2 text-sm font-medium">
                     <div className="text-tertiary">Available</div>
                     <div className="flex-1" />
-                    {formatter.number(
-                      walBalance.data || 0,
-                      walrus.decimals
-                    )}{" "}
+                    {formatter.number(walBalance || 0, walrus.decimals)}{" "}
                     <img
                       src={images.wal}
                       alt="walrus"
@@ -249,12 +252,12 @@ export function StakeDialog({
                         variant="outline"
                         type="button"
                         onClick={() => {
-                          if (walBalance.data) {
+                          if (walBalance) {
                             field.onChange()
                             form.setValue(
                               "amount",
                               parseFloat(
-                                walBalance.data.multipliedBy(value).toFixed(9)
+                                walBalance.multipliedBy(value).toFixed(9)
                               )
                             )
                             form.clearErrors("amount")
@@ -262,7 +265,7 @@ export function StakeDialog({
                         }}
                         size="sm"
                         className="flex-1"
-                        disabled={!walBalance.data || !account}
+                        disabled={!walBalance || !account}
                       >
                         {formatter.percentage(value)}
                       </Button>
@@ -307,9 +310,7 @@ export function StakeDialog({
               type="submit"
               className="w-full"
               variant="purple"
-              disabled={
-                form.formState.isSubmitting || !walBalance.data || !account
-              }
+              disabled={form.formState.isSubmitting || !walBalance || !account}
             >
               {!form.formState.isSubmitting ? (
                 "Stake"

@@ -118,8 +118,14 @@ export function WithdrawDialog({
         queryKey: ["staked-wal", account.address],
         exact: true,
       })
-      suiBalance.refetch()
-      walBalance.refetch()
+      queryClient.refetchQueries({
+        queryKey: ["sui-balance", account.address],
+        exact: true,
+      })
+      queryClient.refetchQueries({
+        queryKey: ["wal-balance", account.address],
+        exact: true,
+      })
       toast.success("Withdraw successfully", {
         description: result.digest,
         action: {
