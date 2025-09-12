@@ -448,8 +448,12 @@ export const useEstimatedReward = ({
   address?: string
   stakedWals?: StakedWalWithStatus[] | null
 }) => {
-  return useQuery({
-    queryKey: ["estimated-reward", address, stakedWals?.map((s) => s.nodeId)],
+  const nodeIds = useMemo(() => {
+    return stakedWals?.map((s) => s.nodeId).sort() || []
+  }, [stakedWals])
+
+  const data = useQuery({
+    queryKey: ["estimated-reward", address, nodeIds] as const,
     enabled: !!stakedWals && !!address,
     queryFn: async () => {
       if (!stakedWals || !address)
@@ -498,6 +502,12 @@ export const useEstimatedReward = ({
       }
     },
   })
+
+  const memoizedData = useMemo(() => {
+    return data.data || null
+  }, [data])
+
+  return memoizedData
 }
 
 export const useDelegators = <T = DelegatorResponse>({

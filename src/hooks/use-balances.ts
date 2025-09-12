@@ -1,3 +1,4 @@
+import { useMemo } from "react"
 import { useCurrentAccount, useSuiClientQueries } from "@mysten/dapp-kit"
 import BigNumber from "bignumber.js"
 
@@ -5,7 +6,10 @@ import { walrus } from "@/config/walrus"
 
 export const useBalances = ({ address }: { address?: string } = {}) => {
   const currentAccount = useCurrentAccount()
-  const usedAddress = address || currentAccount?.address
+  const usedAddress = useMemo(
+    () => address || currentAccount?.address,
+    [address, currentAccount]
+  )
 
   const [walBalance, suiBalance] = useSuiClientQueries({
     queries: [

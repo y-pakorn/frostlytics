@@ -1,4 +1,5 @@
 import { ComponentProps, useEffect, useState } from "react"
+import _ from "lodash"
 
 import { Icons } from "./icons"
 
@@ -22,10 +23,12 @@ export function SafeImage({
     setImageSrc(null)
 
     const img = new Image()
-    img.onload = () => setImageSrc(src as string)
+    const usedSrc = `${src}`
+    img.onload = () => setImageSrc(usedSrc as string)
     img.onerror = () => setHasError(true)
+    img.onabort = () => setHasError(true)
     img.crossOrigin = "anonymous"
-    img.src = src as string
+    img.src = usedSrc as string
 
     return () => {
       img.onload = null

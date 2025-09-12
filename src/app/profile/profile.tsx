@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { use, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import { useResolveSuiNSName } from "@mysten/dapp-kit"
 import { bcs } from "@mysten/sui/bcs"
@@ -35,6 +35,7 @@ import {
 import { toast } from "sonner"
 
 import { links } from "@/config/link"
+import { tiers } from "@/config/tier"
 import { walrus } from "@/config/walrus"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
@@ -60,6 +61,7 @@ import {
   useEstimatedReward,
   useFullOperators,
   useStakedWalWithStatus,
+  useStaking,
 } from "@/hooks"
 import { StakedWalWithStatus } from "@/types"
 
@@ -72,6 +74,7 @@ export function Profile({
 }) {
   const { data: name } = useResolveSuiNSName(address)
 
+  const staking = useStaking()
   const stakedWalWithStatus = useStakedWalWithStatus({
     address,
   })
@@ -186,7 +189,7 @@ export function Profile({
               enableGlobalFilter: false,
               cell: ({ row }) => {
                 const thisEstimatedReward =
-                  estimatedReward.data?.rewards[row.original.id] || 0
+                  estimatedReward?.rewards[row.original.id] || 0
                 if (row.original.status === "withdrawing") {
                   return (
                     <div className="text-disabled font-semibold">
@@ -240,7 +243,6 @@ export function Profile({
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
-    getRowId: (row) => row.id,
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
@@ -250,6 +252,17 @@ export function Profile({
       columnFilters,
     },
   })
+
+  const tier = useMemo(() => {
+    if (!staking || !stakedWalWithStatus) return null
+    // percentile distribution is from first staking epoch to current epoch - first staking epoch is at 1% percentile
+    const userEpoch =
+      _.minBy(stakedWalWithStatus, "activationEpoch")?.activationEpoch ||
+      staking.epoch
+    const percentile =
+      (userEpoch - staking.firstEpochStartMs) / (staking.epochDurationMs * 1000)
+    return tiers.find((tier) => percentile >= tier.percentile)
+  }, [stakedWalWithStatus, staking])
 
   return (
     <div className="space-y-6">
@@ -316,8 +329,8 @@ export function Profile({
               {
                 icon: Gem,
                 label: "Estimated Reward",
-                isLoading: estimatedReward.isPending,
-                value: formatter.number(estimatedReward.data?.total || 0, 4),
+                isLoading: !estimatedReward,
+                value: formatter.number(estimatedReward?.total || 0, 4),
               },
             ].map(({ icon: Icon, label, value, isLoading }) => (
               <div
@@ -416,7 +429,7 @@ export function Profile({
           }
           estimatedReward={_.sumBy(
             stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || [],
-            (s) => estimatedReward.data?.rewards[s.id] || 0
+            (s) => estimatedReward?.rewards[s.id] || 0
           )}
           isWithdrawAll
         >
