@@ -85,9 +85,6 @@ export function Profile({
   }, [validators])
 
   const { walBalance } = useBalances({ address })
-  useEffect(() => {
-    console.log("RERENDER Wal Balance")
-  }, [walBalance])
   const totalStakedBalance = useMemo(() => {
     return _.sumBy(stakedWalWithStatus, "amount")
   }, [stakedWalWithStatus])
