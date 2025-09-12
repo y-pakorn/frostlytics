@@ -128,7 +128,7 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-foreground text-sm font-medium", className)}
+      className={cn("text-secondary text-sm font-medium", className)}
       {...props}
     />
   )

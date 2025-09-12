@@ -26,8 +26,6 @@ export function SafeImage({
     const usedSrc = `${src}`
     img.onload = () => setImageSrc(usedSrc as string)
     img.onerror = () => setHasError(true)
-    img.onabort = () => setHasError(true)
-    img.crossOrigin = "anonymous"
     img.src = usedSrc as string
 
     return () => {

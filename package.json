@@ -36,6 +36,7 @@
     "cmdk": "^1.1.1",
     "critters": "^0.0.25",
     "dayjs": "^1.11.18",
+    "html-to-image": "^1.11.13",
     "lodash": "^4.17.21",
     "lucide-react": "^0.543.0",
     "next": "15.5.3",

@@ -1,6 +1,7 @@
-import dayjs from "dayjs"
 import _ from "lodash"
 import numbro from "numbro"
+
+import { dayjs } from "./dayjs"
 
 export const formatter = {
   number: (v?: any, mantissa = 2) =>
@@ -30,4 +31,5 @@ export const formatter = {
       forceSign: forceSign,
     }),
   date: (v?: any) => dayjs(v).format("DD MMM YYYY hh:mm A"),
+  duration: (v?: any) => dayjs.duration(v).format("Y[Y] M[M] D[D]"),
 }

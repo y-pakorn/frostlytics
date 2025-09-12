@@ -55,6 +55,7 @@ import {
 } from "@/components/ui/table"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { OperatorHeader } from "@/components/operator-header"
+import { ReportCardDialog } from "@/components/report-card-dialog"
 import { UnstakeDialog } from "@/components/unstake-dialog"
 import { WithdrawDialog } from "@/components/withdraw-dialog"
 import {
@@ -253,15 +254,25 @@ export function Profile({
     },
   })
 
-  const tier = useMemo(() => {
-    if (!staking || !stakedWalWithStatus) return null
+  const { tier, stakingPeriod } = useMemo(() => {
+    if (!staking || !stakedWalWithStatus)
+      return {
+        tier: _.last(tiers)!,
+        stakingPeriodMs: null,
+      }
     // percentile distribution is from first staking epoch to current epoch - first staking epoch is at 1% percentile
     const userEpoch =
       _.minBy(stakedWalWithStatus, "activationEpoch")?.activationEpoch ||
-      staking.epoch
-    const percentile =
-      (userEpoch - staking.firstEpochStartMs) / (staking.epochDurationMs * 1000)
-    return tiers.find((tier) => percentile >= tier.percentile)
+      staking.epoch + 1
+    const stakingPeriodMs =
+      stakedWalWithStatus.length > 0
+        ? staking.epochDurationMs * 1000 * (staking.epoch - (userEpoch - 1))
+        : null
+    const percentile = ((staking.epoch - (userEpoch - 1)) / staking.epoch) * 100
+    return {
+      tier: tiers.find((tier) => percentile >= tier.percentile)!,
+      stakingPeriod: stakingPeriodMs ? stakingPeriodMs / 1000 : null,
+    }
   }, [stakedWalWithStatus, staking])
 
   return (
@@ -299,18 +310,44 @@ export function Profile({
               </div>
             </div>
             <div className="flex-1" />
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                navigator.clipboard.writeText(
-                  `${window.location.origin}/profile/${address}`
-                )
-                toast.success("Link copied to clipboard")
-              }}
-            >
-              Share Address <Share />
-            </Button>
+            <div className="flex items-center gap-2 rounded-lg bg-black/20 p-2">
+              <img
+                src={tier.imageUrl}
+                alt={tier.label}
+                className="aspect-auto w-11 shrink-0"
+              />
+              {stakingPeriod && (
+                <div className="-space-y-1">
+                  <div className="text-foreground text-lg font-bold">
+                    {formatter.duration(stakingPeriod)}
+                  </div>
+                  <div>Staking Period</div>
+                </div>
+              )}
+              {tier?.reportImageUrl && stakingPeriod && (
+                <ReportCardDialog
+                  imageUrl={tier.reportImageUrl}
+                  address={address}
+                  stakingPeriod={stakingPeriod}
+                >
+                  <Button variant="outline" size="sm">
+                    Report Card
+                  </Button>
+                </ReportCardDialog>
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  navigator.clipboard.writeText(
+                    `${window.location.origin}/profile/${address}`
+                  )
+                  toast.success("Link copied to clipboard")
+                }}
+              >
+                Share Address <Share />
+              </Button>
+            </div>
           </div>
           <div className="grid grid-cols-3 gap-3">
             {[
