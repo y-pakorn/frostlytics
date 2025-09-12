@@ -2,7 +2,6 @@
 
 import { use, useMemo, useState } from "react"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
@@ -13,13 +12,9 @@ import { formatter } from "@/lib/formatter"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { GradientBorderCard } from "@/components/gradient-border-card"
+import { SafeImage } from "@/components/safe-image"
 import { StakeDialog } from "@/components/stake-dialog"
-import {
-  useDelegations,
-  useDelegators,
-  useOperatorTransactions,
-  useOperatorWithSharesAndBaseApy,
-} from "@/hooks"
+import { useOperatorWithSharesAndBaseApy } from "@/hooks"
 
 import { OperatorDelegations } from "./delegations"
 import { OperatorDelegators } from "./delegators"
@@ -63,11 +58,10 @@ export function Operator({
   return (
     <div className="space-y-4">
       <GradientBorderCard className="flex items-center gap-4">
-        <img
+        <SafeImage
           src={operatorMetadata.imageUrl}
           alt={operatorMetadata.name}
           className="size-16 shrink-0 rounded-full"
-          onError={(e) => (e.currentTarget.src = images.avatar)}
         />
         <div className="space-y-1">
           <h1 className="text-foreground text-2xl font-bold">
