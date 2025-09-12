@@ -13,7 +13,7 @@ import { db } from "@/lib/db"
 import { aggregatedDaily, operatorDaily } from "@/lib/db/schema"
 import { suiGraphQLClient } from "@/services/client"
 
-export const getFees = async () => {
+const getFees = async () => {
   const data = await fetch(
     "https://api.llama.fi/summary/fees/walrus-protocol",
     {
