@@ -6,7 +6,7 @@ export const siteConfig = {
   name: "Frostlytics",
   author: "Frostlytics",
   description:
-    "Frostlytics is a dashboard for staking and analyzing the performance of Walrus.",
+    "All-in-one analytics for Walrus: APY, staking, operator, fees, and supply.",
   keywords: [],
   url: {
     base: env.NEXT_PUBLIC_APP_URL,

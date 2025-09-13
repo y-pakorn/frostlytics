@@ -26,11 +26,11 @@ export const generateMetadata = async ({
   const name = await getSuiNameCached(addr)
   const displayName = name || addr
   return {
-    title: `${displayName}`,
-    description: `${displayName}'s profile on Walrus`,
+    title: `${displayName} - Walrus Profile`,
+    description: `${displayName}'s profile on Walrus. View their staking positions, rewards, and unstake timelines in one place.`,
     openGraph: {
-      title: `${displayName}`,
-      description: `${displayName}'s profile on Walrus`,
+      title: `${displayName} - Walrus Profile`,
+      description: `${displayName}'s profile on Walrus. View their staking positions, rewards, and unstake timelines in one place.`,
     },
   }
 }

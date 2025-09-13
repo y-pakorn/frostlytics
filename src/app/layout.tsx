@@ -51,8 +51,9 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: siteConfig.url.base,
-    title: siteConfig.name,
-    description: siteConfig.description,
+    title: "Frostlytics - All-in-one Walrus Dashboard",
+    description:
+      "All-in-one analytics for Walrus: APY, staking, operator, fees, and supply.",
     siteName: siteConfig.name,
   },
   twitter: {

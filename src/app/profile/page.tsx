@@ -1,11 +1,13 @@
 import { MyProfile } from "./my-profile"
 
 export const metadata = {
-  title: "My Profile",
-  description: "View your profile and staking activity on Walrus",
+  title: "My Walrus Profile",
+  description:
+    "View your staking positions, rewards, and unstake timelines in one place.",
   openGraph: {
-    title: "My Profile",
-    description: "View your profile and staking activity on Walrus",
+    title: "My Walrus Profile",
+    description:
+      "View your staking positions, rewards, and unstake timelines in one place.",
   },
 }
 

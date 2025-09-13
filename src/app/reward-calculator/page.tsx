@@ -3,11 +3,13 @@ import { Metadata } from "next"
 import RewardCalculator from "./calculator"
 
 export const metadata: Metadata = {
-  title: "Reward Calculator",
-  description: "Calculate your rewards on Walrus staking",
+  title: "Walrus Reward Calculator",
+  description:
+    "Estimate your WAL rewards based on stake amount, APY, and time period.",
   openGraph: {
-    title: "Reward Calculator",
-    description: "Calculate your rewards on Walrus staking",
+    title: "Walrus Reward Calculator",
+    description:
+      "Estimate your WAL rewards based on stake amount, APY, and time period.",
   },
 }
 

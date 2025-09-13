@@ -34,11 +34,11 @@ export const generateMetadata = async ({
   }
 
   return {
-    title: `Operator ${operator.name}`,
-    description: `Operator ${operator.name} on Walrus`,
+    title: `${operator.name} - Walrus Operator`,
+    description: `${operator.name} Operator on Walrus. View their details, APY, commission, and stake. ${operator.description}`,
     openGraph: {
-      title: `Operator ${operator.name}`,
-      description: `Operator ${operator.name} on Walrus`,
+      title: `${operator.name} - Walrus Operator`,
+      description: `${operator.name} Operator on Walrus. View their details, APY, commission, and stake. ${operator.description}`,
     },
   }
 }
