@@ -5,12 +5,7 @@ import { Transaction } from "@mysten/sui/transactions"
 import BigNumber from "bignumber.js"
 import _ from "lodash"
 
-import {
-  MinimalOperatorWithMetadata,
-  OperatorMetadata,
-  OperatorWithSharesAndBaseApy,
-  PoolOperator,
-} from "@/types/operator"
+import { MinimalOperatorWithMetadata, OperatorMetadata } from "@/types/operator"
 import { walrus } from "@/config/walrus"
 
 import {

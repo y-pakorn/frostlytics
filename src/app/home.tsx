@@ -92,7 +92,16 @@ export default function Home({
 }) {
   const fullOperators = useFullOperators()
   const totalStakedWAL = useMemo(() => {
-    return fullOperators ? _.sumBy(fullOperators, "staked") : null
+    return fullOperators
+      ? _.sumBy(
+          fullOperators,
+          (o) =>
+            o.staked +
+            o.pendingStake -
+            o.pendingSharesWithdraw -
+            o.preActiveWithdrawals
+        )
+      : null
   }, [fullOperators])
 
   const prices = usePrices()
