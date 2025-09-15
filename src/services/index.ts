@@ -134,6 +134,7 @@ export const getOperatorProfileCached = unstable_cache(
           )
         )
       )
+      await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay to avoid rate limiting
       operatorProfiles.push(...metadatas)
     }
     return _.compact(operatorProfiles)
