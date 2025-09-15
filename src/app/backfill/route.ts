@@ -296,47 +296,38 @@ export async function GET(request: NextRequest) {
     .orderBy(desc(aggregatedDaily.timestamp))
     .limit(1)
   const latestTimestamp = latestDates?.[0]?.timestamp
+  const latestDate = latestTimestamp ? dayjs.utc(latestTimestamp) : null
 
-  if (latestTimestamp) {
-    const latestDate = dayjs.utc(latestTimestamp)
-    const toBeBackfilled = dayjs.utc().startOf("day").subtract(1, "day")
-    if (
-      latestDate.isSame(toBeBackfilled) ||
-      latestDate.isAfter(toBeBackfilled)
-    ) {
-      console.log(`Latest date is today or after today, stopping`)
-      return NextResponse.json({
-        message: "NO_ACTION_NEEDED",
-      })
+  const fees = await getFees()
+
+  let filledCount = 0
+  const dates = _.range(30).map((i) =>
+    dayjs
+      .utc()
+      .subtract(i + 1, "day")
+      .startOf("day")
+  )
+  for (const date of dates) {
+    if (latestDate && (date.isAfter(latestDate) || date.isSame(latestDate))) {
+      console.log("Already reached latest date, stopping")
+      break
     }
-    console.log(`Backfilling ${latestDate.format("YYYY-MM-DD")}`)
-    const fees = await getFees()
-    const result = await backfillByDate(toBeBackfilled, fees)
+    console.log(`Backfilling ${date.format("YYYY-MM-DD")}`)
+    const result = await backfillByDate(date, fees)
     if (!result) {
       console.log(`Failed to backfill, stopping`)
+      break
     }
-  } else {
-    const fees = await getFees()
-    const dates = _.range(30).map((i) =>
-      dayjs
-        .utc()
-        .subtract(i + 1, "day")
-        .startOf("day")
-    )
-    for (const date of dates) {
-      console.log(`Backfilling ${date.format("YYYY-MM-DD")}`)
-      const result = await backfillByDate(date, fees)
-      if (!result) {
-        console.log(`Failed to backfill, stopping`)
-        break
-      }
-    }
+    filledCount++
   }
 
-  revalidateTag("historical-data")
-  revalidatePath("/", "page")
+  if (filledCount > 0) {
+    revalidateTag("historical-data")
+    revalidatePath("/", "page")
+  }
 
   return NextResponse.json({
     message: "OK",
+    filledCount,
   })
 }
