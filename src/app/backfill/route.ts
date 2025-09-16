@@ -308,7 +308,7 @@ export async function GET(request: NextRequest) {
       .startOf("day")
   )
   for (const date of dates) {
-    if (latestDate && (date.isAfter(latestDate) || date.isSame(latestDate))) {
+    if (latestDate && (latestDate.isAfter(date) || latestDate.isSame(date))) {
       console.log("Already reached latest date, stopping")
       break
     }
