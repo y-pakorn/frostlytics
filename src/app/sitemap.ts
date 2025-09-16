@@ -24,6 +24,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.9,
       lastModified: new Date(),
     },
+    {
+      url: `${env.NEXT_PUBLIC_APP_URL}/faq`,
+      priority: 0.9,
+    },
     ...operators.map((operator) => ({
       url: `${env.NEXT_PUBLIC_APP_URL}/operator/${operator.id}`,
       priority: 0.8,

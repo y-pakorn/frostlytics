@@ -1,4 +1,10 @@
-import { Gem, LayoutDashboard, PackageCheck, User } from "lucide-react"
+import {
+  Gem,
+  LayoutDashboard,
+  MessageCircleQuestionMark,
+  PackageCheck,
+  User,
+} from "lucide-react"
 
 import { links } from "./link"
 
@@ -21,6 +27,17 @@ export const navItems = [
         icon: Gem,
         href: "/reward-calculator",
       },
+    ],
+  },
+  {
+    label: "MORE",
+    items: [
+      {
+        label: "FAQ",
+        icon: MessageCircleQuestionMark,
+        href: "/faq",
+      },
+
       {
         label: "Become an Operator",
         icon: PackageCheck,

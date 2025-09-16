@@ -87,13 +87,13 @@ export function AppSidebar() {
           href={links.twitter}
           target="_blank"
           rel="noopener noreferrer"
-          className="group-data-[state=collapsed]:hidden"
+          className="mr-auto group-data-[state=collapsed]:hidden"
         >
           <Button variant="ghost" size="icon">
             <FaXTwitter />
           </Button>
         </Link>
-        <Link
+        {/* <Link
           href={links.docs}
           target="_blank"
           rel="noopener noreferrer"
@@ -102,7 +102,7 @@ export function AppSidebar() {
           <Button variant="ghost" size="icon">
             <Book />
           </Button>
-        </Link>
+        </Link> */}
         <SidebarTrigger size="icon" className="rounded-full" variant="outline">
           <Layout />
         </SidebarTrigger>
