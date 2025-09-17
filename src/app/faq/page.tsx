@@ -75,7 +75,7 @@ export default function FAQPage() {
           Frequently asked questions (FAQ)
         </h1>
         <p className="text-tertiary text-xl">
-          Everything you need to know about Frostlytic
+          Everything you need to know about Frostlytics
         </p>
       </div>
       <div className="space-y-6">
