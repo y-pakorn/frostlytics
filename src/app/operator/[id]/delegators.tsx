@@ -117,7 +117,7 @@ export function OperatorDelegators({
   })
 
   return (
-    <div>
+    <div className="space-y-2">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -171,11 +171,19 @@ export function OperatorDelegators({
           )}
         </TableBody>
       </Table>
-      <PaginationManual
-        totalPages={totalPages}
-        currentPageIndex={pageIndex}
-        setPageIndex={setPageIndex}
-      />
+      <div className="flex items-center justify-between">
+        <div className="text-tertiary text-sm font-medium">
+          Delegator data is provided by{" "}
+          <Link href={links.blockberry} target="_blank" className="underline">
+            Blockberry
+          </Link>
+        </div>
+        <PaginationManual
+          totalPages={totalPages}
+          currentPageIndex={pageIndex}
+          setPageIndex={setPageIndex}
+        />
+      </div>
     </div>
   )
 }

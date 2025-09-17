@@ -90,7 +90,7 @@ export function PaginationManual<T>({
       >
         <ArrowLeft />
       </Button>
-      {totalPages &&
+      {!!totalPages &&
         getPaginationPages(totalPages, currentPageIndex).map((page, i) => (
           <Button
             key={i}

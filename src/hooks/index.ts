@@ -565,23 +565,29 @@ export const useOperatorTransactions = ({
     initialPageParam: null,
     queryFn: async ({ pageParam = null }) => {
       const transactions = await fetch(
-        "https://sui-mainnet.mystenlabs.com/graphql",
+        "https://graphql.mainnet.sui.io/graphql",
         {
           method: "POST",
           body: JSON.stringify({
             query: `
-          query TransactionBlocks($filter: TransactionBlockFilter, $last: Int, $before: String) {
-  transactionBlocks(filter: $filter, last: $last, before: $before) {
+query Transactions($operatorId: String, $last: Int, $before: String) {
+  transactions(
+    filter: {
+      affectedObject: $operatorId,
+    }
+    last: $last
+    before: $before
+  ) {
+    pageInfo {
+      startCursor
+    }
     nodes {
-      sender {
-        defaultSuinsName(format: DOT)
-      }
       digest
       kind {
-        ... on ProgrammableTransactionBlock {
-          transactions {
+        ... on ProgrammableTransaction {
+           commands {
             nodes {
-              ... on MoveCallTransaction {
+              ... on MoveCallCommand {
                 function {
                   name
                   module {
@@ -593,34 +599,28 @@ export const useOperatorTransactions = ({
           }
         }
       }
+      sender {
+        address
+        defaultSuinsName
+      }
       effects {
         status
         gasEffects {
           gasSummary {
             computationCost
-            nonRefundableStorageFee
             storageCost
             storageRebate
+            nonRefundableStorageFee
           }
         }
         timestamp
-        transactionBlock {
-          sender {
-            address
-          }
-        }
       }
-    }
-    pageInfo {
-      startCursor
     }
   }
 }
           `,
             variables: {
-              filter: {
-                changedObject: operatorId,
-              },
+              operatorId,
               last: 20,
               before: pageParam,
             },
@@ -630,19 +630,19 @@ export const useOperatorTransactions = ({
         .then((res) => res.json())
         .then((data) => {
           return {
-            pageInfo: data.data.transactionBlocks.pageInfo,
-            transactions: data.data.transactionBlocks.nodes.map((node: any) => {
+            pageInfo: data.data.transactions.pageInfo,
+            transactions: data.data.transactions.nodes.map((node: any) => {
               const firstTx = _.findLast(
-                node.kind.transactions.nodes,
+                node.kind.commands.nodes,
                 (t) => "function" in t
               )
 
               return {
                 digest: node.digest,
-                sender: node.effects.transactionBlock.sender.address,
-                name: node.sender?.defaultSuinsName,
+                sender: node.sender.address,
+                name: node.sender.defaultSuinsName,
                 txLabel: firstTx?.function.name,
-                txCount: node.kind.transactions.nodes.length,
+                txCount: node.kind.commands.nodes.length,
                 timestamp: node.effects.timestamp,
                 gas:
                   parseFloat(

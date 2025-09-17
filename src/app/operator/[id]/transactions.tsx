@@ -23,7 +23,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { PaginationLeftRight, PaginationManual } from "@/components/pagination"
+import { PaginationLeftRight } from "@/components/pagination"
 import { useOperatorTransactions } from "@/hooks"
 import { OperatorTransaction } from "@/types"
 

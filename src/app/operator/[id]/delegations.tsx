@@ -214,11 +214,19 @@ export function OperatorDelegations({
           )}
         </TableBody>
       </Table>
-      <PaginationManual
-        totalPages={totalPages}
-        currentPageIndex={pageIndex}
-        setPageIndex={setPageIndex}
-      />
+      <div className="flex items-center justify-between">
+        <div className="text-tertiary text-sm font-medium">
+          Delegation data is provided by{" "}
+          <Link href={links.blockberry} target="_blank" className="underline">
+            Blockberry
+          </Link>
+        </div>
+        <PaginationManual
+          totalPages={totalPages}
+          currentPageIndex={pageIndex}
+          setPageIndex={setPageIndex}
+        />
+      </div>
     </div>
   )
 }

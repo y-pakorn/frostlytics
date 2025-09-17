@@ -6,4 +6,5 @@ export const links = {
   object: (objectId: string) => `https://suiscan.xyz/object/${objectId}`,
   transaction: (transactionId: string) =>
     `https://suiscan.xyz/tx/${transactionId}`,
+  blockberry: "https://docs.blockberry.one",
 }
