@@ -3,7 +3,7 @@
   "crons": [
     {
       "path": "/backfill",
-      "schedule": "5 0 * * *"
+      "schedule": "5 1 * * *"
     }
   ]
 }

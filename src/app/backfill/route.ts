@@ -13,6 +13,12 @@ import { db } from "@/lib/db"
 import { aggregatedDaily, operatorDaily } from "@/lib/db/schema"
 import { suiGraphQLClient } from "@/services/client"
 
+interface Fees {
+  lastFee: number
+  feesArray: [number, number][]
+  fees: Record<number, number>
+}
+
 const getFees = async () => {
   const data = await fetch(
     "https://api.llama.fi/summary/fees/walrus-protocol",
@@ -20,10 +26,14 @@ const getFees = async () => {
       cache: "no-store",
     }
   ).then((res) => res.json())
-  return _.chain(data.totalDataChart)
+  const fees = _.chain(data.totalDataChart)
     .map((e) => [e[0], e[1]] as [number, number])
-    .fromPairs()
     .value()
+  return {
+    lastFee: _.last(fees)?.[1] || 0,
+    feesArray: fees,
+    fees: _.fromPairs(fees),
+  }
 }
 
 const getTransactionAffectedObject = async (
@@ -144,10 +154,7 @@ const findCheckpointBefore = async (
   }
 }
 
-const backfillByDate = async (
-  date: dayjs.Dayjs,
-  fees?: Record<number, number>
-) => {
+const backfillByDate = async (date: dayjs.Dayjs, fees?: Fees) => {
   if (date.isAfter(dayjs.utc().startOf("day"))) {
     console.log("date is not ended yet")
     return
@@ -233,7 +240,8 @@ const backfillByDate = async (
     .uniq()
     .value()
 
-  const feesUSD = fees?.[Math.floor(date.valueOf() / 1000)]
+  const feesUSD =
+    fees?.fees[Math.floor(date.valueOf() / 1000)] || fees?.lastFee || 0
 
   await db
     .insert(aggregatedDaily)
