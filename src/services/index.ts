@@ -112,30 +112,34 @@ export const getMinimalOperatorsWithMetadataCached = unstable_cache(
   }
 )
 
-export const getOperatorProfileCached = unstable_cache(
-  async () => {
-    const operators = await getAllOperators()
-    const operatorProfiles = []
-    for (const chunkedOperators of _.chunk(operators, 10)) {
-      const metadatas = await Promise.all(
-        chunkedOperators.map((operator) =>
-          getOperatorMetadata(operator.metadataId).then((metadata) =>
-            !metadata.description && !metadata.imageUrl && !metadata.projectUrl
-              ? null
-              : {
-                  id: operator.id,
-                  ...metadata,
-                }
+export const getOperatorProfileCached = cache(
+  unstable_cache(
+    async () => {
+      const operators = await getAllOperators()
+      const operatorProfiles = []
+      for (const chunkedOperators of _.chunk(operators, 10)) {
+        const metadatas = await Promise.all(
+          chunkedOperators.map((operator) =>
+            getOperatorMetadata(operator.metadataId).then((metadata) =>
+              !metadata.description &&
+              !metadata.imageUrl &&
+              !metadata.projectUrl
+                ? null
+                : {
+                    id: operator.id,
+                    ...metadata,
+                  }
+            )
           )
         )
-      )
-      await new Promise((resolve) => setTimeout(resolve, 100)) // 100ms delay to avoid rate limiting
-      operatorProfiles.push(...metadatas)
+        await new Promise((resolve) => setTimeout(resolve, 300)) // 100ms delay to avoid rate limiting
+        operatorProfiles.push(...metadatas)
+      }
+      return _.compact(operatorProfiles)
+    },
+    ["operator-profile"],
+    {
+      revalidate: 86400, // 24 hours
     }
-    return _.compact(operatorProfiles)
-  },
-  ["operator-profile"],
-  {
-    revalidate: 86400, // 24 hours
-  }
+  )
 )
