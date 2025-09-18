@@ -11,7 +11,7 @@ import { walrus } from "@/config/walrus"
 import { dayjs } from "@/lib/dayjs"
 import { db } from "@/lib/db"
 import { aggregatedDaily, operatorDaily } from "@/lib/db/schema"
-import { suiGraphQLClient } from "@/services/client"
+import { suiClient, suiGraphQLClient } from "@/services/client"
 
 interface Fees {
   lastFee: number

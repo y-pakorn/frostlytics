@@ -97,8 +97,7 @@ export default function RewardCalculator() {
         // Compound reward calculation for each operator
         // reward = final amount - initial amount, compounded weekly
         reward:
-          amount *
-            Math.pow(1 + o.apyWithCommission / 100 / 52, 52 * (day / 365)) -
+          amount * Math.pow(1 + o.apyWithCommission / 52, 52 * (day / 365)) -
           amount,
       })) || []
     setOperatorRewards(_.keyBy(operators, "id"))
