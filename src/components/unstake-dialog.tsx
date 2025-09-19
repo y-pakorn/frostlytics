@@ -17,6 +17,7 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
@@ -143,6 +144,8 @@ export function UnstakeDialog({
       return
     }
 
+    track("Unstake", { operatorId: operator?.id, amount: data.amount })
+
     queryClient.refetchQueries({
       queryKey: ["staked-wal", account.address],
       exact: true,
@@ -171,7 +174,17 @@ export function UnstakeDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger
+        asChild
+        onClick={() => {
+          track("UnstakeDialogOpen", {
+            operatorId: operator?.id,
+            amount: stakedWal.amount,
+          })
+        }}
+      >
+        {children}
+      </DialogTrigger>
       <DialogContent className="gap-4">
         <DialogTitle>Unstaking</DialogTitle>
         <DialogDescription className="sr-only">

@@ -33,6 +33,7 @@ import z from "zod"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn, getPaginationPages } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -101,6 +102,7 @@ export default function RewardCalculator() {
           amount,
       })) || []
     setOperatorRewards(_.keyBy(operators, "id"))
+    track("CalculateReward", { amount, day })
   }
 
   const columns = useMemo(

@@ -15,6 +15,7 @@ import { toast } from "sonner"
 
 import { images } from "@/config/image"
 import { links } from "@/config/link"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
@@ -39,7 +40,12 @@ export function WalletButton({
   return !currentAccount ? (
     <ConnectModal
       trigger={
-        <Button variant="outline" className="rounded-full" {...props}>
+        <Button
+          variant="outline"
+          className="rounded-full"
+          onClick={() => track("ClickWalletConnect", undefined)}
+          {...props}
+        >
           Connect Wallet
         </Button>
       }

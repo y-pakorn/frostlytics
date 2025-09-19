@@ -37,6 +37,7 @@ import { toast } from "sonner"
 import { links } from "@/config/link"
 import { tiers } from "@/config/tier"
 import { walrus } from "@/config/walrus"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
@@ -343,6 +344,7 @@ export function Profile({
                     `${window.location.origin}/profile/${address}`
                   )
                   toast.success("Link copied to clipboard")
+                  track("ShareAddress", { address })
                 }}
               >
                 Share Address <Share />

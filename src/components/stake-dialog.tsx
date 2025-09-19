@@ -18,6 +18,7 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { useBalances } from "@/hooks/use-balances"
 import { recursiveGetCoins, suiClient } from "@/services/client"
@@ -149,6 +150,8 @@ export function StakeDialog({
       return
     }
 
+    track("Stake", { operatorId: operator.id, amount: data.amount })
+
     queryClient.refetchQueries({
       queryKey: ["staked-wal", account.address],
       exact: true,
@@ -177,7 +180,14 @@ export function StakeDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger
+        asChild
+        onClick={() => {
+          track("StakeDialogOpen", { operatorId: operator.id })
+        }}
+      >
+        {children}
+      </DialogTrigger>
       <DialogContent className="gap-4">
         <DialogTitle>Staking</DialogTitle>
         <DialogDescription className="sr-only">

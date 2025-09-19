@@ -1,31 +1,22 @@
 import { useState } from "react"
-import { zodResolver } from "@hookform/resolvers/zod"
 import {
   useCurrentAccount,
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit"
 import { Transaction } from "@mysten/sui/transactions"
 import { useMutation, useQueryClient } from "@tanstack/react-query"
-import BigNumber from "bignumber.js"
-import { ExternalLink, Info, Loader2 } from "lucide-react"
-import { useForm } from "react-hook-form"
-import { NumericFormat } from "react-number-format"
+import { ExternalLink, Loader2 } from "lucide-react"
 import { toast } from "sonner"
-import z from "zod"
 
-import { OperatorWithSharesAndBaseApy } from "@/types/operator"
-import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
-import { recursiveGetCoins, suiClient } from "@/services/client"
-import { useStaking } from "@/hooks"
+import { suiClient } from "@/services/client"
 import { StakedWal } from "@/types"
 
-import { GradientBorderCard } from "./gradient-border-card"
-import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
 import {
   Dialog,
@@ -34,16 +25,6 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./ui/dialog"
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "./ui/form"
-import { Input } from "./ui/input"
-import { Skeleton } from "./ui/skeleton"
 
 export function WithdrawDialog({
   children,
@@ -114,6 +95,11 @@ export function WithdrawDialog({
         return
       }
 
+      track("Withdraw", {
+        isWithdrawAll,
+        amount: stakedWal.reduce((acc, s) => acc + s.amount, 0),
+      })
+
       queryClient.refetchQueries({
         queryKey: ["staked-wal", account.address],
         exact: true,
@@ -142,7 +128,17 @@ export function WithdrawDialog({
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger
+        asChild
+        onClick={() => {
+          track("WithdrawDialogOpen", {
+            isWithdrawAll,
+            amount: stakedWal.reduce((acc, s) => acc + s.amount, 0),
+          })
+        }}
+      >
+        {children}
+      </DialogTrigger>
       <DialogContent className="gap-4">
         <DialogTitle>{isWithdrawAll ? "Withdraw All" : "Withdraw"}</DialogTitle>
         <DialogDescription>
