@@ -9,6 +9,7 @@ import { Search, User } from "lucide-react"
 
 import { images } from "@/config/image"
 import { navItems } from "@/config/nav"
+import { track } from "@/lib/analytic"
 import { isValidAddress } from "@/lib/utils"
 import { suiClient } from "@/services/client"
 import { useFullOperators } from "@/hooks"
@@ -139,6 +140,9 @@ export function AppNavbar() {
                       href={`/operator/${o.id}`}
                       key={o.id}
                       prefetch={false}
+                      onClick={() =>
+                        track("ClickSearch", { searchValue, operatorId: o.id })
+                      }
                     >
                       <CommandItem onSelect={() => setOpen(false)}>
                         <img
@@ -157,6 +161,12 @@ export function AppNavbar() {
                     <Link
                       href={`/profile/${walletAddress.address}`}
                       prefetch={false}
+                      onClick={() =>
+                        track("ClickSearch", {
+                          searchValue,
+                          walletAddress: walletAddress.address,
+                        })
+                      }
                     >
                       <CommandItem onSelect={() => setOpen(false)}>
                         <img

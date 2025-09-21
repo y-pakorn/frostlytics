@@ -33,6 +33,11 @@ const TRACK_EVENT = {
     amount: z.number(),
     day: z.number(),
   }),
+  ClickSearch: z.object({
+    searchValue: z.string(),
+    operatorId: z.string().optional(),
+    walletAddress: z.string().optional(),
+  }),
 }
 
 export const track = <T extends keyof typeof TRACK_EVENT>(
