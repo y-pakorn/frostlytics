@@ -6,15 +6,13 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import _ from "lodash"
+import range from "lodash/range"
 import { ChevronDown, Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
 import { MinimalOperatorWithMetadata } from "@/types/operator"
 import { links } from "@/config/link"
-import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
@@ -26,8 +24,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { PaginationManual } from "@/components/pagination"
-import { useDelegations } from "@/hooks"
-import { DelegationResponse } from "@/types"
+import { useDelegators } from "@/hooks"
+import { DelegatorResponse } from "@/types"
 
 const columns = [
   {
@@ -36,9 +34,9 @@ const columns = [
     accessorFn: (row) => row[0],
     cell: ({ row }) => {
       const address = row.original[0]
-      const name = row.original[6]
+      const name = row.original[3]
       return (
-        <Link href={`/profile/${address}`} prefetch={false}>
+        <Link href={`/profile?addr=${address}`} prefetch={false}>
           {name && <div className="font-medium">{name}</div>}
           <div className="text-tertiary flex items-center gap-1 font-mono">
             {address.slice(0, 8)}...{address.slice(-8)}
@@ -69,28 +67,11 @@ const columns = [
     },
   },
   {
-    header: "Operation",
-    id: "operation",
-    accessorFn: (row) => row[4],
-    cell: ({ getValue }) => {
-      const operation = getValue<"Staked" | "Withdrawing" | (string & {})>()
-      return (
-        <Badge
-          variant={
-            operation === "Staked"
-              ? "success"
-              : operation === "Withdrawing"
-                ? "accentPurpleOutline"
-                : "outline"
-          }
-        >
-          {operation}
-        </Badge>
-      )
-    },
-  },
-  {
-    header: "Amount",
+    header: () => (
+      <div className="flex items-center gap-1">
+        Amount <ChevronDown className="size-4" />
+      </div>
+    ),
     id: "amount",
     accessorFn: (row) => row[1],
     cell: ({ getValue }) => {
@@ -101,7 +82,7 @@ const columns = [
     },
   },
   {
-    header: "Epoch",
+    header: "Activation Epoch",
     id: "activationEpoch",
     accessorFn: (row) => row[2],
     cell: ({ getValue }) => {
@@ -109,50 +90,26 @@ const columns = [
       return <div className="text-secondary">{activationEpoch}</div>
     },
   },
-  {
-    header: "Age",
-    id: "age",
-    accessorFn: (row) => row[3],
-    cell: ({ getValue }) => {
-      const age = getValue<number>()
-      return <div className="text-secondary">{dayjs(age).fromNow(true)}</div>
-    },
-  },
-  {
-    header: "Digest",
-    id: "digest",
-    accessorFn: (row) => row[5],
-    cell: ({ getValue }) => {
-      const digest = getValue<string>()
-      return (
-        <Link href={links.transaction(digest)} target="_blank">
-          <Button variant="ghost" size="iconXs" className="text-tertiary">
-            <ExternalLink />
-          </Button>
-        </Link>
-      )
-    },
-  },
-] satisfies ColumnDef<DelegationResponse["delegations"][number]>[]
+] satisfies ColumnDef<DelegatorResponse["delegators"][number]>[]
 
-export function OperatorDelegations({
+export function OperatorDelegators({
   operator,
 }: {
   operator: MinimalOperatorWithMetadata
 }) {
   const [pageIndex, setPageIndex] = useState(0)
   const [totalPages, setTotalPages] = useState(0)
-  const { data: delegations, isPending } = useDelegations({
+  const { data: delegators, isPending } = useDelegators({
     pageIndex,
     operatorId: operator.id,
   })
   useEffect(() => {
-    if (delegations) setTotalPages(delegations.totalPages)
-  }, [delegations])
+    if (delegators) setTotalPages(delegators.totalPages)
+  }, [delegators])
 
   const data = useMemo(() => {
-    return delegations?.delegations ?? []
-  }, [delegations])
+    return delegators?.delegators ?? []
+  }, [delegators])
   const table = useReactTable({
     data,
     columns,
@@ -160,7 +117,7 @@ export function OperatorDelegations({
   })
 
   return (
-    <div>
+    <div className="space-y-2">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
@@ -185,7 +142,7 @@ export function OperatorDelegations({
         </TableHeader>
         <TableBody>
           {isPending ? (
-            _.range(20).map((i) => (
+            range(20).map((i) => (
               <TableRow key={i}>
                 <TableCell colSpan={columns.length}>
                   <Skeleton className="h-3/4 w-full" />
@@ -216,7 +173,7 @@ export function OperatorDelegations({
       </Table>
       <div className="flex items-center justify-between">
         <div className="text-tertiary text-sm font-medium">
-          Delegation data is provided by{" "}
+          Delegator data is provided by{" "}
           <Link href={links.blockberry} target="_blank" className="underline">
             Blockberry
           </Link>

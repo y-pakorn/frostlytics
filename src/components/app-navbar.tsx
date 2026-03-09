@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { blo } from "blo"
+// Full lodash import required for _.chain() usage
 import _ from "lodash"
 import { Search, User } from "lucide-react"
 
@@ -13,7 +14,6 @@ import { track } from "@/lib/analytic"
 import { isValidAddress } from "@/lib/utils"
 import { suiClient } from "@/services/client"
 import { useFullOperators } from "@/hooks"
-import { getSuiName } from "@/services"
 
 import {
   Command,
@@ -137,7 +137,7 @@ export function AppNavbar() {
                 <CommandGroup heading="Operators">
                   {fullOperators?.map((o) => (
                     <Link
-                      href={`/operator/${o.id}`}
+                      href={`/operator?id=${o.id}`}
                       key={o.id}
                       prefetch={false}
                       onClick={() =>
@@ -159,7 +159,7 @@ export function AppNavbar() {
                 {walletAddress && (
                   <CommandGroup heading="Wallet Address" forceMount>
                     <Link
-                      href={`/profile/${walletAddress.address}`}
+                      href={`/profile?addr=${walletAddress.address}`}
                       prefetch={false}
                       onClick={() =>
                         track("ClickSearch", {

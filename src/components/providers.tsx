@@ -21,9 +21,11 @@ const { networkConfig } = createNetworkConfig({
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      experimental_prefetchInRender: true,
+      staleTime: 1000 * 60 * 5, // 5 minutes
+      gcTime: 1000 * 60 * 30, // 30 minutes
       refetchOnReconnect: false,
       refetchOnWindowFocus: false,
+      retry: 1,
     },
   },
 })

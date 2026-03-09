@@ -10,6 +10,7 @@ import {
   UseQueryOptions,
 } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
+// Full lodash import required for _.chain() usage
 import _ from "lodash"
 
 import {
@@ -18,6 +19,7 @@ import {
   PoolOperator,
 } from "@/types/operator"
 import { walrus } from "@/config/walrus"
+import { env } from "@/env.mjs"
 import {
   batchGetObject,
   recursiveGetDynamicFields,
@@ -433,7 +435,7 @@ export const useOperatorMetadatas = <D = _.Dictionary<OperatorMetadataWithId>>(
     staleTime: Infinity,
     queryKey: ["operator-metadatas"],
     queryFn: async () => {
-      return await fetch("/api/profiles")
+      return await fetch(`${env.NEXT_PUBLIC_API_URL}/api/profiles`)
         .then((res) => res.json())
         .then((data) => _.keyBy(data.operators, "id"))
     },
@@ -503,11 +505,7 @@ export const useEstimatedReward = ({
     },
   })
 
-  const memoizedData = useMemo(() => {
-    return data.data || null
-  }, [data])
-
-  return memoizedData
+  return data.data ?? null
 }
 
 export const useDelegators = <T = DelegatorResponse>({
@@ -523,7 +521,7 @@ export const useDelegators = <T = DelegatorResponse>({
     staleTime: Infinity,
     queryFn: async () => {
       const delegators = await fetch(
-        `/api/delegators/${operatorId}/${pageIndex}`
+        `${env.NEXT_PUBLIC_API_URL}/api/delegators/${operatorId}/${pageIndex}`
       )
       return delegators.json()
     },
@@ -544,7 +542,7 @@ export const useDelegations = <T = DelegationResponse>({
     staleTime: Infinity,
     queryFn: async () => {
       const delegations = await fetch(
-        `/api/delegations/${operatorId}/${pageIndex}`
+        `${env.NEXT_PUBLIC_API_URL}/api/delegations/${operatorId}/${pageIndex}`
       )
       return delegations.json()
     },

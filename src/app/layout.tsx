@@ -4,9 +4,7 @@ import "@mysten/dapp-kit/dist/index.css"
 import type { Metadata, Viewport } from "next"
 import { JetBrains_Mono } from "next/font/google"
 import localFont from "next/font/local"
-import { cookies } from "next/headers"
 import { GoogleAnalytics } from "@next/third-parties/google"
-import { Analytics } from "@vercel/analytics/next"
 
 import { env } from "@/env.mjs"
 import { images } from "@/config/image"
@@ -71,10 +69,7 @@ export const viewport: Viewport = {
   ],
 }
 
-export default async function RootLayout({ children }: RootLayoutProps) {
-  const cookieStore = await cookies()
-  const defaultOpen = cookieStore.get("sidebar_state")?.value === "true"
-
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html lang="en" suppressHydrationWarning>
       <head />
@@ -91,7 +86,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             forcedTheme="dark"
             disableTransitionOnChange
           >
-            <SidebarProvider defaultOpen={defaultOpen}>
+            <SidebarProvider defaultOpen={true}>
               <AppSidebar />
               <SidebarInset className="relative flex min-h-screen w-full flex-col overflow-hidden">
                 <img
@@ -106,7 +101,6 @@ export default async function RootLayout({ children }: RootLayoutProps) {
             <Toaster />
           </ThemeProvider>
         </Providers>
-        <Analytics />
         {env.NEXT_PUBLIC_GA_ID && (
           <GoogleAnalytics gaId={env.NEXT_PUBLIC_GA_ID} />
         )}

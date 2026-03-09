@@ -1,11 +1,10 @@
 "use client"
 
-import { use, useMemo, useState } from "react"
+import { lazy, Suspense, useMemo, useState } from "react"
 import Link from "next/link"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
-import { MinimalOperatorWithMetadata } from "@/types/operator"
 import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { formatter } from "@/lib/formatter"
@@ -14,11 +13,17 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { GradientBorderCard } from "@/components/gradient-border-card"
 import { SafeImage } from "@/components/safe-image"
 import { StakeDialog } from "@/components/stake-dialog"
-import { useOperatorWithSharesAndBaseApy } from "@/hooks"
+import { useOperatorMetadatas, useOperatorWithSharesAndBaseApy } from "@/hooks"
 
-import { OperatorDelegations } from "./delegations"
-import { OperatorDelegators } from "./delegators"
-import { OperatorTransactions } from "./transactions"
+const OperatorDelegators = lazy(() =>
+  import("./delegators").then((m) => ({ default: m.OperatorDelegators }))
+)
+const OperatorDelegations = lazy(() =>
+  import("./delegations").then((m) => ({ default: m.OperatorDelegations }))
+)
+const OperatorTransactions = lazy(() =>
+  import("./transactions").then((m) => ({ default: m.OperatorTransactions }))
+)
 
 const tabs = [
   {
@@ -36,16 +41,17 @@ const tabs = [
 ] as const
 
 export function Operator({
-  operator: operatorMetadata,
-  searchParams,
+  id,
+  defaultTab,
 }: {
-  operator: MinimalOperatorWithMetadata
-  searchParams: Promise<{ tab?: string }>
+  id: string
+  defaultTab?: string
 }) {
-  const { tab: defaultTab } = use(searchParams)
+  const operatorMetadatas = useOperatorMetadatas()
+  const operatorMetadata = operatorMetadatas.data?.[id]
 
   const operator = useOperatorWithSharesAndBaseApy({
-    id: operatorMetadata.id,
+    id,
   })
 
   const [tab, setTab] = useState<(typeof tabs)[number]["label"]>(
@@ -59,30 +65,32 @@ export function Operator({
     <div className="space-y-4">
       <GradientBorderCard className="flex items-center gap-4">
         <SafeImage
-          src={operatorMetadata.imageUrl}
-          alt={operatorMetadata.name}
+          src={operatorMetadata?.imageUrl}
+          alt={operator?.name ?? id}
           className="size-16 shrink-0 rounded-full"
         />
         <div className="space-y-1">
           <h1 className="text-foreground text-2xl font-bold">
-            {operatorMetadata.name}
+            {operator?.name ?? (
+              <Skeleton className="inline-block h-7 w-40" />
+            )}
           </h1>
           <div className="flex items-center gap-1">
             <p className="font-mono font-medium">
-              {operatorMetadata.id.slice(0, 8)}...
-              {operatorMetadata.id.slice(-8)}
+              {id.slice(0, 8)}...
+              {id.slice(-8)}
             </p>
             <Button
               variant="ghost"
               size="iconXs"
               onClick={() => {
-                navigator.clipboard.writeText(operatorMetadata.id)
+                navigator.clipboard.writeText(id)
                 toast.success("Copied to clipboard")
               }}
             >
               <Copy />
             </Button>
-            <Link href={links.object(operatorMetadata.id)} target="_blank">
+            <Link href={links.object(id)} target="_blank">
               <Button variant="ghost" size="iconXs">
                 <ExternalLink />
               </Button>
@@ -296,7 +304,7 @@ export function Operator({
                   window.history.replaceState(
                     null,
                     "",
-                    `/operator/${operatorMetadata.id}?tab=${t.label}`
+                    `/operator?id=${id}&tab=${t.label}`
                   )
                 }}
               >
@@ -304,7 +312,9 @@ export function Operator({
               </Button>
             ))}
           </div>
-          <TabComponent operator={operatorMetadata} />
+          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+            <TabComponent operator={{ id, name: operator?.name ?? "", imageUrl: operatorMetadata?.imageUrl ?? "", description: operatorMetadata?.description ?? "", projectUrl: operatorMetadata?.projectUrl ?? "" }} />
+          </Suspense>
         </div>
       </div>
     </div>

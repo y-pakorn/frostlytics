@@ -6,7 +6,7 @@ import {
   getCoreRowModel,
   useReactTable,
 } from "@tanstack/react-table"
-import _ from "lodash"
+import range from "lodash/range"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
@@ -51,7 +51,7 @@ const columns = [
       const address = row.original.sender
       const name = row.original.name
       return (
-        <Link href={`/profile/${address}`} prefetch={false}>
+        <Link href={`/profile?addr=${address}`} prefetch={false}>
           {name && <div className="font-medium">{name}</div>}
           <div className="text-tertiary flex items-center gap-1 font-mono">
             {address.slice(0, 8)}...{address.slice(-8)}
@@ -171,7 +171,7 @@ export function OperatorTransactions({
         </TableHeader>
         <TableBody>
           {isFetching ? (
-            _.range(20).map((i) => (
+            range(20).map((i) => (
               <TableRow key={i}>
                 <TableCell colSpan={columns.length}>
                   <Skeleton className="h-3/4 w-full" />

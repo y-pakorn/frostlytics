@@ -1,11 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  outputFileTracingIncludes: {
-    "/*": ["og-template/**/*"],
-  },
-  experimental: {
-    optimizeCss: true,
-  },
+  output: "export",
 }
 
 module.exports = nextConfig

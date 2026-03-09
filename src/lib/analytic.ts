@@ -1,4 +1,4 @@
-import { track as trackVercel } from "@vercel/analytics"
+import { sendGAEvent } from "@next/third-parties/google"
 import z from "zod"
 
 const TRACK_EVENT = {
@@ -44,5 +44,5 @@ export const track = <T extends keyof typeof TRACK_EVENT>(
   event: T,
   data: z.infer<(typeof TRACK_EVENT)[T]>
 ) => {
-  trackVercel(event, data)
+  sendGAEvent("event", event, data as Record<string, unknown>)
 }

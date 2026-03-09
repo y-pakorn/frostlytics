@@ -1,40 +1,21 @@
-import { unstable_cache } from "next/cache"
-import { asc } from "drizzle-orm"
+"use client"
 
-import { db } from "@/lib/db"
-import { aggregatedDaily } from "@/lib/db/schema"
+import { useQuery } from "@tanstack/react-query"
+
+import { env } from "@/env.mjs"
+import { HistoricalData } from "@/types"
 
 import Home from "./home"
 
-export const revalidate = false
+export default function HomePage() {
+  const { data: historicalData } = useQuery({
+    queryKey: ["historical-data"],
+    staleTime: Infinity,
+    queryFn: async () => {
+      const res = await fetch(`${env.NEXT_PUBLIC_API_URL}/api/historical-data`)
+      return res.json() as Promise<HistoricalData[]>
+    },
+  })
 
-const getHistoricalData = unstable_cache(
-  async () => {
-    return await db
-      .select({
-        timestamp: aggregatedDaily.timestamp,
-        paidFeesUSD: aggregatedDaily.paidFeesUSD,
-        totalStakedWAL: aggregatedDaily.totalStakedWAL,
-        storageUsedTB: aggregatedDaily.storageUsageTB,
-      })
-      .from(aggregatedDaily)
-      .orderBy(asc(aggregatedDaily.timestamp))
-      .then((data) => {
-        return data.map((d) => ({
-          timestamp: d.timestamp.toISOString(),
-          paidFeesUSD: d.paidFeesUSD,
-          totalStakedWAL: d.totalStakedWAL,
-          storageUsedTB: d.storageUsedTB,
-        }))
-      })
-  },
-  ["historical-data"],
-  {
-    revalidate: false,
-  }
-)
-
-export default async function HomePage() {
-  const historicalData = await getHistoricalData()
-  return <Home historicalData={historicalData} />
+  return <Home historicalData={historicalData ?? []} />
 }

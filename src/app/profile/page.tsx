@@ -1,4 +1,4 @@
-import { MyProfile } from "./my-profile"
+import { ProfilePageClient } from "./page-client"
 
 export const metadata = {
   title: "My Walrus Profile",
@@ -12,5 +12,5 @@ export const metadata = {
 }
 
 export default function ProfilePage() {
-  return <MyProfile />
+  return <ProfilePageClient />
 }

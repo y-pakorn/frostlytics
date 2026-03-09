@@ -1,4 +1,3 @@
-import _ from "lodash"
 import numbro from "numbro"
 
 import { dayjs } from "./dayjs"

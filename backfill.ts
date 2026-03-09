@@ -1,17 +1,15 @@
-import { revalidatePath, revalidateTag } from "next/cache"
-import { NextRequest, NextResponse } from "next/server"
+import "dotenv/config"
 import { graphql } from "@mysten/sui/graphql/schemas/latest"
 import BigNumber from "bignumber.js"
 import { desc } from "drizzle-orm"
-import { uuid } from "drizzle-orm/pg-core"
 import _ from "lodash"
 import { NIL, v5 as uuidv5 } from "uuid"
 
-import { walrus } from "@/config/walrus"
-import { dayjs } from "@/lib/dayjs"
-import { db } from "@/lib/db"
-import { aggregatedDaily, operatorDaily } from "@/lib/db/schema"
-import { suiClient, suiGraphQLClient } from "@/services/client"
+import { walrus } from "./src/config/walrus"
+import { dayjs } from "./src/lib/dayjs"
+import { aggregatedDaily, operatorDaily } from "./src/lib/db/schema"
+import { suiClient, suiGraphQLClient } from "./server/services/client"
+import { db } from "./server/db"
 
 interface Fees {
   lastFee: number
@@ -25,7 +23,7 @@ const getFees = async () => {
     {
       cache: "no-store",
     }
-  ).then((res) => res.json())
+  ).then((res) => res.json()) as any
   const fees = _.chain(data.totalDataChart)
     .map((e) => [e[0], e[1]] as [number, number])
     .value()
@@ -117,7 +115,7 @@ const getCheckpoints = async (fromCheckpoint?: number) => {
 const findCheckpointBefore = async (
   timestampMs: number,
   fromCheckpoint?: number
-) => {
+): Promise<number> => {
   const checkpoints = await getCheckpoints(fromCheckpoint)
   const averageCheckpointPerSec = _.chain(checkpoints)
     .map((c, i, cs) =>
@@ -282,19 +280,8 @@ const backfillByDate = async (date: dayjs.Dayjs, fees?: Fees) => {
   return true
 }
 
-export const dynamic = "force-dynamic"
-
-export async function GET(request: NextRequest) {
-  const authHeader = request.headers.get("authorization")
-  if (
-    process.env.MODE !== "development" &&
-    authHeader !== `Bearer ${process.env.CRON_SECRET}`
-  ) {
-    return NextResponse.json({
-      message: "Unauthorized",
-      status: 401,
-    })
-  }
+async function main() {
+  console.log("Starting backfill...")
 
   const latestDates = await db
     .select({
@@ -329,13 +316,11 @@ export async function GET(request: NextRequest) {
     filledCount++
   }
 
-  if (filledCount > 0) {
-    revalidateTag("historical-data")
-    revalidatePath("/", "page")
-  }
-
-  return NextResponse.json({
-    message: "OK",
-    filledCount,
-  })
+  console.log(`Backfill complete. Filled ${filledCount} days.`)
+  process.exit(0)
 }
+
+main().catch((err) => {
+  console.error("Backfill failed:", err)
+  process.exit(1)
+})

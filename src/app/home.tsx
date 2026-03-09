@@ -13,6 +13,7 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
+// Full lodash import required for _.chain() usage
 import _ from "lodash"
 import {
   ChevronDown,

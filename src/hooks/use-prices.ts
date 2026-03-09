@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query"
 export const usePrices = () => {
   const { data, isLoading, error } = useQuery({
     queryKey: ["prices"],
+    staleTime: 30_000,
     refetchInterval: 30_000, // 30 seconds
     queryFn: async () => {
       const response = await fetch(

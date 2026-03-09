@@ -18,7 +18,12 @@ import {
 } from "@tanstack/react-table"
 import BigNumber from "bignumber.js"
 import { blo } from "blo"
-import _ from "lodash"
+import keyBy from "lodash/keyBy"
+import last from "lodash/last"
+import minBy from "lodash/minBy"
+import range from "lodash/range"
+import startCase from "lodash/startCase"
+import sumBy from "lodash/sumBy"
 import {
   ArrowUpRight,
   ChevronDown,
@@ -83,12 +88,12 @@ export function Profile({
 
   const validators = useFullOperators()
   const validatorMap = useMemo(() => {
-    return _.keyBy(validators, "id")
+    return keyBy(validators, "id")
   }, [validators])
 
   const { walBalance } = useBalances({ address })
   const totalStakedBalance = useMemo(() => {
-    return _.sumBy(stakedWalWithStatus, "amount")
+    return sumBy(stakedWalWithStatus, "amount")
   }, [stakedWalWithStatus])
 
   const estimatedReward = useEstimatedReward({
@@ -148,7 +153,7 @@ export function Profile({
                       : "outline"
                 }
               >
-                {_.startCase(row.original.status)}
+                {startCase(row.original.status)}
               </Badge>
             </div>
           )
@@ -258,12 +263,12 @@ export function Profile({
   const { tier, stakingPeriod } = useMemo(() => {
     if (!staking || !stakedWalWithStatus)
       return {
-        tier: _.last(tiers)!,
+        tier: last(tiers)!,
         stakingPeriodMs: null,
       }
     // percentile distribution is from first staking epoch to current epoch - first staking epoch is at 1% percentile
     const userEpoch =
-      _.minBy(stakedWalWithStatus, "activationEpoch")?.activationEpoch ||
+      minBy(stakedWalWithStatus, "activationEpoch")?.activationEpoch ||
       staking.epoch + 1
     const stakingPeriodMs =
       stakedWalWithStatus.length > 0
@@ -341,7 +346,7 @@ export function Profile({
                 size="sm"
                 onClick={() => {
                   navigator.clipboard.writeText(
-                    `${window.location.origin}/profile/${address}`
+                    `${window.location.origin}/profile?addr=${address}`
                   )
                   toast.success("Link copied to clipboard")
                   track("ShareAddress", { address })
@@ -446,7 +451,7 @@ export function Profile({
             >
               {label}{" "}
               <div className="bg-accent flex size-5.5 items-center justify-center rounded-full border text-sm">
-                {_.sumBy(stakedWalWithStatus, (s) =>
+                {sumBy(stakedWalWithStatus, (s) =>
                   !status || s.status === status ? 1 : 0
                 )}
               </div>
@@ -466,7 +471,7 @@ export function Profile({
           stakedWal={
             stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || []
           }
-          estimatedReward={_.sumBy(
+          estimatedReward={sumBy(
             stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || [],
             (s) => estimatedReward?.rewards[s.id] || 0
           )}
@@ -529,7 +534,7 @@ export function Profile({
           </TableHeader>
           <TableBody>
             {!stakedWalWithStatus
-              ? _.range(10).map((i) => (
+              ? range(10).map((i) => (
                   <TableRow key={i}>
                     <TableCell colSpan={columns.length}>
                       <Skeleton className="h-3/4 w-full" />

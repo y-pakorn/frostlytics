@@ -10,9 +10,10 @@ import {
 import { SuiGraphQLClient } from "@mysten/sui/graphql"
 import {
   create,
+  indexedResolver,
+  keyResolver,
   windowedFiniteBatchScheduler,
 } from "@yornaath/batshit"
-// Full lodash import required for _.chain() usage
 import _ from "lodash"
 
 export const suiClient = new SuiClient({

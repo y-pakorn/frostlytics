@@ -1,9 +1,8 @@
-import { ComponentProps, useEffect, useState } from "react"
-import _ from "lodash"
+import { ComponentProps, memo, useEffect, useState } from "react"
 
 import { Icons } from "./icons"
 
-export function SafeImage({
+export const SafeImage = memo(function SafeImage({
   src,
   alt,
   className,
@@ -38,5 +37,14 @@ export function SafeImage({
     return <Icons.avatar className={className} />
   }
 
-  return <img src={imageSrc} alt={alt} className={className} {...props} />
-}
+  return (
+    <img
+      src={imageSrc}
+      alt={alt}
+      loading="lazy"
+      decoding="async"
+      className={className}
+      {...props}
+    />
+  )
+})

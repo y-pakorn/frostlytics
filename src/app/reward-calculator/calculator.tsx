@@ -14,7 +14,8 @@ import {
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
-import _ from "lodash"
+import keyBy from "lodash/keyBy"
+import range from "lodash/range"
 import {
   ArrowLeft,
   ArrowRight,
@@ -101,7 +102,7 @@ export default function RewardCalculator() {
           amount * Math.pow(1 + o.apyWithCommission / 52, 52 * (day / 365)) -
           amount,
       })) || []
-    setOperatorRewards(_.keyBy(operators, "id"))
+    setOperatorRewards(keyBy(operators, "id"))
     track("CalculateReward", { amount, day })
   }
 
@@ -408,7 +409,7 @@ export default function RewardCalculator() {
             </TableHeader>
             <TableBody>
               {!fullOperators ? (
-                _.range(10).map((i) => (
+                range(10).map((i) => (
                   <TableRow key={i}>
                     <TableCell colSpan={columns.length}>
                       <Skeleton className="h-3/4 w-full" />

@@ -25,7 +25,7 @@ export const OperatorHeader = memo(
       <Tooltip>
         <TooltipTrigger asChild>
           <Link
-            href={`/operator/${operator.id}`}
+            href={`/operator?id=${operator.id}`}
             className={cn("flex w-[250px] items-center gap-2", className)}
             prefetch={false}
             {...props}
