@@ -13,7 +13,15 @@ import { sitemapRoutes } from "./server/routes/sitemap"
 const port = process.env.PORT ?? 3001
 
 const app = new Elysia({ adapter: node() })
-  .use(cors())
+  .use(
+    cors({
+      origin: [
+        "http://localhost:3000",
+        "https://frostlytics.wal.app",
+        "https://froslytics.wal.app",
+      ],
+    })
+  )
   .use(profilesRoutes)
   .use(delegatorsRoutes)
   .use(delegationsRoutes)
