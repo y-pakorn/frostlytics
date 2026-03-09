@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import Link from "next/link"
 import { useCurrentAccount } from "@mysten/dapp-kit"
 import {
@@ -15,6 +15,7 @@ import {
 } from "@tanstack/react-table"
 // Full lodash import required for _.chain() usage
 import _ from "lodash"
+import debounce from "lodash/debounce"
 import {
   ChevronDown,
   ChevronsUpDown,
@@ -34,6 +35,7 @@ import {
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
+import { track } from "@/lib/analytic"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
@@ -238,6 +240,14 @@ export default function Home({
         },
       ] satisfies ColumnDef<OperatorWithSharesAndBaseApy>[],
     [stakedWalByNodeId]
+  )
+
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const trackSearch = useCallback(
+    debounce((query: string) => {
+      if (query) track("TableSearch", { table: "operators", query })
+    }, 500),
+    []
   )
 
   const [sorting, setSorting] = useState<SortingState>([
@@ -645,7 +655,10 @@ export default function Home({
           <div className="relative md:w-[330px]">
             <Input
               className="h-9 pl-10"
-              onChange={(e) => table.setGlobalFilter(e.target.value)}
+              onChange={(e) => {
+                table.setGlobalFilter(e.target.value)
+                trackSearch(e.target.value)
+              }}
               placeholder="Enter Operator Name"
             />
             <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
@@ -672,11 +685,15 @@ export default function Home({
                     onSelect={() => {
                       if (item.value === undefined) {
                         table.setColumnFilters([])
-                        return
+                      } else {
+                        table.setColumnFilters([
+                          { id: "name", value: item.value },
+                        ])
                       }
-                      table.setColumnFilters([
-                        { id: "name", value: item.value },
-                      ])
+                      track("TableFilter", {
+                        table: "operators",
+                        filterValue: item.label,
+                      })
                     }}
                   >
                     {item.label}
@@ -710,7 +727,16 @@ export default function Home({
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
                       className={cn(canSort && "cursor-default select-none")}
-                      onClick={() => canSort && header.column.toggleSorting()}
+                      onClick={() => {
+                        if (canSort) {
+                          header.column.toggleSorting()
+                          track("TableSort", {
+                            table: "operators",
+                            column: header.id,
+                            direction: header.column.getIsSorted() === "desc" ? "asc" : "desc",
+                          })
+                        }
+                      }}
                     >
                       <div className="flex items-center gap-1">
                         {header.isPlaceholder

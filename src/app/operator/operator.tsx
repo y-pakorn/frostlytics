@@ -7,6 +7,7 @@ import { toast } from "sonner"
 
 import { images } from "@/config/image"
 import { links } from "@/config/link"
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -86,11 +87,21 @@ export function Operator({
               onClick={() => {
                 navigator.clipboard.writeText(id)
                 toast.success("Copied to clipboard")
+                track("CopyToClipboard", { contentType: "operatorId" })
               }}
             >
               <Copy />
             </Button>
-            <Link href={links.object(id)} target="_blank">
+            <Link
+              href={links.object(id)}
+              target="_blank"
+              onClick={() =>
+                track("ExternalLinkClick", {
+                  url: links.object(id),
+                  label: "SuiScan Operator",
+                })
+              }
+            >
               <Button variant="ghost" size="iconXs">
                 <ExternalLink />
               </Button>
@@ -232,6 +243,12 @@ export function Operator({
                       onClick={() => {
                         navigator.clipboard.writeText(value)
                         toast.success("Copied to clipboard")
+                        track("CopyToClipboard", {
+                          contentType:
+                            label === "Commission receiver"
+                              ? "commissionReceiver"
+                              : "governanceAuthorized",
+                        })
                       }}
                     >
                       <Copy />
@@ -242,6 +259,10 @@ export function Operator({
                       className="text-tertiary"
                       onClick={() => {
                         window.open(links.account(value), "_blank")
+                        track("ExternalLinkClick", {
+                          url: links.account(value),
+                          label: `SuiScan ${label}`,
+                        })
                       }}
                     >
                       <ExternalLink />
@@ -301,6 +322,7 @@ export function Operator({
                 variant={t.label === tab ? "active" : "inactive"}
                 onClick={() => {
                   setTab(t.label)
+                  track("TabChange", { tabName: t.label, operatorId: id })
                   window.history.replaceState(
                     null,
                     "",

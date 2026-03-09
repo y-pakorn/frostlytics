@@ -129,7 +129,16 @@ function ConnectWalletButton({
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
-        <Link href={links.account(currentAccount.address)} target="_blank">
+        <Link
+          href={links.account(currentAccount.address)}
+          target="_blank"
+          onClick={() =>
+            track("ExternalLinkClick", {
+              url: links.account(currentAccount.address),
+              label: "SuiScan Wallet",
+            })
+          }
+        >
           <DropdownMenuItem>
             <ExternalLink />
             View on SuiScan
@@ -139,6 +148,7 @@ function ConnectWalletButton({
           onSelect={() => {
             navigator.clipboard.writeText(currentAccount.address)
             toast.success("Copied to clipboard")
+            track("CopyToClipboard", { contentType: "walletAddress" })
           }}
         >
           <Copy />

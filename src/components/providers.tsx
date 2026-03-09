@@ -12,6 +12,7 @@ import { Frown } from "lucide-react"
 import { images } from "@/config/image"
 import { siteConfig } from "@/config/site"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { usePosthogIdentify } from "@/hooks/use-posthog-identify"
 
 import { Icons } from "./icons"
 
@@ -44,11 +45,17 @@ export function Providers({ children }: { children: React.ReactNode }) {
             name: siteConfig.name,
           }}
         >
+          <WalletIdentifier />
           {children}
         </WalletProvider>
       </SuiClientProvider>
     </QueryClientProvider>
   )
+}
+
+function WalletIdentifier() {
+  usePosthogIdentify()
+  return null
 }
 
 function Mobile() {

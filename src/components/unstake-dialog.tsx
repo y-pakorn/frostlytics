@@ -121,6 +121,7 @@ export function UnstakeDialog({
       toast.error("Execute transaction error", {
         description: error.message,
       })
+      track("UnstakeError", { operatorId: operator?.id, error: error.message })
       throw error
     })
     const txResultPromise = suiClient.waitForTransaction({
@@ -140,6 +141,10 @@ export function UnstakeDialog({
     if (txResult.effects?.status.status !== "success") {
       toast.error("Staking error", {
         description: txResult.effects?.status.error,
+      })
+      track("UnstakeError", {
+        operatorId: operator?.id,
+        error: txResult.effects?.status.error || "Unknown error",
       })
       return
     }
@@ -236,15 +241,18 @@ export function UnstakeDialog({
                         onClick={() => {
                           if (walBalance) {
                             field.onChange()
-                            form.setValue(
-                              "amount",
-                              parseFloat(
-                                new BigNumber(stakedWal.amount)
-                                  .multipliedBy(value)
-                                  .toFixed(walrus.decimals)
-                              )
+                            const amount = parseFloat(
+                              new BigNumber(stakedWal.amount)
+                                .multipliedBy(value)
+                                .toFixed(walrus.decimals)
                             )
+                            form.setValue("amount", amount)
                             form.clearErrors("amount")
+                            track("UnstakeAmountSelect", {
+                              operatorId: operator?.id,
+                              percentage: value,
+                              amount,
+                            })
                           }
                         }}
                         size="sm"

@@ -3,6 +3,7 @@ import { blo } from "blo"
 import { toPng } from "html-to-image"
 import { Copy, Save } from "lucide-react"
 
+import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 
 import { Button } from "./ui/button"
@@ -37,13 +38,19 @@ export function ReportCardDialog({
     link.download = "component.png"
     link.href = dataUrl
     link.click()
+    track("ReportCardSave", { address })
   }
   const onCopy = () => {
     if (!ref.current) return
+    track("ReportCardCopy", { address })
   }
   return (
     <Dialog>
-      <DialogTrigger asChild {...props}>
+      <DialogTrigger
+        asChild
+        {...props}
+        onClick={() => track("ReportCardOpen", { address })}
+      >
         {children}
       </DialogTrigger>
       <DialogContent className="min-w-[740px] lg:min-w-[950px]">

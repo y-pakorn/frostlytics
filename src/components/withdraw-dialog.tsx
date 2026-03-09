@@ -72,6 +72,7 @@ export function WithdrawDialog({
         toast.error("Execute transaction error", {
           description: error.message,
         })
+        track("WithdrawError", { isWithdrawAll, error: error.message })
         throw error
       })
       const txResultPromise = suiClient.waitForTransaction({
@@ -91,6 +92,10 @@ export function WithdrawDialog({
       if (txResult.effects?.status.status !== "success") {
         toast.error("Withdraw error", {
           description: txResult.effects?.status.error,
+        })
+        track("WithdrawError", {
+          isWithdrawAll,
+          error: txResult.effects?.status.error || "Unknown error",
         })
         return
       }

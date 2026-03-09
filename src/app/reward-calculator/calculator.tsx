@@ -322,21 +322,30 @@ export default function RewardCalculator() {
           <Button
             variant="outline"
             type="button"
-            onClick={() => form.setValue("day", 30)}
+            onClick={() => {
+              form.setValue("day", 30)
+              track("CalculatorPresetClick", { days: 30 })
+            }}
           >
             30D
           </Button>
           <Button
             variant="outline"
             type="button"
-            onClick={() => form.setValue("day", 365)}
+            onClick={() => {
+              form.setValue("day", 365)
+              track("CalculatorPresetClick", { days: 365 })
+            }}
           >
             365D
           </Button>
           <Button
             variant="outline"
             type="button"
-            onClick={() => form.setValue("day", 730)}
+            onClick={() => {
+              form.setValue("day", 730)
+              track("CalculatorPresetClick", { days: 730 })
+            }}
           >
             730D
           </Button>

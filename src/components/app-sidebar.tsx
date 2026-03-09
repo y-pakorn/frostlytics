@@ -15,6 +15,7 @@ import { FaXTwitter } from "react-icons/fa6"
 
 import { links } from "@/config/link"
 import { navItems } from "@/config/nav"
+import { track } from "@/lib/analytic"
 import { cn } from "@/lib/utils"
 import {
   Sidebar,
@@ -55,6 +56,19 @@ export function AppSidebar() {
                     className={cn(item.disabled && "pointer-events-none")}
                     target={item.isExternal ? "_blank" : undefined}
                     rel={item.isExternal ? "noopener noreferrer" : undefined}
+                    onClick={() => {
+                      if (item.isExternal) {
+                        track("ExternalLinkClick", {
+                          url: item.href,
+                          label: item.label,
+                        })
+                      } else {
+                        track("NavigationClick", {
+                          destination: item.href,
+                          label: item.label,
+                        })
+                      }
+                    }}
                   >
                     <SidebarMenuItem>
                       <SidebarMenuButton
@@ -88,6 +102,12 @@ export function AppSidebar() {
           target="_blank"
           rel="noopener noreferrer"
           className="mr-auto group-data-[state=collapsed]:hidden"
+          onClick={() =>
+            track("ExternalLinkClick", {
+              url: links.twitter,
+              label: "Twitter",
+            })
+          }
         >
           <Button variant="ghost" size="icon">
             <FaXTwitter />

@@ -1,3 +1,5 @@
+import { Suspense } from "react"
+
 import { ProfilePageClient } from "./page-client"
 
 export const metadata = {
@@ -12,5 +14,9 @@ export const metadata = {
 }
 
 export default function ProfilePage() {
-  return <ProfilePageClient />
+  return (
+    <Suspense>
+      <ProfilePageClient />
+    </Suspense>
+  )
 }

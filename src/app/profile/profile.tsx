@@ -1,8 +1,8 @@
 "use client"
 
-import { use, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { useResolveSuiNSName } from "@mysten/dapp-kit"
+import { useCurrentAccount, useResolveSuiNSName } from "@mysten/dapp-kit"
 import { bcs } from "@mysten/sui/bcs"
 import { Transaction } from "@mysten/sui/transactions"
 import { useQuery } from "@tanstack/react-query"
@@ -80,6 +80,14 @@ export function Profile({
   readOnly?: boolean
 }) {
   const { data: name } = useResolveSuiNSName(address)
+  const currentAccount = useCurrentAccount()
+
+  useEffect(() => {
+    track("ProfileView", {
+      address,
+      isOwnProfile: currentAccount?.address === address,
+    })
+  }, [address, currentAccount?.address])
 
   const staking = useStaking()
   const stakedWalWithStatus = useStakedWalWithStatus({
@@ -134,6 +142,7 @@ export function Profile({
                   onClick={() => {
                     navigator.clipboard.writeText(row.original.id)
                     toast.success("Copied to clipboard")
+                    track("CopyToClipboard", { contentType: "positionId" })
                   }}
                 >
                   <Copy />
@@ -304,11 +313,21 @@ export function Profile({
                   onClick={() => {
                     navigator.clipboard.writeText(address)
                     toast.success("Address copied to clipboard")
+                    track("CopyToClipboard", { contentType: "walletAddress" })
                   }}
                 >
                   <Copy />
                 </Button>
-                <Link href={links.account(address)} target="_blank">
+                <Link
+                  href={links.account(address)}
+                  target="_blank"
+                  onClick={() =>
+                    track("ExternalLinkClick", {
+                      url: links.account(address),
+                      label: "SuiScan Profile",
+                    })
+                  }
+                >
                   <Button variant="ghost" size="iconXs">
                     <ExternalLink />
                   </Button>
@@ -350,6 +369,7 @@ export function Profile({
                   )
                   toast.success("Link copied to clipboard")
                   track("ShareAddress", { address })
+                  track("CopyToClipboard", { contentType: "profileLink" })
                 }}
               >
                 Share Address <Share />
@@ -439,14 +459,15 @@ export function Profile({
               onClick={() => {
                 if (status === undefined) {
                   setColumnFilters([])
-                  return
+                } else {
+                  setColumnFilters([
+                    {
+                      id: "status",
+                      value: status,
+                    },
+                  ])
                 }
-                setColumnFilters([
-                  {
-                    id: "status",
-                    value: status,
-                  },
-                ])
+                track("StakeStatusFilter", { status: label })
               }}
             >
               {label}{" "}
@@ -511,7 +532,16 @@ export function Profile({
                       key={header.id}
                       style={{ width: `${header.getSize()}px` }}
                       className={cn(canSort && "cursor-default select-none")}
-                      onClick={() => canSort && header.column.toggleSorting()}
+                      onClick={() => {
+                        if (canSort) {
+                          header.column.toggleSorting()
+                          track("TableSort", {
+                            table: "staking",
+                            column: header.id,
+                            direction: header.column.getIsSorted() === "desc" ? "asc" : "desc",
+                          })
+                        }
+                      }}
                     >
                       <div className="flex items-center gap-1">
                         {header.isPlaceholder

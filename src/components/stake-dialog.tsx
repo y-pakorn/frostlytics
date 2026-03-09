@@ -127,6 +127,7 @@ export function StakeDialog({
       toast.error("Execute transaction error", {
         description: error.message,
       })
+      track("StakeError", { operatorId: operator.id, error: error.message })
       throw error
     })
     const txResultPromise = suiClient.waitForTransaction({
@@ -146,6 +147,10 @@ export function StakeDialog({
     if (txResult.effects?.status.status !== "success") {
       toast.error("Staking error", {
         description: txResult.effects?.status.error,
+      })
+      track("StakeError", {
+        operatorId: operator.id,
+        error: txResult.effects?.status.error || "Unknown error",
       })
       return
     }
@@ -264,13 +269,16 @@ export function StakeDialog({
                         onClick={() => {
                           if (walBalance) {
                             field.onChange()
-                            form.setValue(
-                              "amount",
-                              parseFloat(
-                                walBalance.multipliedBy(value).toFixed(9)
-                              )
+                            const amount = parseFloat(
+                              walBalance.multipliedBy(value).toFixed(9)
                             )
+                            form.setValue("amount", amount)
                             form.clearErrors("amount")
+                            track("StakeAmountSelect", {
+                              operatorId: operator.id,
+                              percentage: value,
+                              amount,
+                            })
                           }
                         }}
                         size="sm"
