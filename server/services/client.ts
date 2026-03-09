@@ -1,13 +1,13 @@
+import { SuiGraphQLClient } from "@mysten/sui/graphql"
 import {
   CoinStruct,
   DynamicFieldInfo,
-  getFullnodeUrl,
-  SuiClient,
+  getJsonRpcFullnodeUrl,
+  SuiJsonRpcClient,
   SuiObjectDataFilter,
   SuiObjectDataOptions,
   SuiObjectResponse,
-} from "@mysten/sui/client"
-import { SuiGraphQLClient } from "@mysten/sui/graphql"
+} from "@mysten/sui/jsonRpc"
 import {
   create,
   indexedResolver,
@@ -16,12 +16,14 @@ import {
 } from "@yornaath/batshit"
 import _ from "lodash"
 
-export const suiClient = new SuiClient({
-  url: getFullnodeUrl("mainnet"),
+export const suiClient = new SuiJsonRpcClient({
+  url: getJsonRpcFullnodeUrl("mainnet"),
+  network: "mainnet",
 })
 
 export const suiGraphQLClient = new SuiGraphQLClient({
   url: "https://graphql.mainnet.sui.io/graphql",
+  network: "mainnet",
 })
 
 export const recursiveGetDynamicFields = async ({
@@ -29,7 +31,7 @@ export const recursiveGetDynamicFields = async ({
   client = suiClient,
 }: {
   parentId: string
-  client?: SuiClient
+  client?: SuiJsonRpcClient
 }) => {
   const limit = 50
   const data: DynamicFieldInfo[] = []
@@ -60,7 +62,7 @@ export const recursiveGetMultiObjects = async ({
 }: {
   objectIds: string[]
   options?: SuiObjectDataOptions
-  client?: SuiClient
+  client?: SuiJsonRpcClient
 }) => {
   const limit = 50
   return Promise.all(
@@ -100,7 +102,7 @@ export const recursiveGetCoins = async ({
 }: {
   owner: string
   coinType: string
-  client?: SuiClient
+  client?: SuiJsonRpcClient
 }) => {
   const data: CoinStruct[] = []
   let cursor = null
@@ -131,7 +133,7 @@ export const recursiveGetOwnedObjects = async ({
 }: {
   owner: string
   filter?: SuiObjectDataFilter
-  client?: SuiClient
+  client?: SuiJsonRpcClient
 }) => {
   const data: SuiObjectResponse[] = []
   let cursor = null

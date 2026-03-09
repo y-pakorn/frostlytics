@@ -4,7 +4,6 @@ import {
   useCurrentAccount,
   useSignAndExecuteTransaction,
 } from "@mysten/dapp-kit"
-import { SuiTransactionBlockResponse } from "@mysten/sui/client"
 import { Transaction } from "@mysten/sui/transactions"
 import { useQueryClient } from "@tanstack/react-query"
 import BigNumber from "bignumber.js"
@@ -71,14 +70,18 @@ export function StakeDialog({
   const queryClient = useQueryClient()
   const { walBalance, suiBalance } = useBalances()
 
-  const form = useForm<z.infer<typeof stakeFormSchema>>({
+  const form = useForm<
+    z.input<typeof stakeFormSchema>,
+    any,
+    z.output<typeof stakeFormSchema>
+  >({
     resolver: zodResolver(stakeFormSchema),
     criteriaMode: "firstError",
     mode: "onChange",
     reValidateMode: "onChange",
   })
 
-  const onSubmit = async (data: z.infer<typeof stakeFormSchema>) => {
+  const onSubmit = async (data: z.output<typeof stakeFormSchema>) => {
     if (!account) return
 
     if (!walBalance || walBalance.lt(data.amount)) {
@@ -244,6 +247,7 @@ export function StakeDialog({
                   <FormControl>
                     <NumericFormat
                       {...field}
+                      value={field.value as number | undefined}
                       customInput={Input}
                       placeholder="Enter staking amount"
                       disabled={!walBalance || !account}

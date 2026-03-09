@@ -1,7 +1,7 @@
 import { useMemo } from "react"
 import { useSuiClient } from "@mysten/dapp-kit"
 import { bcs } from "@mysten/sui/bcs"
-import { SuiObjectResponse } from "@mysten/sui/client"
+import { SuiObjectResponse } from "@mysten/sui/jsonRpc"
 import { Transaction } from "@mysten/sui/transactions"
 import {
   useInfiniteQuery,

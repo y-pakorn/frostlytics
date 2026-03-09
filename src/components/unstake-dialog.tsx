@@ -74,14 +74,18 @@ export function UnstakeDialog({
     useSignAndExecuteTransaction()
   const { walBalance, suiBalance } = useBalances()
 
-  const form = useForm<z.infer<typeof stakeFormSchema>>({
+  const form = useForm<
+    z.input<typeof stakeFormSchema>,
+    any,
+    z.output<typeof stakeFormSchema>
+  >({
     resolver: zodResolver(stakeFormSchema),
     criteriaMode: "firstError",
     mode: "onChange",
     reValidateMode: "onChange",
   })
 
-  const onSubmit = async (data: z.infer<typeof stakeFormSchema>) => {
+  const onSubmit = async (data: z.output<typeof stakeFormSchema>) => {
     if (!account) return
 
     if (data.amount > stakedWal.amount) {
@@ -214,6 +218,7 @@ export function UnstakeDialog({
                   <FormControl>
                     <NumericFormat
                       {...field}
+                      value={field.value as number | undefined}
                       customInput={Input}
                       placeholder={`Enter unstaking amount (minimum ${walrus.minimumStaking} WAL)`}
                       disabled={!walBalance || !account}

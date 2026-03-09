@@ -5,7 +5,7 @@ import {
   SuiClientProvider,
   WalletProvider,
 } from "@mysten/dapp-kit"
-import { getFullnodeUrl } from "@mysten/sui/client"
+import { getJsonRpcFullnodeUrl } from "@mysten/sui/jsonRpc"
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query"
 import { Frown } from "lucide-react"
 
@@ -17,7 +17,7 @@ import { usePosthogIdentify } from "@/hooks/use-posthog-identify"
 import { Icons } from "./icons"
 
 const { networkConfig } = createNetworkConfig({
-  mainnet: { url: getFullnodeUrl("mainnet") },
+  mainnet: { url: getJsonRpcFullnodeUrl("mainnet"), network: "mainnet" },
 })
 const queryClient = new QueryClient({
   defaultOptions: {

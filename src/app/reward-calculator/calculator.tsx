@@ -83,7 +83,11 @@ type OperatorWithReward = OperatorWithSharesAndBaseApy & {
 export default function RewardCalculator() {
   const fullOperators = useFullOperators()
 
-  const form = useForm<z.infer<typeof rewardFormSchema>>({
+  const form = useForm<
+    z.input<typeof rewardFormSchema>,
+    any,
+    z.output<typeof rewardFormSchema>
+  >({
     resolver: zodResolver(rewardFormSchema),
   })
 
@@ -92,7 +96,7 @@ export default function RewardCalculator() {
     OperatorWithReward
   > | null>(null)
 
-  const onSubmit = ({ amount, day }: z.infer<typeof rewardFormSchema>) => {
+  const onSubmit = ({ amount, day }: z.output<typeof rewardFormSchema>) => {
     const operators =
       fullOperators?.map((o) => ({
         ...o,
@@ -294,6 +298,7 @@ export default function RewardCalculator() {
                 <FormControl>
                   <NumericFormat
                     {...field}
+                    value={field.value as number | undefined}
                     customInput={Input}
                     placeholder="Enter staking amount"
                   />
@@ -311,6 +316,7 @@ export default function RewardCalculator() {
                 <FormControl>
                   <NumericFormat
                     {...field}
+                    value={field.value as number | undefined}
                     customInput={Input}
                     placeholder="Enter staking period"
                   />
