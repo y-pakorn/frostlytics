@@ -1,5 +1,5 @@
 import "dotenv/config"
-import { graphql } from "@mysten/sui/graphql/schemas/latest"
+import { graphql } from "@mysten/sui/graphql/schema"
 import BigNumber from "bignumber.js"
 import { desc } from "drizzle-orm"
 import _ from "lodash"
@@ -109,7 +109,7 @@ const getCheckpoints = async (fromCheckpoint?: number) => {
       afterCheckpoint: fromCheckpoint,
     },
   })
-  return data.data?.checkpoints.nodes || []
+  return data.data?.checkpoints?.nodes || []
 }
 
 const findCheckpointBefore = async (
