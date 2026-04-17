@@ -205,7 +205,7 @@ const generateProfileOg = memoizee(_generateProfileOg, {
   normalizer: ([addr]: [string]) => addr,
 })
 
-export const ogRoutes = new Elysia()
+export const ogRoutes = new Elysia({ tags: ["Open Graph Images"] })
   .get(
     "/api/og/operator/:id",
     async ({ params, set }) => {
@@ -215,7 +215,17 @@ export const ogRoutes = new Elysia()
       return new Response(buffer)
     },
     {
-      params: t.Object({ id: t.String() }),
+      params: t.Object({
+        id: t.String({ description: "Operator's Sui object ID (0x-prefixed, 66 chars)" }),
+      }),
+      detail: {
+        summary: "Generate operator OG image",
+        description:
+          "Generates a 1200x630 PNG Open Graph image for a Walrus operator, featuring their name and avatar overlaid on a branded template. Used for social media link previews (Twitter, Discord, Telegram, etc.). Images are cached for 24 hours (up to 500 operators). Returns a fallback image for invalid or unknown operator IDs.",
+      },
+      response: {
+        200: t.Any({ description: "PNG image binary (content-type: image/png)" }),
+      },
     }
   )
   .get(
@@ -227,6 +237,16 @@ export const ogRoutes = new Elysia()
       return new Response(buffer)
     },
     {
-      params: t.Object({ addr: t.String() }),
+      params: t.Object({
+        addr: t.String({ description: "Sui wallet address (0x-prefixed, 66 chars)" }),
+      }),
+      detail: {
+        summary: "Generate profile OG image",
+        description:
+          "Generates a 1048x550 PNG Open Graph image for a Sui wallet address, displaying either the resolved Sui Name Service name or a truncated address. Used for social media link previews on profile pages. Images are cached for 24 hours (up to 500 addresses). Returns a fallback image for invalid addresses.",
+      },
+      response: {
+        200: t.Any({ description: "PNG image binary (content-type: image/png)" }),
+      },
     }
   )
