@@ -40,7 +40,7 @@ const getDelegators = memoizee(_getDelegators, {
   max: 1000,
 })
 
-export const delegatorsRoutes = new Elysia().get(
+export const delegatorsRoutes = new Elysia({ tags: ["Delegators"] }).get(
   "/api/delegators/:operatorId/:pageIndex",
   async ({ params }) => {
     const { operatorId, pageIndex } = params
@@ -75,8 +75,28 @@ export const delegatorsRoutes = new Elysia().get(
   },
   {
     params: t.Object({
-      operatorId: t.String(),
-      pageIndex: t.String(),
+      operatorId: t.String({ description: "Operator's Sui object ID (0x-prefixed, 66 chars)" }),
+      pageIndex: t.String({ description: "Zero-based page index for pagination (20 items per page)" }),
     }),
+    detail: {
+      summary: "List delegators for an operator",
+      description:
+        "Returns a paginated list of delegators who have staked WAL tokens with a specific operator. Each delegator entry includes their address, staked amount, activation epoch, and resolved Sui Name Service name (if available). Results are cached for 1 hour. Data is sourced from Blockberry API.",
+    },
+    response: {
+      200: t.Object({
+        delegators: t.Array(
+          t.Tuple([
+            t.String({ description: "Delegator's Sui address" }),
+            t.Number({ description: "Amount of WAL staked (in base units, divide by 10^9 for WAL)" }),
+            t.Number({ description: "Epoch when the delegation was activated" }),
+            t.Union([t.String(), t.Null()], { description: "Resolved Sui Name Service name, or null" }),
+          ]),
+          { description: "Array of delegator tuples: [address, amount, activationEpoch, suiName]" }
+        ),
+        totalPages: t.Number({ description: "Total number of pages available" }),
+        total: t.Number({ description: "Total number of delegators for this operator" }),
+      }),
+    },
   }
 )
