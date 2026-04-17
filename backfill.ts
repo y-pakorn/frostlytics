@@ -7,7 +7,11 @@ import { NIL, v5 as uuidv5 } from "uuid"
 
 import { walrus } from "./src/config/walrus"
 import { dayjs } from "./src/lib/dayjs"
-import { aggregatedDaily, operatorDaily } from "./src/lib/db/schema"
+import {
+  aggregatedDaily,
+  backfillLog,
+  operatorDaily,
+} from "./src/lib/db/schema"
 import { suiClient, suiGraphQLClient } from "./server/services/client"
 import { db } from "./server/db"
 
@@ -277,7 +281,23 @@ const backfillByDate = async (date: dayjs.Dayjs, fees?: Fees) => {
     )
     .onConflictDoNothing()
 
-  return true
+  return {
+    epoch,
+    sequenceNumber: checkpoint,
+    activeCount,
+    committeeCount,
+    operatorCount,
+    nShard,
+    totalStakedWAL,
+    averageStakedWAL: _.meanBy(uniqueNodeIds, "stakedWal"),
+    storageUsageTB: usedCapacityTB,
+    totalStorageTB: totalCapacityTB,
+    storagePrice,
+    writePrice,
+    paidFeesUSD: feesUSD,
+    operatorsIngested: uniqueNodeIds.length,
+    operatorIds: uniqueNodeIds.map((n) => n.id),
+  }
 }
 
 async function main() {
@@ -303,17 +323,50 @@ async function main() {
       .startOf("day")
   )
   for (const date of dates) {
+    const startTime = Date.now()
+
     if (latestDate && (latestDate.isAfter(date) || latestDate.isSame(date))) {
       console.log("Already reached latest date, stopping")
+      await db.insert(backfillLog).values({
+        targetDate: date.toDate(),
+        status: "skipped",
+        durationMs: Date.now() - startTime,
+      })
       break
     }
+
     console.log(`Backfilling ${date.format("YYYY-MM-DD")}`)
-    const result = await backfillByDate(date, fees)
-    if (!result) {
-      console.log(`Failed to backfill, stopping`)
+    try {
+      const result = await backfillByDate(date, fees)
+      const durationMs = Date.now() - startTime
+
+      if (!result) {
+        console.log("Failed to backfill, stopping")
+        await db.insert(backfillLog).values({
+          targetDate: date.toDate(),
+          status: "failure",
+          durationMs,
+          error: "backfillByDate returned falsy",
+        })
+        break
+      }
+
+      await db.insert(backfillLog).values({
+        targetDate: date.toDate(),
+        status: "success",
+        durationMs,
+        rawData: result,
+      })
+      filledCount++
+    } catch (err) {
+      await db.insert(backfillLog).values({
+        targetDate: date.toDate(),
+        status: "failure",
+        durationMs: Date.now() - startTime,
+        error: String((err as Error).message).slice(0, 500),
+      })
       break
     }
-    filledCount++
   }
 
   console.log(`Backfill complete. Filled ${filledCount} days.`)
