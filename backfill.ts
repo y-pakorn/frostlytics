@@ -331,6 +331,8 @@ async function main() {
         targetDate: date.toDate(),
         status: "skipped",
         durationMs: Date.now() - startTime,
+        checkpoint: null,
+        epoch: null,
       })
       break
     }
@@ -346,6 +348,8 @@ async function main() {
           targetDate: date.toDate(),
           status: "failure",
           durationMs,
+          checkpoint: null,
+          epoch: null,
           error: "backfillByDate returned falsy",
         })
         break
@@ -355,6 +359,8 @@ async function main() {
         targetDate: date.toDate(),
         status: "success",
         durationMs,
+        checkpoint: result.sequenceNumber,
+        epoch: result.epoch,
         rawData: result,
       })
       filledCount++
@@ -363,6 +369,8 @@ async function main() {
         targetDate: date.toDate(),
         status: "failure",
         durationMs: Date.now() - startTime,
+        checkpoint: null,
+        epoch: null,
         error: String((err as Error).message).slice(0, 500),
       })
       break

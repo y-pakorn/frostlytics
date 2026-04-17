@@ -22,7 +22,7 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
 
     if (format === "csv") {
       const header =
-        "id,target_date,status,duration_ms,epoch,operators_ingested,total_staked_wal,storage_usage_tb,total_storage_tb,storage_price,write_price,paid_fees_usd,error,created_at"
+        "id,target_date,status,duration_ms,checkpoint,epoch,operators_ingested,total_staked_wal,storage_usage_tb,total_storage_tb,storage_price,write_price,paid_fees_usd,error,created_at"
       const lines = rows.map((r) => {
         const d = r.rawData as Record<string, any> | null
         return [
@@ -30,7 +30,8 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
           r.targetDate.toISOString(),
           r.status,
           r.durationMs,
-          d?.epoch ?? "",
+          r.checkpoint ?? "",
+          r.epoch ?? "",
           d?.operatorsIngested ?? "",
           d?.totalStakedWAL ?? "",
           d?.storageUsageTB ?? "",
@@ -52,6 +53,8 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
       targetDate: r.targetDate.toISOString(),
       status: r.status,
       durationMs: r.durationMs,
+      checkpoint: r.checkpoint,
+      epoch: r.epoch,
       rawData: r.rawData,
       error: r.error,
       createdAt: r.createdAt.toISOString(),
@@ -98,6 +101,8 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
             { description: "Outcome of the backfill attempt. 'success' = data ingested, 'failure' = error occurred, 'skipped' = date already existed in DB" }
           ),
           durationMs: t.Number({ description: "Wall-clock duration of this date's backfill in milliseconds" }),
+          checkpoint: t.Union([t.Number(), t.Null()], { description: "Sui checkpoint sequence number used for this snapshot. Null for skipped/failed entries." }),
+          epoch: t.Union([t.Number(), t.Null()], { description: "Walrus protocol epoch number at the time of the snapshot. Null for skipped/failed entries." }),
           rawData: t.Union(
             [
               t.Object({

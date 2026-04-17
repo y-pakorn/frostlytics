@@ -57,6 +57,8 @@ export const backfillLog = pgTable(
     targetDate: timestamp("target_date").notNull(),
     status: varchar("status", { length: 10 }).notNull(), // 'success' | 'failure' | 'skipped'
     durationMs: integer("duration_ms").notNull(),
+    checkpoint: integer("checkpoint"),
+    epoch: integer("epoch"),
     rawData: jsonb("raw_data"),
     error: varchar("error", { length: 500 }),
     createdAt: timestamp("created_at").notNull().defaultNow(),
