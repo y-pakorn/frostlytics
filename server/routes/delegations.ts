@@ -43,7 +43,7 @@ const getDelegations = memoizee(_getDelegations, {
   max: 1000,
 })
 
-export const delegationsRoutes = new Elysia().get(
+export const delegationsRoutes = new Elysia({ tags: ["Delegations"] }).get(
   "/api/delegations/:operatorId/:pageIndex",
   async ({ params }) => {
     const { operatorId, pageIndex } = params
@@ -78,8 +78,31 @@ export const delegationsRoutes = new Elysia().get(
   },
   {
     params: t.Object({
-      operatorId: t.String(),
-      pageIndex: t.String(),
+      operatorId: t.String({ description: "Operator's Sui object ID (0x-prefixed, 66 chars)" }),
+      pageIndex: t.String({ description: "Zero-based page index for pagination (20 items per page)" }),
     }),
+    detail: {
+      summary: "List delegation history for an operator",
+      description:
+        "Returns a paginated history of staking/unstaking events for a specific operator, sorted by timestamp descending. Each entry includes the delegator address, amount, activation epoch, timestamp, state (e.g. STAKED, UNSTAKED), transaction digest, and resolved Sui Name Service name. Results are cached for 1 minute. Data is sourced from Blockberry API.",
+    },
+    response: {
+      200: t.Object({
+        delegations: t.Array(
+          t.Tuple([
+            t.String({ description: "Delegator's Sui address" }),
+            t.Number({ description: "Amount of WAL (in base units, divide by 10^9 for WAL)" }),
+            t.Number({ description: "Epoch when the delegation was activated" }),
+            t.Number({ description: "Unix timestamp (milliseconds) of the delegation event" }),
+            t.String({ description: "Delegation state: STAKED, UNSTAKED, WITHDRAWN, etc." }),
+            t.String({ description: "Sui transaction digest for this delegation event" }),
+            t.Union([t.String(), t.Null()], { description: "Resolved Sui Name Service name, or null" }),
+          ]),
+          { description: "Array of delegation tuples: [address, amount, activationEpoch, timestamp, state, txDigest, suiName]" }
+        ),
+        totalPages: t.Number({ description: "Total number of pages available" }),
+        total: t.Number({ description: "Total number of delegation events for this operator" }),
+      }),
+    },
   }
 )
