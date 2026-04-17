@@ -1,4 +1,4 @@
-import { Elysia } from "elysia"
+import { Elysia, t } from "elysia"
 import memoizee from "memoizee"
 
 import { getOperatorProfiles } from "../services"
@@ -39,12 +39,22 @@ const generateSitemap = memoizee(_generateSitemap, {
   maxAge: 86_400_000, // 24h
 })
 
-export const sitemapRoutes = new Elysia().get(
+export const sitemapRoutes = new Elysia({ tags: ["SEO"] }).get(
   "/sitemap.xml",
   async ({ set }) => {
     const xml = await generateSitemap()
     set.headers["content-type"] = "application/xml"
     set.headers["cache-control"] = "public, max-age=86400"
     return xml
+  },
+  {
+    detail: {
+      summary: "XML Sitemap",
+      description:
+        "Generates an XML sitemap containing all public pages: homepage, reward calculator, profile page, FAQ, and individual operator pages. Dynamically includes all operators with metadata. Cached for 24 hours. Used by search engine crawlers for SEO indexing.",
+    },
+    response: {
+      200: t.String({ description: "XML sitemap document (content-type: application/xml)" }),
+    },
   }
 )
