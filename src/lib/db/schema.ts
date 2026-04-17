@@ -2,6 +2,7 @@ import {
   doublePrecision,
   index,
   integer,
+  jsonb,
   numeric,
   pgTable,
   serial,
@@ -47,4 +48,18 @@ export const operatorDaily = pgTable(
     index("idx_od_operator_id").on(table.operatorId),
     index("idx_od_timestamp").on(table.timestamp),
   ]
+)
+
+export const backfillLog = pgTable(
+  "backfill_log",
+  {
+    id: serial("id").primaryKey(),
+    targetDate: timestamp("target_date").notNull(),
+    status: varchar("status", { length: 10 }).notNull(), // 'success' | 'failure' | 'skipped'
+    durationMs: integer("duration_ms").notNull(),
+    rawData: jsonb("raw_data"),
+    error: varchar("error", { length: 500 }),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("idx_bl__target_date").on(table.targetDate)]
 )

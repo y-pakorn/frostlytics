@@ -71,6 +71,13 @@
       "when": 1757671086868,
       "tag": "0009_sweet_swordsman",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1776416289291,
+      "tag": "0010_productive_malice",
+      "breakpoints": true
     }
   ]
 }
