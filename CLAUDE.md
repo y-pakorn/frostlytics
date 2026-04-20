@@ -20,7 +20,7 @@ Blockchain (Sui RPC / GraphQL) → Elysia API (`server/`) → React Query hooks 
 
 External APIs: Blockberry (delegation history), DefiLlama (fee data), Sui Name Service (address resolution).
 
-Database: Neon PostgreSQL via Drizzle ORM. Two tables — `aggregated_daily` (network snapshots) and `operatorDaily` (per-operator snapshots). Backfilled daily via `backfill.ts`.
+Database: PostgreSQL via Drizzle ORM. Two tables — `aggregated_daily` (network snapshots) and `operatorDaily` (per-operator snapshots). Backfilled daily via `backfill.ts`.
 
 ### Key Directories
 
