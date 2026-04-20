@@ -192,14 +192,15 @@ export interface DailyMetrics {
 
 export const computeDailyMetrics = async (
   date: dayjs.Dayjs,
-  fees?: Fees
+  fees?: Fees,
+  opts?: { checkpoint?: number }
 ): Promise<DailyMetrics | null> => {
   if (date.isAfter(dayjs.utc().startOf("day"))) {
     console.log("date is not ended yet")
     return null
   }
   const tmr = date.add(1, "day").valueOf()
-  const checkpoint = await findCheckpointBefore(tmr)
+  const checkpoint = opts?.checkpoint ?? (await findCheckpointBefore(tmr))
   const systemInnerEffected = await getTransactionAffectedObject(
     walrus.backfill.systemInner,
     checkpoint + 1

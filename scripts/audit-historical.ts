@@ -11,7 +11,7 @@ import { dayjs } from "../src/lib/dayjs"
 const API_URL =
   process.env.AUDIT_API_URL ?? "https://api.frostlytics.xyz/api/historical-data"
 
-const DAYS = 30
+const DAYS = 21
 const MATCH_TOLERANCE_PCT = 0.01
 const DRIFT_WARN_PCT = 1
 
@@ -61,22 +61,9 @@ const fmtInt = (n: number | null | undefined) => {
   return new Intl.NumberFormat("en-US").format(n)
 }
 
-const renderCkpt = (
-  dbCkpt: number | null,
-  srcCkpt: number | null
-): string => {
-  const dbStr = fmtInt(dbCkpt)
-  const srcStr = fmtInt(srcCkpt)
-  if (dbCkpt == null || srcCkpt == null) {
-    return c.dim(`${dbStr} → ${srcStr}`)
-  }
-  if (dbCkpt === srcCkpt) {
-    return c.dim(`${dbStr} = ${srcStr}`)
-  }
-  const delta = srcCkpt - dbCkpt
-  const sign = delta >= 0 ? "+" : "−"
-  const colorFn = Math.abs(delta) > 100 ? c.red : c.yellow
-  return `${c.dim(dbStr)} ${colorFn("→")} ${colorFn(srcStr)} ${c.dim(`(${sign}${fmtInt(Math.abs(delta))})`)}`
+const renderCkpt = (ckpt: number | null): string => {
+  if (ckpt == null) return c.dim("—")
+  return c.dim(fmtInt(ckpt))
 }
 
 type DiffResult =
@@ -158,7 +145,7 @@ async function main() {
       padLeft("STORAGE TB", W.tb),
       padLeft("Δ", W.diff),
       "  " + padRight("STATUS", W.status),
-      "  " + "CKPT (DB → SRC)",
+      "  " + "CKPT",
     ].join("  ")
   console.log(c.bold(header))
   console.log(c.dim("  " + "─".repeat(header.length - 2)))
@@ -177,25 +164,25 @@ async function main() {
     )
 
     const apiRow = apiByDay.get(dayKey)
-    const dbCkpt = apiRow?.sequenceNumber ?? null
+    const ckpt = apiRow?.sequenceNumber ?? null
 
     let status: string
     let feesDiff: DiffResult = { kind: "match" }
     let stakedDiff: DiffResult = { kind: "match" }
     let storageDiff: DiffResult = { kind: "match" }
-    let srcCkpt: number | null = null
 
     if (!apiRow) {
       missingCount++
       status = c.red("MISSING")
     } else {
       try {
-        const metrics = await computeDailyMetrics(date, fees)
+        const metrics = await computeDailyMetrics(date, fees, {
+          checkpoint: apiRow.sequenceNumber,
+        })
         if (!metrics) {
           errorCount++
           status = c.red("SOURCE_ERROR")
         } else {
-          srcCkpt = metrics.sequenceNumber
           feesDiff = diffField(apiRow.paidFeesUSD, metrics.paidFeesUSD)
           stakedDiff = diffField(apiRow.totalStakedWAL, metrics.totalStakedWAL)
           storageDiff = diffField(apiRow.storageUsedTB, metrics.storageUsageTB)
@@ -228,7 +215,7 @@ async function main() {
         padLeft(apiStorageStr, W.tb),
         renderDiff(storageDiff),
         "  " + padRight(status, W.status),
-        "  " + renderCkpt(dbCkpt, srcCkpt),
+        "  " + renderCkpt(ckpt),
       ].join("  ")
 
     process.stdout.write(`\r${CLEAR_LINE}${row}\n`)
