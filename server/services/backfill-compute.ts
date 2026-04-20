@@ -1,0 +1,301 @@
+import { graphql } from "@mysten/sui/graphql/schema"
+import BigNumber from "bignumber.js"
+import _ from "lodash"
+
+import { walrus } from "../../src/config/walrus"
+import { dayjs } from "../../src/lib/dayjs"
+import { suiGraphQLClient } from "./client"
+
+export interface Fees {
+  lastFee: number
+  feesArray: [number, number][]
+  fees: Record<number, number>
+}
+
+export const getFees = async (): Promise<Fees> => {
+  const data = (await fetch(
+    "https://api.llama.fi/summary/fees/walrus-protocol",
+    {
+      cache: "no-store",
+    }
+  ).then((res) => res.json())) as any
+  const fees = _.chain(data.totalDataChart)
+    .map((e) => [e[0], e[1]] as [number, number])
+    .value()
+  return {
+    lastFee: _.last(fees)?.[1] || 0,
+    feesArray: fees,
+    fees: _.fromPairs(fees),
+  }
+}
+
+export const getTransactionAffectedObject = async (
+  objectId: string,
+  beforeCheckpoint?: number
+) => {
+  const query = graphql(`
+    query getTransactionAffectedObject(
+      $beforeCheckpoint: Int
+      $objectId: String
+    ) {
+      transactions(
+        filter: {
+          affectedObject: $objectId
+          beforeCheckpoint: $beforeCheckpoint
+        }
+        last: 1
+      ) {
+        nodes {
+          digest
+          effects {
+            objectChanges {
+              nodes {
+                address
+                outputState {
+                  address
+                  asMoveObject {
+                    contents {
+                      type {
+                        repr
+                      }
+                      json
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  `)
+
+  const data = await suiGraphQLClient.query({
+    query,
+    variables: {
+      beforeCheckpoint: beforeCheckpoint,
+      objectId: objectId,
+    },
+  })
+  const txs = data.data?.transactions as any
+  return _.chain(txs?.nodes[0]?.effects?.objectChanges?.nodes)
+    .map((o: any) => o.outputState?.asMoveObject?.contents)
+    .compact()
+    .map((o: any) => ({
+      type: o.type.repr,
+      ...o.json,
+    }))
+    .value()
+}
+
+export const getCheckpoints = async (fromCheckpoint?: number) => {
+  const data = await suiGraphQLClient.query({
+    query: graphql(`
+      query getCheckpoints($afterCheckpoint: Int) {
+        checkpoints(last: 50, filter: { beforeCheckpoint: $afterCheckpoint }) {
+          nodes {
+            sequenceNumber
+            timestamp
+          }
+        }
+      }
+    `),
+    variables: {
+      afterCheckpoint: fromCheckpoint,
+    },
+  })
+  return data.data?.checkpoints?.nodes || []
+}
+
+export const findCheckpointBefore = async (
+  timestampMs: number,
+  fromCheckpoint?: number
+): Promise<number> => {
+  const window = await getCheckpoints(fromCheckpoint)
+  if (window.length === 0) {
+    throw new Error(
+      `findCheckpointBefore: no checkpoints returned for fromCheckpoint=${fromCheckpoint}`
+    )
+  }
+
+  const avgMsPerCheckpoint =
+    _.chain(window)
+      .map((c, i, cs) =>
+        i > 0
+          ? dayjs(c.timestamp).diff(cs[i - 1]?.timestamp, "milliseconds")
+          : null
+      )
+      .compact()
+      .mean()
+      .value() || 500
+
+  const oldest = window[0]
+  const newest = window[window.length - 1]
+  const oldestTs = dayjs(oldest.timestamp).valueOf()
+  const newestTs = dayjs(newest.timestamp).valueOf()
+  const newestSeq = newest.sequenceNumber as number
+
+  // Overshoot: every checkpoint in the window is at/after the target — step further back.
+  if (oldestTs >= timestampMs) {
+    const offset = Math.max(
+      50,
+      Math.floor((newestTs - timestampMs) / avgMsPerCheckpoint)
+    )
+    return findCheckpointBefore(timestampMs, newestSeq - offset)
+  }
+
+  // Undershoot: every checkpoint in the window is before the target — step forward.
+  // (Previously returned the wrong checkpoint silently, far from the intended boundary.)
+  if (newestTs < timestampMs) {
+    const offset =
+      Math.max(
+        50,
+        Math.floor((timestampMs - newestTs) / avgMsPerCheckpoint)
+      ) + 50
+    return findCheckpointBefore(timestampMs, newestSeq + offset)
+  }
+
+  // Window straddles the target: pick the highest-sequence checkpoint strictly before target.
+  const found = _.findLast(
+    window,
+    (c) => dayjs(c.timestamp).valueOf() < timestampMs
+  )
+  if (!found) {
+    throw new Error(
+      `findCheckpointBefore: straddling window had no checkpoint before target ${timestampMs}`
+    )
+  }
+  return found.sequenceNumber as number
+}
+
+export interface DailyMetrics {
+  epoch: number
+  sequenceNumber: number
+  activeCount: number
+  committeeCount: number
+  operatorCount: number
+  nShard: number
+  totalStakedWAL: number
+  averageStakedWAL: number
+  storageUsageTB: number
+  totalStorageTB: number
+  storagePrice: number
+  writePrice: number
+  paidFeesUSD: number
+  uniqueNodeIds: Array<{
+    id: string
+    weight: number
+    stakedWal: number
+    weightPercentage: number
+  }>
+}
+
+export const computeDailyMetrics = async (
+  date: dayjs.Dayjs,
+  fees?: Fees
+): Promise<DailyMetrics | null> => {
+  if (date.isAfter(dayjs.utc().startOf("day"))) {
+    console.log("date is not ended yet")
+    return null
+  }
+  const tmr = date.add(1, "day").valueOf()
+  const checkpoint = await findCheckpointBefore(tmr)
+  const systemInnerEffected = await getTransactionAffectedObject(
+    walrus.backfill.systemInner,
+    checkpoint + 1
+  )
+  const systemInner = _.find(systemInnerEffected, (o) =>
+    o.type.includes("::SystemStateInner")
+  )?.value
+  if (!systemInner) {
+    console.log("systemInner not found")
+    return null
+  }
+  const epoch = systemInner?.committee.epoch
+  const committeeCount = systemInner?.committee.members.length
+  const nShard = systemInner?.committee.n_shards
+  const totalCapacityTB = new BigNumber(systemInner?.total_capacity_size)
+    .shiftedBy(-12)
+    .toNumber()
+  const usedCapacityTB = new BigNumber(systemInner?.used_capacity_size)
+    .shiftedBy(-12)
+    .toNumber()
+  const storagePrice = parseFloat(systemInner?.storage_price_per_unit_size)
+  const writePrice = parseFloat(systemInner?.write_price_per_unit_size)
+
+  const stakingInnerEffected = await getTransactionAffectedObject(
+    walrus.backfill.stakingInner,
+    checkpoint + 1
+  )
+  const stakingInner = _.find(stakingInnerEffected, (o) =>
+    o.type.includes("::StakingInner")
+  )?.value
+  if (!stakingInner) {
+    console.log("stakingInner not found")
+    return null
+  }
+  const operatorCount = parseInt(stakingInner?.pools.size)
+
+  const activeSetEffected = await getTransactionAffectedObject(
+    walrus.backfill.activeSet,
+    checkpoint + 1
+  )
+  const activeSet = _.find(activeSetEffected, (o) =>
+    o.type.includes("::ActiveSet")
+  )?.value
+  if (!activeSet) {
+    console.log("activeSet not found")
+    return null
+  }
+
+  const totalStakedWAL = new BigNumber(activeSet?.total_stake)
+    .shiftedBy(-walrus.decimals)
+    .toNumber()
+  const activeCount = activeSet?.nodes.length
+
+  const weightMap = _.chain(systemInner?.committee.members)
+    .map((m) => [m.node_id, m.weight])
+    .fromPairs()
+    .value()
+
+  const stakedWalMap = _.chain(activeSet?.nodes)
+    .map((m) => [m.node_id, m.staked_amount])
+    .fromPairs()
+    .value()
+
+  const uniqueNodeIds = _.chain(systemInner?.committee.members)
+    .concat(activeSet?.nodes)
+    .map((m) => m?.node_id)
+    .compact()
+    .map((m) => ({
+      id: m,
+      weight: weightMap[m] ?? 0,
+      stakedWal: new BigNumber(stakedWalMap[m])
+        .shiftedBy(-walrus.decimals)
+        .toNumber(),
+      weightPercentage: (weightMap[m] ?? 0) / nShard,
+    }))
+    .compact()
+    .uniq()
+    .value()
+
+  const feesUSD =
+    fees?.fees[Math.floor(date.valueOf() / 1000)] || fees?.lastFee || 0
+
+  return {
+    epoch,
+    sequenceNumber: checkpoint,
+    activeCount,
+    committeeCount,
+    operatorCount,
+    nShard,
+    totalStakedWAL,
+    averageStakedWAL: _.meanBy(uniqueNodeIds, "stakedWal"),
+    storageUsageTB: usedCapacityTB,
+    totalStorageTB: totalCapacityTB,
+    storagePrice,
+    writePrice,
+    paidFeesUSD: feesUSD,
+    uniqueNodeIds,
+  }
+}

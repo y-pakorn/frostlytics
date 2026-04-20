@@ -10,6 +10,7 @@
     "server": "tsx watch server.ts",
     "server:start": "tsx server.ts",
     "backfill": "tsx backfill.ts",
+    "audit:historical": "tsx scripts/audit-historical.ts",
     "db:sync": "drizzle-kit generate && drizzle-kit migrate",
     "format": "pnpm prettier ./src --write",
     "format:check": "pnpm prettier ./src --check"
