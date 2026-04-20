@@ -2,10 +2,7 @@ import "dotenv/config"
 
 import _ from "lodash"
 
-import {
-  computeDailyMetrics,
-  getFees,
-} from "../server/services/backfill-compute"
+import { computeDailyMetrics } from "../server/services/backfill-compute"
 import { dayjs } from "../src/lib/dayjs"
 
 const API_URL =
@@ -39,16 +36,6 @@ const padLeft = (s: string, width: number) =>
 const padRight = (s: string, width: number) =>
   s.length >= width ? s : s + " ".repeat(width - s.length)
 
-const fmtMoney = (n: number | null | undefined) => {
-  if (n == null) return "—"
-  return (
-    "$" +
-    new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(n)
-  )
-}
 const fmtNum = (n: number | null | undefined, digits = 2) => {
   if (n == null) return "—"
   return new Intl.NumberFormat("en-US", {
@@ -117,8 +104,8 @@ async function main() {
   console.log(c.dim(`  Comparing last ${DAYS} days against on-chain source`))
   console.log("")
 
-  process.stdout.write(c.dim("  Fetching API and DefiLlama fees...\r"))
-  const [apiRows, fees] = await Promise.all([fetchApi(), getFees()])
+  process.stdout.write(c.dim("  Fetching API...\r"))
+  const apiRows = await fetchApi()
   process.stdout.write(CLEAR_LINE)
 
   const apiByDay = new Map<string, ApiRow>()
@@ -133,13 +120,11 @@ async function main() {
       .startOf("day")
   )
 
-  const W = { date: 10, money: 16, diff: 8, wal: 16, tb: 12, status: 14 }
+  const W = { date: 10, diff: 8, wal: 16, tb: 12, status: 14 }
   const header =
     "  " +
     [
       padRight("DATE", W.date),
-      padLeft("FEES USD", W.money),
-      padLeft("Δ", W.diff),
       padLeft("STAKED WAL", W.wal),
       padLeft("Δ", W.diff),
       padLeft("STORAGE TB", W.tb),
@@ -167,7 +152,6 @@ async function main() {
     const ckpt = apiRow?.sequenceNumber ?? null
 
     let status: string
-    let feesDiff: DiffResult = { kind: "match" }
     let stakedDiff: DiffResult = { kind: "match" }
     let storageDiff: DiffResult = { kind: "match" }
 
@@ -176,17 +160,16 @@ async function main() {
       status = c.red("MISSING")
     } else {
       try {
-        const metrics = await computeDailyMetrics(date, fees, {
+        const metrics = await computeDailyMetrics(date, undefined, {
           checkpoint: apiRow.sequenceNumber,
         })
         if (!metrics) {
           errorCount++
           status = c.red("SOURCE_ERROR")
         } else {
-          feesDiff = diffField(apiRow.paidFeesUSD, metrics.paidFeesUSD)
           stakedDiff = diffField(apiRow.totalStakedWAL, metrics.totalStakedWAL)
           storageDiff = diffField(apiRow.storageUsedTB, metrics.storageUsageTB)
-          if (rowHasDrift([feesDiff, stakedDiff, storageDiff])) {
+          if (rowHasDrift([stakedDiff, storageDiff])) {
             driftCount++
             status = c.yellow("DRIFT")
           } else {
@@ -200,7 +183,6 @@ async function main() {
       }
     }
 
-    const apiFeesStr = apiRow ? fmtMoney(apiRow.paidFeesUSD) : "—"
     const apiStakedStr = apiRow ? fmtNum(apiRow.totalStakedWAL) : "—"
     const apiStorageStr = apiRow ? fmtNum(apiRow.storageUsedTB) : "—"
 
@@ -208,8 +190,6 @@ async function main() {
       "  " +
       [
         padRight(dayKey, W.date),
-        padLeft(apiFeesStr, W.money),
-        renderDiff(feesDiff),
         padLeft(apiStakedStr, W.wal),
         renderDiff(stakedDiff),
         padLeft(apiStorageStr, W.tb),
