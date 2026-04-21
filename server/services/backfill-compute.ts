@@ -111,61 +111,40 @@ export const findCheckpointBefore = async (
   timestampMs: number,
   fromCheckpoint?: number
 ): Promise<number> => {
-  const window = await getCheckpoints(fromCheckpoint)
-  if (window.length === 0) {
-    throw new Error(
-      `findCheckpointBefore: no checkpoints returned for fromCheckpoint=${fromCheckpoint}`
+  const checkpoints = await getCheckpoints(fromCheckpoint)
+  const averageCheckpointPerSec = _.chain(checkpoints)
+    .map((c, i, cs) =>
+      i > 0
+        ? dayjs(c.timestamp).diff(cs[i - 1]?.timestamp, "milliseconds")
+        : null
     )
-  }
-
-  const avgMsPerCheckpoint =
-    _.chain(window)
-      .map((c, i, cs) =>
-        i > 0
-          ? dayjs(c.timestamp).diff(cs[i - 1]?.timestamp, "milliseconds")
-          : null
-      )
-      .compact()
-      .mean()
-      .value() || 500
-
-  const oldest = window[0]
-  const newest = window[window.length - 1]
-  const oldestTs = dayjs(oldest.timestamp).valueOf()
-  const newestTs = dayjs(newest.timestamp).valueOf()
-  const newestSeq = newest.sequenceNumber as number
-
-  // Overshoot: every checkpoint in the window is at/after the target — step further back.
-  if (oldestTs >= timestampMs) {
-    const offset = Math.max(
-      50,
-      Math.floor((newestTs - timestampMs) / avgMsPerCheckpoint)
+    .compact()
+    .mean()
+    .value()
+  const checkpointCalculatedFromInterval =
+    ((checkpoints[checkpoints.length - 1]?.sequenceNumber as number) || 0) -
+    Math.floor(
+      (dayjs(checkpoints[checkpoints.length - 1]?.timestamp).valueOf() -
+        timestampMs) /
+        averageCheckpointPerSec
     )
-    return findCheckpointBefore(timestampMs, newestSeq - offset)
-  }
 
-  // Undershoot: every checkpoint in the window is before the target — step forward.
-  // (Previously returned the wrong checkpoint silently, far from the intended boundary.)
-  if (newestTs < timestampMs) {
-    const offset =
-      Math.max(
-        50,
-        Math.floor((timestampMs - newestTs) / avgMsPerCheckpoint)
-      ) + 50
-    return findCheckpointBefore(timestampMs, newestSeq + offset)
-  }
-
-  // Window straddles the target: pick the highest-sequence checkpoint strictly before target.
+  const checkpointsAfter = await getCheckpoints(
+    checkpointCalculatedFromInterval
+  )
   const found = _.findLast(
-    window,
+    checkpointsAfter,
     (c) => dayjs(c.timestamp).valueOf() < timestampMs
   )
-  if (!found) {
-    throw new Error(
-      `findCheckpointBefore: straddling window had no checkpoint before target ${timestampMs}`
+  if (found) {
+    return found.sequenceNumber as number
+  } else {
+    return findCheckpointBefore(
+      timestampMs,
+      (_.last(checkpointsAfter)?.sequenceNumber as number) ||
+        checkpointCalculatedFromInterval
     )
   }
-  return found.sequenceNumber as number
 }
 
 export interface DailyMetrics {
