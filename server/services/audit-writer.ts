@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm"
+import { eq, lt } from "drizzle-orm"
 import _ from "lodash"
 
 import { dayjs } from "../../src/lib/dayjs"
@@ -175,10 +175,23 @@ export async function runAuditForDate(
   return { rowsWritten: rows.length }
 }
 
+const AUDIT_RETENTION_DAYS = 32
+
+export async function pruneAuditLog(
+  retentionDays: number = AUDIT_RETENTION_DAYS
+): Promise<{ pruned: number }> {
+  const cutoff = dayjs.utc().subtract(retentionDays, "day").toDate()
+  const deleted = await db
+    .delete(auditLog)
+    .where(lt(auditLog.createdAt, cutoff))
+    .returning({ id: auditLog.id })
+  return { pruned: deleted.length }
+}
+
 export async function runAuditWindow(
   fees?: Fees,
   opts?: { days?: number }
-): Promise<{ daysAudited: number; rowsWritten: number }> {
+): Promise<{ daysAudited: number; rowsWritten: number; pruned: number }> {
   const days = opts?.days ?? 7
   const resolvedFees = fees ?? (await getFees())
   const dates = _.range(days).map((i) =>
@@ -211,5 +224,13 @@ export async function runAuditWindow(
       )
     }
   }
-  return { daysAudited, rowsWritten }
+
+  const { pruned } = await pruneAuditLog()
+  if (pruned > 0) {
+    console.log(
+      `pruned ${pruned} audit_log rows older than ${AUDIT_RETENTION_DAYS} days`
+    )
+  }
+
+  return { daysAudited, rowsWritten, pruned }
 }

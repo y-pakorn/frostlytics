@@ -8,6 +8,9 @@ import {
   AUDIT_SOURCES,
   buildReferenceQuery,
   METRIC_DEFS,
+  SUI_GRAPHQL_ENDPOINT,
+  SUI_OBJECT_QUERY_BODY,
+  SUI_OBJECT_QUERY_NAME,
 } from "../services/audit-queries"
 
 const CSV_COLUMNS = [
@@ -96,12 +99,34 @@ const renderQueriesMarkdown = (): string => {
   lines.push("# Frostlytics Audit — Reference Queries")
   lines.push("")
   lines.push(
-    "Each row in `/api/audit.csv` is self-contained: `reference_query` carries the HTTP call, the extraction path, the decoding rule, and the Frostlytics-side DB column for that metric. `notes` repeats the DB column (with operator/date parameters filled in), so any row can be reproduced with no additional context."
+    "Each row in `/api/audit.csv` lists the HTTP call, the jq extraction, the decoding rule, and the DB column that row compares. The HTTP call in each row is written as `SuiGraphQL <queryName> <var>=<val>` — the full query body is fixed and documented once here, so rows stay compact."
   )
   lines.push("")
   lines.push(
     "For Sui GraphQL sources, the audit pins each row to the checkpoint recorded in `aggregated_daily.sequence_number` for that day. The `beforeCheckpoint` parameter in the query is `checkpoint + 1` so the returned object reflects the state *at* that checkpoint."
   )
+  lines.push("")
+
+  lines.push("## Query template")
+  lines.push("")
+  lines.push(
+    `Every \`SuiGraphQL ${SUI_OBJECT_QUERY_NAME} ...\` row resolves to a POST against \`${SUI_GRAPHQL_ENDPOINT}\` with this body:`
+  )
+  lines.push("")
+  lines.push("```graphql")
+  lines.push(SUI_OBJECT_QUERY_BODY)
+  lines.push("```")
+  lines.push("")
+  lines.push(
+    "Substitute the row's `objectId` and `beforeCheckpoint` values into the `$variables`. To reproduce from curl:"
+  )
+  lines.push("")
+  lines.push("```bash")
+  lines.push(`curl -s ${SUI_GRAPHQL_ENDPOINT} -H 'Content-Type: application/json' \\`)
+  lines.push(
+    `  -d '{"query":"${SUI_OBJECT_QUERY_NAME}($beforeCheckpoint: Int, $objectId: String) { ... }","variables":{"objectId":"<OBJ>","beforeCheckpoint":<N+1>}}'`
+  )
+  lines.push("```")
   lines.push("")
 
   lines.push("## Sources")

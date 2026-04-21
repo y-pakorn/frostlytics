@@ -6,8 +6,9 @@ export type AuditSourceKey =
   | "sui_graphql:activeSet"
   | "defillama:walrus-protocol"
 
-const SUI_GRAPHQL_ENDPOINT = "https://graphql.mainnet.sui.io/graphql"
-const SUI_OBJECT_QUERY = `query getTransactionAffectedObject($beforeCheckpoint: Int, $objectId: String) { transactions(filter: { affectedObject: $objectId, beforeCheckpoint: $beforeCheckpoint }, last: 1) { nodes { digest effects { objectChanges { nodes { address outputState { address asMoveObject { contents { type { repr } json } } } } } } } } }`
+export const SUI_GRAPHQL_ENDPOINT = "https://graphql.mainnet.sui.io/graphql"
+export const SUI_OBJECT_QUERY_NAME = "getTransactionAffectedObject"
+export const SUI_OBJECT_QUERY_BODY = `query getTransactionAffectedObject($beforeCheckpoint: Int, $objectId: String) { transactions(filter: { affectedObject: $objectId, beforeCheckpoint: $beforeCheckpoint }, last: 1) { nodes { digest effects { objectChanges { nodes { address outputState { address asMoveObject { contents { type { repr } json } } } } } } } } }`
 
 interface SourceDef {
   source: AuditSourceKey
@@ -16,16 +17,10 @@ interface SourceDef {
   buildHttpCall: (ctx: { checkpoint?: number; date?: string }) => string
 }
 
+// Lean: template name + variables only. Full query body is fixed and
+// documented once in /api/audit/queries.md — no need to repeat it per row.
 const buildSuiObjectCall = (objectId: string, checkpoint: number) =>
-  [
-    `POST ${SUI_GRAPHQL_ENDPOINT}`,
-    `Content-Type: application/json`,
-    ``,
-    `{`,
-    `  "query": ${JSON.stringify(SUI_OBJECT_QUERY)},`,
-    `  "variables": { "objectId": "${objectId}", "beforeCheckpoint": ${checkpoint + 1} }`,
-    `}`,
-  ].join("\n")
+  `SuiGraphQL ${SUI_OBJECT_QUERY_NAME} objectId=${objectId} beforeCheckpoint=${checkpoint + 1}`
 
 export const AUDIT_SOURCES: Record<AuditSourceKey, SourceDef> = {
   "sui_graphql:systemInner": {
@@ -195,21 +190,15 @@ export interface ReferenceQueryContext {
   operatorId?: string
 }
 
+// Keeps full derivation detail (HTTP body, extract, decoding, DB column) for
+// per-row reproducibility but omits metric/source/checkpoint/date — those are
+// already their own CSV columns and don't need to be repeated in the body.
 export const buildReferenceQuery = (ctx: ReferenceQueryContext): string => {
   const def = METRIC_DEFS[ctx.metric]
   if (!def) throw new Error(`Unknown audit metric: ${ctx.metric}`)
   const src = AUDIT_SOURCES[def.source]
 
-  const header: string[] = [
-    `# Metric: ${ctx.metric}`,
-    `# Source: ${def.source}`,
-  ]
-  if (src.objectId) header.push(`# Object ID: ${src.objectId}`)
-  if (ctx.checkpoint != null) header.push(`# Checkpoint: ${ctx.checkpoint}`)
-  header.push(`# UTC date: ${ctx.date}`)
-  if (ctx.operatorId) header.push(`# Operator: ${ctx.operatorId}`)
-
-  const extractPath =
+  const extract =
     def.source === "defillama:walrus-protocol"
       ? def.extractPath.replace(
           "<unix_seconds_of_utc_day>",
@@ -224,32 +213,26 @@ export const buildReferenceQuery = (ctx: ReferenceQueryContext): string => {
     date: ctx.date,
   })
 
+  const dbColumn = def.dbColumn
+    .replace("<operatorId>", ctx.operatorId ?? "<operatorId>")
+    .replace("<date>", ctx.date)
+
   return [
-    ...header,
-    ``,
-    `# --- HTTP request ---`,
+    `# HTTP`,
     httpCall,
     ``,
-    `# --- Extraction (jq syntax on response JSON) ---`,
-    `# ${extractPath}`,
+    `# Extract (jq)`,
+    extract,
     ``,
-    `# --- Decoding ---`,
-    `# ${def.decoding}`,
+    `# Decode`,
+    def.decoding,
     ``,
-    `# --- Frostlytics side ---`,
-    `# Read from: ${def.dbColumn.replace("<operatorId>", ctx.operatorId ?? "<operatorId>").replace("<date>", ctx.date)}`,
+    `# DB side`,
+    dbColumn,
   ].join("\n")
 }
 
 export const buildNotes = (ctx: ReferenceQueryContext): string => {
-  const def = METRIC_DEFS[ctx.metric]
-  if (!def) return ""
-  const dbCol = def.dbColumn
-    .replace("<operatorId>", ctx.operatorId ?? "<operatorId>")
-    .replace("<date>", ctx.date)
-  const parts = [`db_source=${dbCol}`]
-  if (ctx.operatorId) parts.push(`operatorId=${ctx.operatorId}`)
-  if (ctx.checkpoint != null) parts.push(`checkpoint=${ctx.checkpoint}`)
-  parts.push(`date=${ctx.date}`)
-  return parts.join("; ")
+  if (ctx.operatorId) return `operatorId=${ctx.operatorId}`
+  return ""
 }

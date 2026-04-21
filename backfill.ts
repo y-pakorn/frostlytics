@@ -160,7 +160,7 @@ async function main() {
   try {
     const auditResult = await runAuditWindow(fees)
     console.log(
-      `Audit complete. Audited ${auditResult.daysAudited} days, wrote ${auditResult.rowsWritten} audit_log rows.`
+      `Audit complete. Audited ${auditResult.daysAudited} days, wrote ${auditResult.rowsWritten} audit_log rows, pruned ${auditResult.pruned} stale rows.`
     )
   } catch (err) {
     console.error("Audit failed (non-fatal):", (err as Error).message)
