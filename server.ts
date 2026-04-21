@@ -4,6 +4,7 @@ import { Elysia } from "elysia"
 import { cors } from "@elysiajs/cors"
 import { swagger } from "@elysiajs/swagger"
 
+import { auditRoutes } from "./server/routes/audit"
 import { backfillLogsRoutes } from "./server/routes/backfill-logs"
 import { profilesRoutes } from "./server/routes/profiles"
 import { delegatorsRoutes } from "./server/routes/delegators"
@@ -39,12 +40,14 @@ const app = new Elysia({ adapter: node() })
           { name: "Delegations", description: "Staking/unstaking event history per operator" },
           { name: "Historical Data", description: "Daily aggregated network snapshots from the backfill pipeline" },
           { name: "Backfill Logs", description: "Ingestion pipeline execution logs for auditing data continuity" },
+          { name: "Audit", description: "DB-vs-on-chain reconciliation time series with per-row reference queries" },
           { name: "Open Graph Images", description: "Dynamic OG image generation for social media link previews" },
           { name: "SEO", description: "Search engine optimization resources (sitemap)" },
         ],
       },
     })
   )
+  .use(auditRoutes)
   .use(backfillLogsRoutes)
   .use(profilesRoutes)
   .use(delegatorsRoutes)

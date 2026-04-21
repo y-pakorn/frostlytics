@@ -5,6 +5,7 @@ import _ from "lodash"
 import { NIL, v5 as uuidv5 } from "uuid"
 
 import { db } from "./server/db"
+import { runAuditWindow } from "./server/services/audit-writer"
 import {
   computeDailyMetrics,
   Fees,
@@ -154,6 +155,17 @@ async function main() {
   }
 
   console.log(`Backfill complete. Filled ${filledCount} days.`)
+
+  console.log("Running rolling 7-day audit...")
+  try {
+    const auditResult = await runAuditWindow(fees)
+    console.log(
+      `Audit complete. Audited ${auditResult.daysAudited} days, wrote ${auditResult.rowsWritten} audit_log rows.`
+    )
+  } catch (err) {
+    console.error("Audit failed (non-fatal):", (err as Error).message)
+  }
+
   process.exit(0)
 }
 

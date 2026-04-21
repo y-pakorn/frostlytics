@@ -5,6 +5,7 @@ import {
   jsonb,
   numeric,
   pgTable,
+  text,
   timestamp,
   uuid,
   varchar,
@@ -63,4 +64,26 @@ export const backfillLog = pgTable(
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (table) => [index("idx_bl__target_date").on(table.targetDate)]
+)
+
+export const auditLog = pgTable(
+  "audit_log",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    timestamp: timestamp("timestamp").notNull(),
+    checkpoint: integer("checkpoint"),
+    metric: varchar("metric", { length: 64 }).notNull(),
+    frostlyticsValue: doublePrecision("frostlytics_value"),
+    referenceValue: doublePrecision("reference_value"),
+    delta: doublePrecision("delta"),
+    deltaPct: doublePrecision("delta_pct"),
+    source: varchar("source", { length: 64 }).notNull(),
+    referenceQuery: text("reference_query").notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [
+    index("idx_al__timestamp").on(table.timestamp),
+    index("idx_al__metric_timestamp").on(table.metric, table.timestamp),
+  ]
 )
