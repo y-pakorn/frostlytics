@@ -229,7 +229,13 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
       detail: {
         summary: "Reconciliation audit (CSV)",
         description:
-          "Streams persisted audit_log rows as CSV. Each row records one metric comparison between Frostlytics's stored value (frostlytics_value) and the on-chain reference (reference_value) at a pinned Sui checkpoint. Multiple rows per (timestamp, metric) are expected — every backfill run re-audits the rolling 21-day window, so audit passes accumulate as evidence of continued sync over time. Use the reference_query column to reproduce any row independently.",
+          "Streams persisted audit_log rows as CSV. Each row records one metric comparison between Frostlytics's stored value (frostlytics_value) and the on-chain reference (reference_value) at a pinned Sui checkpoint. Multiple rows per (timestamp, metric) are expected — every backfill run re-audits a rolling 7-day window, so audit passes accumulate as evidence of continued sync over time. Rows older than 32 days are pruned. Use the reference_query column to reproduce any row independently; the query template is documented once at /api/audit/queries.md.",
+      },
+      response: {
+        200: t.String({
+          description:
+            "CSV with a header row followed by one data row per metric comparison. Columns: timestamp, checkpoint, metric, frostlytics_value, reference_value, delta, delta_pct, source, reference_query, notes.",
+        }),
       },
     }
   )
@@ -264,15 +270,90 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
     },
     {
       query: t.Object({
-        from: t.Optional(t.String({ format: "date" })),
-        to: t.Optional(t.String({ format: "date" })),
-        metric: t.Optional(t.String()),
-        limit: t.Optional(t.String()),
+        from: t.Optional(
+          t.String({
+            format: "date",
+            description:
+              "Start of window (inclusive). ISO 8601 date. Default: 30 days ago.",
+          })
+        ),
+        to: t.Optional(
+          t.String({
+            format: "date",
+            description:
+              "End of window (inclusive). ISO 8601 date. Default: now.",
+          })
+        ),
+        metric: t.Optional(
+          t.String({
+            description:
+              "Optional metric filter. Exact match or trailing '*' for prefix (e.g. 'per_operator.*').",
+          })
+        ),
+        limit: t.Optional(
+          t.String({
+            description: "Max rows returned (default 500000).",
+          })
+        ),
       }),
       detail: {
         summary: "Reconciliation audit (JSON)",
         description:
-          "Same content as /api/audit.csv but returned as JSON for programmatic consumers.",
+          "Same content as /api/audit.csv but returned as JSON for programmatic consumers. See CSV endpoint for semantics.",
+      },
+      response: {
+        200: t.Array(
+          t.Object({
+            id: t.String({ format: "uuid" }),
+            timestamp: t.String({
+              format: "date-time",
+              description: "UTC day being audited (start-of-day)",
+            }),
+            checkpoint: t.Union([t.Number(), t.Null()], {
+              description:
+                "Sui checkpoint sequence_number the audit pinned. Null for defillama rows (no on-chain checkpoint).",
+            }),
+            metric: t.String({
+              description:
+                "Metric name. Network-level (e.g. 'totalStakedWAL') or per-operator ('per_operator.stakedWAL').",
+            }),
+            frostlyticsValue: t.Union([t.Number(), t.Null()], {
+              description: "Value read from the Frostlytics DB for that day.",
+            }),
+            referenceValue: t.Union([t.Number(), t.Null()], {
+              description:
+                "Value re-computed from the on-chain (or external) source at the pinned checkpoint.",
+            }),
+            delta: t.Union([t.Number(), t.Null()], {
+              description: "frostlyticsValue - referenceValue.",
+            }),
+            deltaPct: t.Union([t.Number(), t.Null()], {
+              description:
+                "Signed percent delta vs reference. Match tolerance is ~0.01%.",
+            }),
+            source: t.String({
+              description:
+                "Source key ('sui_graphql:systemInner' | 'sui_graphql:stakingInner' | 'sui_graphql:activeSet' | 'defillama:walrus-protocol'). Full query template documented at /api/audit/queries.md.",
+            }),
+            referenceQuery: t.String({
+              description:
+                "HTTP call (lean form) + jq extract + decode + DB column for this row. Reproduce by looking up the query template in /api/audit/queries.md and substituting the variables shown here.",
+            }),
+            notes: t.Union([t.String(), t.Null()], {
+              description:
+                "Row-specific context. Contains 'operatorId=0x...' for per-operator metrics, empty otherwise.",
+            }),
+            createdAt: t.String({
+              format: "date-time",
+              description:
+                "When this audit row was written. Each rolling-window pass produces a new row per (timestamp, metric), distinguished by createdAt.",
+            }),
+          }),
+          {
+            description:
+              "Ordered by (timestamp asc, metric asc, createdAt asc).",
+          }
+        ),
       },
     }
   )
@@ -286,7 +367,10 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
       detail: {
         summary: "Audit reference queries (Markdown)",
         description:
-          "Human-readable documentation of every on-chain / external query used by the audit. Includes object IDs, decoding rules, and a commission-is-not-historically-audited caveat.",
+          "Human-readable documentation of every on-chain / external query used by the audit. Contains the single GraphQL template that every audit row references, per-source object IDs, per-metric jq extraction and decoding rules, and a commission-is-not-historically-audited caveat.",
+      },
+      response: {
+        200: t.String({ description: "Markdown document." }),
       },
     }
   )
