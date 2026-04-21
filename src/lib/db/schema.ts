@@ -5,7 +5,6 @@ import {
   jsonb,
   numeric,
   pgTable,
-  serial,
   timestamp,
   uuid,
   varchar,
@@ -53,7 +52,7 @@ export const operatorDaily = pgTable(
 export const backfillLog = pgTable(
   "backfill_log",
   {
-    id: serial("id").primaryKey(),
+    id: uuid("id").primaryKey().defaultRandom(),
     targetDate: timestamp("target_date").notNull(),
     status: varchar("status", { length: 10 }).notNull(), // 'success' | 'failure' | 'skipped'
     durationMs: integer("duration_ms").notNull(),

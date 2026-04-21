@@ -17,7 +17,7 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
       .select()
       .from(backfillLog)
       .where(conditions.length ? and(...conditions) : undefined)
-      .orderBy(desc(backfillLog.targetDate))
+      .orderBy(desc(backfillLog.targetDate), desc(backfillLog.createdAt))
       .limit(parseInt(limitStr || "200"))
 
     return rows.map((r) => ({
@@ -79,7 +79,10 @@ export const backfillLogsRoutes = new Elysia({ tags: ["Backfill Logs"] }).get(
     response: {
       200: t.Array(
         t.Object({
-          id: t.Number({ description: "Auto-incrementing log entry ID" }),
+          id: t.String({
+            format: "uuid",
+            description: "Log entry UUID",
+          }),
           targetDate: t.String({
             format: "date-time",
             description: "The date that was being backfilled (ISO 8601 UTC)",
