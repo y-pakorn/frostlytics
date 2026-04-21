@@ -76,7 +76,8 @@ export interface RunAuditResult {
 
 export async function runAuditForDate(
   date: dayjs.Dayjs,
-  fees?: Fees
+  fees?: Fees,
+  runCreatedAt: Date = new Date()
 ): Promise<RunAuditResult> {
   const dateDate = date.toDate()
 
@@ -167,7 +168,8 @@ export async function runAuditForDate(
   }
 
   if (rows.length > 0) {
-    for (const chunk of _.chunk(rows, 500)) {
+    const stamped = rows.map((r) => ({ ...r, createdAt: runCreatedAt }))
+    for (const chunk of _.chunk(stamped, 500)) {
       await db.insert(auditLog).values(chunk)
     }
   }
@@ -194,6 +196,7 @@ export async function runAuditWindow(
 ): Promise<{ daysAudited: number; rowsWritten: number; pruned: number }> {
   const days = opts?.days ?? 7
   const resolvedFees = fees ?? (await getFees())
+  const runCreatedAt = new Date()
   const dates = _.range(days).map((i) =>
     dayjs
       .utc()
@@ -205,7 +208,7 @@ export async function runAuditWindow(
   let rowsWritten = 0
   for (const date of dates) {
     try {
-      const result = await runAuditForDate(date, resolvedFees)
+      const result = await runAuditForDate(date, resolvedFees, runCreatedAt)
       if (result.rowsWritten > 0) {
         daysAudited++
         rowsWritten += result.rowsWritten

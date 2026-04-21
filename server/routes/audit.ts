@@ -1,4 +1,4 @@
-import { and, asc, gte, like, lte, SQL } from "drizzle-orm"
+import { and, asc, desc, gte, like, lte, SQL } from "drizzle-orm"
 import { eq } from "drizzle-orm"
 import { Elysia, t } from "elysia"
 
@@ -14,6 +14,7 @@ import {
 } from "../services/audit-queries"
 
 const CSV_COLUMNS = [
+  "created_at",
   "timestamp",
   "checkpoint",
   "metric",
@@ -37,6 +38,7 @@ const csvEscape = (v: unknown): string => {
 
 const toCsv = (
   rows: Array<{
+    createdAt: Date
     timestamp: Date
     checkpoint: number | null
     metric: string
@@ -53,6 +55,7 @@ const toCsv = (
   for (const r of rows) {
     lines.push(
       [
+        csvEscape(r.createdAt.toISOString()),
         csvEscape(r.timestamp.toISOString()),
         csvEscape(r.checkpoint),
         csvEscape(r.metric),
@@ -94,92 +97,98 @@ const defaultWindow = () => {
   return { from: from.toISOString(), to: to.toISOString() }
 }
 
-const renderQueriesMarkdown = (): string => {
-  const lines: string[] = []
-  lines.push("# Frostlytics Audit — Reference Queries")
-  lines.push("")
-  lines.push(
-    "Each row in `/api/audit.csv` lists the HTTP call, the jq extraction, the decoding rule, and the DB column that row compares. The HTTP call in each row is written as `SuiGraphQL <queryName> <var>=<val>` — the full query body is fixed and documented once here, so rows stay compact."
+const renderQueriesPlain = (): string => {
+  const L: string[] = []
+  L.push("FROSTLYTICS AUDIT — REFERENCE QUERIES")
+  L.push("=====================================")
+  L.push("")
+  L.push(
+    "Every row in /api/audit/csv has reference_query in the form:"
   )
-  lines.push("")
-  lines.push(
-    "For Sui GraphQL sources, the audit pins each row to the checkpoint recorded in `aggregated_daily.sequence_number` for that day. The `beforeCheckpoint` parameter in the query is `checkpoint + 1` so the returned object reflects the state *at* that checkpoint."
+  L.push("")
+  L.push("  <http_call> :: <jq> :: db=<column>")
+  L.push("")
+  L.push(
+    "The audit pins each row to the checkpoint recorded in aggregated_daily.sequence_number for that day. `beforeCheckpoint` in the GraphQL query is checkpoint+1 so the returned object reflects state at the checkpoint."
   )
-  lines.push("")
+  L.push("")
 
-  lines.push("## Query template")
-  lines.push("")
-  lines.push(
-    `Every \`SuiGraphQL ${SUI_OBJECT_QUERY_NAME} ...\` row resolves to a POST against \`${SUI_GRAPHQL_ENDPOINT}\` with this body:`
+  L.push("SUI GRAPHQL CALL TEMPLATE")
+  L.push("-------------------------")
+  L.push("")
+  L.push(
+    `<http_call> = ${SUI_OBJECT_QUERY_NAME}(objectId=<OBJ>,beforeCheckpoint=<N+1>) resolves to a POST against ${SUI_GRAPHQL_ENDPOINT} with this GraphQL body:`
   )
-  lines.push("")
-  lines.push("```graphql")
-  lines.push(SUI_OBJECT_QUERY_BODY)
-  lines.push("```")
-  lines.push("")
-  lines.push(
-    "Substitute the row's `objectId` and `beforeCheckpoint` values into the `$variables`. To reproduce from curl:"
+  L.push("")
+  L.push(SUI_OBJECT_QUERY_BODY)
+  L.push("")
+  L.push(
+    "jq in each row is applied to the response narrowed to the Move object's JSON, i.e. start from:"
   )
-  lines.push("")
-  lines.push("```bash")
-  lines.push(`curl -s ${SUI_GRAPHQL_ENDPOINT} -H 'Content-Type: application/json' \\`)
-  lines.push(
-    `  -d '{"query":"${SUI_OBJECT_QUERY_NAME}($beforeCheckpoint: Int, $objectId: String) { ... }","variables":{"objectId":"<OBJ>","beforeCheckpoint":<N+1>}}'`
+  L.push("")
+  L.push(
+    "  .data.transactions.nodes[0].effects.objectChanges.nodes[*].outputState.asMoveObject.contents.json"
   )
-  lines.push("```")
-  lines.push("")
+  L.push("")
+  L.push(
+    "(So .value in the jq expressions refers to that object's fields.)"
+  )
+  L.push("")
+  L.push("Curl recipe to reproduce any row:")
+  L.push("")
+  L.push(
+    `  curl -s ${SUI_GRAPHQL_ENDPOINT} -H 'Content-Type: application/json' \\`
+  )
+  L.push(
+    `    -d '{"query":"<template above>","variables":{"objectId":"<OBJ>","beforeCheckpoint":<N+1>}}' \\`
+  )
+  L.push(
+    `    | jq '.data.transactions.nodes[0].effects.objectChanges.nodes[] | .outputState.asMoveObject.contents.json | <jq from row>'`
+  )
+  L.push("")
 
-  lines.push("## Sources")
-  lines.push("")
+  L.push("SOURCES")
+  L.push("-------")
+  L.push("")
   for (const src of Object.values(AUDIT_SOURCES)) {
-    lines.push(`### ${src.source}`)
-    lines.push("")
-    if (src.objectId) lines.push(`- **Object ID**: \`${src.objectId}\``)
-    lines.push(`- **Description**: ${src.description}`)
-    lines.push("")
+    L.push(`${src.source}`)
+    if (src.objectId) L.push(`  objectId: ${src.objectId}`)
+    L.push(`  ${src.description}`)
+    L.push("")
   }
 
-  lines.push("## Metrics")
-  lines.push("")
+  L.push("METRICS")
+  L.push("-------")
+  L.push("")
   for (const [metric, def] of Object.entries(METRIC_DEFS)) {
-    lines.push(`### \`${metric}\``)
-    lines.push("")
-    lines.push(`- **Source**: \`${def.source}\``)
-    lines.push(`- **Frostlytics side**: \`${def.dbColumn}\``)
-    lines.push(`- **Extract path**: \`${def.extractPath}\``)
-    lines.push(`- **Decoding**: ${def.decoding}`)
-    lines.push("")
-    lines.push(
-      "Example `reference_query` cell (checkpoint `<N>`, date `<YYYY-MM-DD>`" +
-        (def.perOperator ? ", operator `<0x...>`" : "") +
-        "):"
-    )
-    lines.push("")
-    lines.push("```")
-    lines.push(
-      buildReferenceQuery({
-        metric,
-        checkpoint: 0,
-        date: "<YYYY-MM-DD>",
-        operatorId: def.perOperator ? "<0x...>" : undefined,
-      }).replace(/"beforeCheckpoint":\s*1/, '"beforeCheckpoint": <N + 1>')
-    )
-    lines.push("```")
-    lines.push("")
+    L.push(metric)
+    L.push(`  source: ${def.source}`)
+    L.push(`  jq: ${def.jq}`)
+    L.push(`  db: ${def.dbColumn}`)
+    L.push("")
   }
 
-  lines.push("## Commission (not historically audited)")
-  lines.push("")
-  lines.push(
-    "Commission rate is read per pool at the current checkpoint only — historical commission per operator per day is not stored in `operator_daily` today, so it is outside the scope of this audit. For a current-state spot check, call `sui_multiGetObjects` with the pool object ID and inspect `content.fields.commission_rate` (divide by 10,000 to get the decimal rate)."
+  L.push("DEFILLAMA")
+  L.push("---------")
+  L.push("")
+  L.push(
+    "Rows with source=defillama:walrus-protocol use GET api.llama.fi/summary/fees/walrus-protocol. jq runs on the response root. <unix> in the jq is the UTC midnight of the audited date in unix seconds."
   )
-  lines.push("")
-  return lines.join("\n")
+  L.push("")
+
+  L.push("COMMISSION (not historically audited)")
+  L.push("-------------------------------------")
+  L.push("")
+  L.push(
+    "Commission rate is not stored per operator per day. For a current-state spot check, call sui_multiGetObjects with the pool object ID and read content.fields.commission_rate (divide by 10,000 for decimal rate)."
+  )
+  L.push("")
+  return L.join("\n")
 }
 
 export const auditRoutes = new Elysia({ tags: ["Audit"] })
   .get(
-    "/api/audit.csv",
+    "/api/audit/csv",
     async ({ query, set }) => {
       const rng = {
         from: query.from ?? defaultWindow().from,
@@ -190,7 +199,7 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
         .select()
         .from(auditLog)
         .where(buildConditions(rng))
-        .orderBy(asc(auditLog.timestamp), asc(auditLog.metric), asc(auditLog.createdAt))
+        .orderBy(desc(auditLog.createdAt), desc(auditLog.timestamp), asc(auditLog.metric))
         .limit(parseInt(query.limit || "500000"))
 
       set.headers["content-type"] = "text/csv; charset=utf-8"
@@ -227,20 +236,21 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
         ),
       }),
       detail: {
+        tags: ["Audit"],
         summary: "Reconciliation audit (CSV)",
         description:
-          "Streams persisted audit_log rows as CSV. Each row records one metric comparison between Frostlytics's stored value (frostlytics_value) and the on-chain reference (reference_value) at a pinned Sui checkpoint. Multiple rows per (timestamp, metric) are expected — every backfill run re-audits a rolling 7-day window, so audit passes accumulate as evidence of continued sync over time. Rows older than 32 days are pruned. Use the reference_query column to reproduce any row independently; the query template is documented once at /api/audit/queries.md.",
+          "Streams persisted audit_log rows as CSV. Each row records one metric comparison between Frostlytics's stored value (frostlytics_value) and the on-chain reference (reference_value) at a pinned Sui checkpoint. Multiple rows per (timestamp, metric) are expected — every backfill run re-audits a rolling 7-day window, so audit passes accumulate as evidence of continued sync over time. Rows older than 32 days are pruned. Use the reference_query column to reproduce any row independently; the query template is documented once at /api/audit/queries.",
       },
       response: {
         200: t.String({
           description:
-            "CSV with a header row followed by one data row per metric comparison. Columns: timestamp, checkpoint, metric, frostlytics_value, reference_value, delta, delta_pct, source, reference_query, notes.",
+            "CSV with a header row followed by one data row per metric comparison, ordered by created_at desc then timestamp desc. Columns: created_at, timestamp, checkpoint, metric, frostlytics_value, reference_value, delta, delta_pct, source, reference_query, notes.",
         }),
       },
     }
   )
   .get(
-    "/api/audit.json",
+    "/api/audit/json",
     async ({ query }) => {
       const rng = {
         from: query.from ?? defaultWindow().from,
@@ -251,10 +261,10 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
         .select()
         .from(auditLog)
         .where(buildConditions(rng))
-        .orderBy(asc(auditLog.timestamp), asc(auditLog.metric), asc(auditLog.createdAt))
+        .orderBy(desc(auditLog.createdAt), desc(auditLog.timestamp), asc(auditLog.metric))
         .limit(parseInt(query.limit || "500000"))
       return rows.map((r) => ({
-        id: r.id,
+        createdAt: r.createdAt.toISOString(),
         timestamp: r.timestamp.toISOString(),
         checkpoint: r.checkpoint,
         metric: r.metric,
@@ -265,7 +275,7 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
         source: r.source,
         referenceQuery: r.referenceQuery,
         notes: r.notes,
-        createdAt: r.createdAt.toISOString(),
+        id: r.id,
       }))
     },
     {
@@ -297,14 +307,19 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
         ),
       }),
       detail: {
+        tags: ["Audit"],
         summary: "Reconciliation audit (JSON)",
         description:
-          "Same content as /api/audit.csv but returned as JSON for programmatic consumers. See CSV endpoint for semantics.",
+          "Same content as /api/audit/csv but returned as JSON for programmatic consumers. See CSV endpoint for semantics.",
       },
       response: {
         200: t.Array(
           t.Object({
-            id: t.String({ format: "uuid" }),
+            createdAt: t.String({
+              format: "date-time",
+              description:
+                "When this audit row was written. Each rolling-window pass produces a new row per (timestamp, metric), distinguished by createdAt. Response is sorted by createdAt desc.",
+            }),
             timestamp: t.String({
               format: "date-time",
               description: "UTC day being audited (start-of-day)",
@@ -333,44 +348,41 @@ export const auditRoutes = new Elysia({ tags: ["Audit"] })
             }),
             source: t.String({
               description:
-                "Source key ('sui_graphql:systemInner' | 'sui_graphql:stakingInner' | 'sui_graphql:activeSet' | 'defillama:walrus-protocol'). Full query template documented at /api/audit/queries.md.",
+                "Source key ('sui_graphql:systemInner' | 'sui_graphql:stakingInner' | 'sui_graphql:activeSet' | 'defillama:walrus-protocol'). Full query template documented at /api/audit/queries.",
             }),
             referenceQuery: t.String({
               description:
-                "HTTP call (lean form) + jq extract + decode + DB column for this row. Reproduce by looking up the query template in /api/audit/queries.md and substituting the variables shown here.",
+                "HTTP call (lean form) + jq extract + decode + DB column for this row. Reproduce by looking up the query template in /api/audit/queries and substituting the variables shown here.",
             }),
             notes: t.Union([t.String(), t.Null()], {
               description:
                 "Row-specific context. Contains 'operatorId=0x...' for per-operator metrics, empty otherwise.",
             }),
-            createdAt: t.String({
-              format: "date-time",
-              description:
-                "When this audit row was written. Each rolling-window pass produces a new row per (timestamp, metric), distinguished by createdAt.",
-            }),
+            id: t.String({ format: "uuid" }),
           }),
           {
             description:
-              "Ordered by (timestamp asc, metric asc, createdAt asc).",
+              "Ordered by (createdAt desc, timestamp desc, metric asc).",
           }
         ),
       },
     }
   )
   .get(
-    "/api/audit/queries.md",
+    "/api/audit/queries",
     ({ set }) => {
-      set.headers["content-type"] = "text/markdown; charset=utf-8"
-      return renderQueriesMarkdown()
+      set.headers["content-type"] = "text/plain; charset=utf-8"
+      return renderQueriesPlain()
     },
     {
       detail: {
-        summary: "Audit reference queries (Markdown)",
+        tags: ["Audit"],
+        summary: "Audit reference queries (plain text)",
         description:
-          "Human-readable documentation of every on-chain / external query used by the audit. Contains the single GraphQL template that every audit row references, per-source object IDs, per-metric jq extraction and decoding rules, and a commission-is-not-historically-audited caveat.",
+          "Plain-text documentation of every on-chain / external query used by the audit. Contains the shared GraphQL template that every audit row references, the jq navigation convention, per-source object IDs, per-metric jq expressions and DB columns, and a commission-is-not-historically-audited caveat.",
       },
       response: {
-        200: t.String({ description: "Markdown document." }),
+        200: t.String({ description: "Plain text document." }),
       },
     }
   )

@@ -17,10 +17,10 @@ interface SourceDef {
   buildHttpCall: (ctx: { checkpoint?: number; date?: string }) => string
 }
 
-// Lean: template name + variables only. Full query body is fixed and
-// documented once in /api/audit/queries.md — no need to repeat it per row.
+// Lean: template name + variables. Full query body + jq navigation convention
+// documented once in /api/audit/queries.
 const buildSuiObjectCall = (objectId: string, checkpoint: number) =>
-  `SuiGraphQL ${SUI_OBJECT_QUERY_NAME} objectId=${objectId} beforeCheckpoint=${checkpoint + 1}`
+  `${SUI_OBJECT_QUERY_NAME}(objectId=${objectId},beforeCheckpoint=${checkpoint + 1})`
 
 export const AUDIT_SOURCES: Record<AuditSourceKey, SourceDef> = {
   "sui_graphql:systemInner": {
@@ -52,128 +52,104 @@ export const AUDIT_SOURCES: Record<AuditSourceKey, SourceDef> = {
     objectId: null,
     description:
       "DefiLlama aggregated fee indexer for Walrus. totalDataChart is [unixSeconds, feesUSD] pairs.",
-    buildHttpCall: () => `GET https://api.llama.fi/summary/fees/walrus-protocol`,
+    buildHttpCall: () => `GET api.llama.fi/summary/fees/walrus-protocol`,
   },
 }
 
+// jq is applied to the Move object's `contents.json` — the full navigation prefix
+// (data.transactions.nodes[0]...asMoveObject.contents.json) is fixed and documented
+// in /api/audit/queries. Keep jq expressions short and self-contained.
 export interface MetricDef {
   source: AuditSourceKey
   dbColumn: string
   perOperator: boolean
-  extractPath: string
-  decoding: string
+  jq: string
 }
-
-const MOVE_JSON_ROOT = `data.transactions.nodes[0].effects.objectChanges.nodes[*].outputState.asMoveObject.contents`
 
 export const METRIC_DEFS: Record<string, MetricDef> = {
   operatorCount: {
     source: "sui_graphql:stakingInner",
     dbColumn: "aggregated_daily.operator_count",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::StakingInner")) | .json.value.pools.size`,
-    decoding: "parseInt(result) — integer count of staking pools.",
+    jq: `.value.pools.size | tonumber`,
   },
   activeCount: {
     source: "sui_graphql:activeSet",
     dbColumn: "aggregated_daily.active_count",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::ActiveSet")) | .json.value.nodes | length`,
-    decoding: "Array length of active nodes.",
+    jq: `.value.nodes | length`,
   },
   committeeCount: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.committee_count",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.committee.members | length`,
-    decoding: "Array length of committee.members[].",
+    jq: `.value.committee.members | length`,
   },
   nShard: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.n_shard",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.committee.n_shards`,
-    decoding: "parseInt(result) — total shard count.",
+    jq: `.value.committee.n_shards | tonumber`,
   },
   totalStakedWAL: {
     source: "sui_graphql:activeSet",
     dbColumn: "aggregated_daily.total_staked_wal",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::ActiveSet")) | .json.value.total_stake`,
-    decoding:
-      "BigNumber(result) * 10^-9 — WAL has 9 decimals; result is base units.",
+    jq: `.value.total_stake | tonumber * 1e-9`,
   },
   averageStakedWAL: {
     source: "sui_graphql:activeSet",
     dbColumn: "aggregated_daily.average_staked_wal",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::ActiveSet")) | .json.value.nodes[].staked_amount`,
-    decoding:
-      "Decode each nodes[].staked_amount via BigNumber * 10^-9, union with systemInner committee.members[], then mean over the union (matches _.meanBy(uniqueNodeIds, 'stakedWal') in backfill-compute.ts).",
+    jq: `[(.value.nodes[] | .staked_amount | tonumber * 1e-9)] | add / length`,
   },
   storageUsageTB: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.storage_usage_tb",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.used_capacity_size`,
-    decoding:
-      "BigNumber(result) * 10^-12 — convert bytes to terabytes (Walrus capacity uses base units shifted by 12).",
+    jq: `.value.used_capacity_size | tonumber * 1e-12`,
   },
   totalStorageTB: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.total_storage_tb",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.total_capacity_size`,
-    decoding: "BigNumber(result) * 10^-12 — same convention as storageUsageTB.",
+    jq: `.value.total_capacity_size | tonumber * 1e-12`,
   },
   storagePrice: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.storage_price",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.storage_price_per_unit_size`,
-    decoding: "parseFloat(result) — on-chain raw unit (no decimal shift).",
+    jq: `.value.storage_price_per_unit_size | tonumber`,
   },
   writePrice: {
     source: "sui_graphql:systemInner",
     dbColumn: "aggregated_daily.write_price",
     perOperator: false,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.write_price_per_unit_size`,
-    decoding: "parseFloat(result) — on-chain raw unit (no decimal shift).",
+    jq: `.value.write_price_per_unit_size | tonumber`,
   },
   paidFeesUSD: {
     source: "defillama:walrus-protocol",
     dbColumn: "aggregated_daily.paid_fees_usd",
     perOperator: false,
-    extractPath: `.totalDataChart[] | select(.[0] == <unix_seconds_of_utc_day>) | .[1]`,
-    decoding:
-      "Numeric USD. If the exact unix_seconds is missing for the day, backfill falls back to the last entry's value (lastFee).",
+    jq: `.totalDataChart[] | select(.[0] == <unix>) | .[1]`,
   },
   "per_operator.stakedWAL": {
     source: "sui_graphql:activeSet",
-    dbColumn:
-      "operator_daily.staked_wal WHERE operator_id = <operatorId> AND timestamp = <date>",
+    dbColumn: `operator_daily.staked_wal[op=<op>,ts=<date>]`,
     perOperator: true,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::ActiveSet")) | .json.value.nodes[] | select(.node_id == "<operatorId>") | .staked_amount`,
-    decoding:
-      "BigNumber(result) * 10^-9. If the operator is only in committee.members[] but not in activeSet.nodes[], the DB value for stakedWAL will be 0 (matches backfill-compute.ts stakedWalMap lookup).",
+    jq: `.value.nodes[] | select(.node_id == "<op>") | .staked_amount | tonumber * 1e-9`,
   },
   "per_operator.weight": {
     source: "sui_graphql:systemInner",
-    dbColumn:
-      "operator_daily.weight WHERE operator_id = <operatorId> AND timestamp = <date>",
+    dbColumn: `operator_daily.weight[op=<op>,ts=<date>]`,
     perOperator: true,
-    extractPath: `${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.committee.members[] | select(.node_id == "<operatorId>") | .weight`,
-    decoding:
-      "parseInt(result) — weight equals shard count assigned to that operator. Operators not in committee.members[] get weight=0.",
+    jq: `.value.committee.members[] | select(.node_id == "<op>") | .weight | tonumber`,
   },
   "per_operator.weightPercentage": {
     source: "sui_graphql:systemInner",
-    dbColumn:
-      "operator_daily.weight_percentage WHERE operator_id = <operatorId> AND timestamp = <date>",
+    dbColumn: `operator_daily.weight_percentage[op=<op>,ts=<date>]`,
     perOperator: true,
-    extractPath: `(${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.committee.members[] | select(.node_id == "<operatorId>") | .weight) / (${MOVE_JSON_ROOT} | select(.type.repr | contains("::SystemStateInner")) | .json.value.committee.n_shards)`,
-    decoding:
-      "weight / n_shards. Not a percentage despite the name — it's a fraction in [0, 1].",
+    jq: `(.value.committee.members[] | select(.node_id == "<op>") | .weight | tonumber) / (.value.committee.n_shards | tonumber)`,
   },
 }
 
@@ -190,23 +166,22 @@ export interface ReferenceQueryContext {
   operatorId?: string
 }
 
-// Keeps full derivation detail (HTTP body, extract, decoding, DB column) for
-// per-row reproducibility but omits metric/source/checkpoint/date — those are
-// already their own CSV columns and don't need to be repeated in the body.
+// Compact single-line format: <http_call> :: <jq> :: db=<column>
+// Full query template + jq navigation prefix convention documented in /api/audit/queries.
 export const buildReferenceQuery = (ctx: ReferenceQueryContext): string => {
   const def = METRIC_DEFS[ctx.metric]
   if (!def) throw new Error(`Unknown audit metric: ${ctx.metric}`)
   const src = AUDIT_SOURCES[def.source]
 
-  const extract =
+  const jq =
     def.source === "defillama:walrus-protocol"
-      ? def.extractPath.replace(
-          "<unix_seconds_of_utc_day>",
+      ? def.jq.replace(
+          "<unix>",
           String(Math.floor(new Date(`${ctx.date}T00:00:00Z`).valueOf() / 1000))
         )
       : def.perOperator && ctx.operatorId
-        ? def.extractPath.replaceAll("<operatorId>", ctx.operatorId)
-        : def.extractPath
+        ? def.jq.replaceAll("<op>", ctx.operatorId)
+        : def.jq
 
   const httpCall = src.buildHttpCall({
     checkpoint: ctx.checkpoint ?? 0,
@@ -214,22 +189,10 @@ export const buildReferenceQuery = (ctx: ReferenceQueryContext): string => {
   })
 
   const dbColumn = def.dbColumn
-    .replace("<operatorId>", ctx.operatorId ?? "<operatorId>")
+    .replace("<op>", ctx.operatorId ?? "<op>")
     .replace("<date>", ctx.date)
 
-  return [
-    `# HTTP`,
-    httpCall,
-    ``,
-    `# Extract (jq)`,
-    extract,
-    ``,
-    `# Decode`,
-    def.decoding,
-    ``,
-    `# DB side`,
-    dbColumn,
-  ].join("\n")
+  return `${httpCall} :: ${jq} :: db=${dbColumn}`
 }
 
 export const buildNotes = (ctx: ReferenceQueryContext): string => {
