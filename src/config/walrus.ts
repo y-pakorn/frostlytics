@@ -1,12 +1,16 @@
 export const walrus = {
   staking: "0x10b9d30c28448939ce6c4d6c6e0ffce4a7f8a4ada8248bdad09ef8b70e4a3904",
   system: "0x2134d52768ea07e8c43570ef975eb3e4c27a39fa6396bef985b5abc58d03ddd2",
+  subsidies:
+    "0xb2ce8bd6e372ea93422a167b52d1ac367d080f67a6c4356334aca8e96ba0577a",
   pool: "0x23ec98c791548aad0712822afab68a2a8c2a548b346193873cc80eb2f66d5b5e",
   walToken:
     "0x356a26eb9e012a68958082340d4c4116e7f55615cf27affcff209cf0ae544f59::wal::WAL",
   stakedWal:
     "0xfdc88f7d7cf30afab2f82e8380d11ee8f70efb90e863d1de8616fae1bb09ea77::staked_wal::StakedWal",
   walrus: "0xfa65cb2d62f4d39e60346fb7d501c12538ca2bbc646eaa37ece2aec5f897814e",
+  walrusSubsidiesPackage:
+    "0x14b874da49e152d2b2910122330f7eb925d75bdb0a0f8e2c6b9b1162a5560a8c",
   suiNsRegistry:
     "0x0f08060ed5dfdaff5d38fecf4954310e840adb5eacbf69c5d155cd3e9a8e1653",
   suiNs: "0xd22b24490e0bae52676651b4f56660a5ff8022a2576e0089f79b3c88d44e08f0",
@@ -21,5 +25,7 @@ export const walrus = {
       "0x16f1f9fcdf5a746da423d1ad055d88f88b24a9272ca8afb4c0dcf074ae6c730a",
     activeSet:
       "0xac7d19db6d6b36f58736f9f923956d7d0a3d218b8225504a151b3f8c9aae1203",
+    subsidiesInner:
+      "0x3950c63a67981d8f79aa4a59e0670f50c8e9c42a4913f4aa1af30ea7eac935f8",
   },
 }
