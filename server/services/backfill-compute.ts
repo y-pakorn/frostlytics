@@ -88,6 +88,57 @@ export const getTransactionAffectedObject = async (
     .value()
 }
 
+// Direct object-state read at a given checkpoint. Doesn't depend on
+// transaction effects retention, so it works for old checkpoints where the
+// affecting tx has been pruned.
+export const getObjectAtCheckpoint = async (
+  objectId: string,
+  atCheckpoint: number
+): Promise<{ type: string; [k: string]: any } | null> => {
+  const data = await suiGraphQLClient.query({
+    query: graphql(`
+      query getObjectAtCheckpoint(
+        $objectId: SuiAddress!
+        $atCheckpoint: Int
+      ) {
+        object(address: $objectId, atCheckpoint: $atCheckpoint) {
+          asMoveObject {
+            contents {
+              type {
+                repr
+              }
+              json
+            }
+          }
+        }
+      }
+    `),
+    variables: { objectId, atCheckpoint },
+  })
+  const contents = (data.data?.object as any)?.asMoveObject?.contents
+  if (!contents) return null
+  return { type: contents.type.repr, ...(contents.json as any) }
+}
+
+// Single-object read with primary (tx-effects) and fallback (atCheckpoint) paths.
+// `typePattern` disambiguates when the affecting tx changed multiple objects.
+export const getObjectStateAt = async (
+  objectId: string,
+  checkpoint: number,
+  typePattern?: string
+): Promise<{ type: string; [k: string]: any } | null> => {
+  const affected = await getTransactionAffectedObject(objectId, checkpoint + 1)
+  const primary = typePattern
+    ? _.find(affected, (o: any) => o.type.includes(typePattern))
+    : affected[0]
+  if (primary) return primary as any
+
+  const direct = await getObjectAtCheckpoint(objectId, checkpoint)
+  if (!direct) return null
+  if (typePattern && !direct.type?.includes?.(typePattern)) return null
+  return direct
+}
+
 export const getCheckpoints = async (fromCheckpoint?: number) => {
   const data = await suiGraphQLClient.query({
     query: graphql(`
@@ -180,12 +231,12 @@ export const computeDailyMetrics = async (
   }
   const tmr = date.add(1, "day").valueOf()
   const checkpoint = opts?.checkpoint ?? (await findCheckpointBefore(tmr))
-  const systemInnerEffected = await getTransactionAffectedObject(
-    walrus.backfill.systemInner,
-    checkpoint + 1
-  )
-  const systemInner = _.find(systemInnerEffected, (o) =>
-    o.type.includes("::SystemStateInner")
+  const systemInner = (
+    await getObjectStateAt(
+      walrus.backfill.systemInner,
+      checkpoint,
+      "::SystemStateInner"
+    )
   )?.value
   if (!systemInner) {
     console.log("systemInner not found")
@@ -203,12 +254,12 @@ export const computeDailyMetrics = async (
   const storagePrice = parseFloat(systemInner?.storage_price_per_unit_size)
   const writePrice = parseFloat(systemInner?.write_price_per_unit_size)
 
-  const stakingInnerEffected = await getTransactionAffectedObject(
-    walrus.backfill.stakingInner,
-    checkpoint + 1
-  )
-  const stakingInner = _.find(stakingInnerEffected, (o) =>
-    o.type.includes("::StakingInner")
+  const stakingInner = (
+    await getObjectStateAt(
+      walrus.backfill.stakingInner,
+      checkpoint,
+      "::StakingInner"
+    )
   )?.value
   if (!stakingInner) {
     console.log("stakingInner not found")
@@ -216,12 +267,12 @@ export const computeDailyMetrics = async (
   }
   const operatorCount = parseInt(stakingInner?.pools.size)
 
-  const activeSetEffected = await getTransactionAffectedObject(
-    walrus.backfill.activeSet,
-    checkpoint + 1
-  )
-  const activeSet = _.find(activeSetEffected, (o) =>
-    o.type.includes("::ActiveSet")
+  const activeSet = (
+    await getObjectStateAt(
+      walrus.backfill.activeSet,
+      checkpoint,
+      "::ActiveSet"
+    )
   )?.value
   if (!activeSet) {
     console.log("activeSet not found")
