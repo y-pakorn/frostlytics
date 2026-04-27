@@ -87,3 +87,23 @@ export const auditLog = pgTable(
     index("idx_al__metric_timestamp").on(table.metric, table.timestamp),
   ]
 )
+
+export const grossProtocolRevenue = pgTable(
+  "gross_protocol_revenue",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    timestamp: timestamp("timestamp").notNull().unique(),
+    fromCheckpoint: integer("from_checkpoint").notNull(),
+    toCheckpoint: integer("to_checkpoint").notNull(),
+    fromEpoch: integer("from_epoch").notNull(),
+    toEpoch: integer("to_epoch").notNull(),
+    grossInflowWAL: doublePrecision("gross_inflow_wal").notNull(),
+    poolDrainWAL: doublePrecision("pool_drain_wal"),
+    poolFundingWAL: doublePrecision("pool_funding_wal"),
+    fixedRateSubsidyWAL: doublePrecision("fixed_rate_subsidy_wal"),
+    usageSubsidyWAL: doublePrecision("usage_subsidy_wal"),
+    userFeeWAL: doublePrecision("user_fee_wal"),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (table) => [index("idx_gpr__timestamp").on(table.timestamp)]
+)
