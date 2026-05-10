@@ -19,10 +19,14 @@ export const walrus = {
   denominator: 10 ** 9,
   minimumStaking: 1,
   backfill: {
+    // old systemInner:
+    //   "0xe7d356f61c74ad511214bb69dc9e38f7cc364c085b007c6ea81461fc8ebe7dfe",
     systemInner:
-      "0xe7d356f61c74ad511214bb69dc9e38f7cc364c085b007c6ea81461fc8ebe7dfe",
+      "0x0b2d4076d3a0b82a632144e835cd972527b185bda9d55011a9cc38fe557a475d",
+    // old stakingInner:
+    //   "0x16f1f9fcdf5a746da423d1ad055d88f88b24a9272ca8afb4c0dcf074ae6c730a",
     stakingInner:
-      "0x16f1f9fcdf5a746da423d1ad055d88f88b24a9272ca8afb4c0dcf074ae6c730a",
+      "0xa1d6719d0447c536a41688d5762449782bed731ac708659d98f9bff668b555b3",
     activeSet:
       "0xac7d19db6d6b36f58736f9f923956d7d0a3d218b8225504a151b3f8c9aae1203",
     subsidiesInner:
