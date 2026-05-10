@@ -1,4 +1,17 @@
 {
-  "site_name": "My Walrus Site",
-  "object_id": "0x82acefdbbc76cd0ed347c5552acaab8681efb0bc57a0d1dab5982c1c38fffd42"
+  "site_name": "Frostlytics",
+  "object_id": "0x82acefdbbc76cd0ed347c5552acaab8681efb0bc57a0d1dab5982c1c38fffd42",
+  "metadata": {
+    "link": "https://frostlytics.wal.app",
+    "image_url": "https://frostlytics.wal.app/opengraph-image.png",
+    "description": "All-in-one analytics for Walrus: APY, staking, operator, fees, and supply.",
+    "creator": "Frostlytics"
+  },
+  "routes": {
+    "/*": "/index.html",
+    "/profile/*": "/profile/index.html",
+    "/operator/*": "/operator/index.html",
+    "/faq/*": "/faq/index.html",
+    "/reward-calculator/*": "/reward-calculator/index.html"
+  }
 }
