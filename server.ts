@@ -11,6 +11,7 @@ import { delegatorsRoutes } from "./server/routes/delegators"
 import { delegationsRoutes } from "./server/routes/delegations"
 import { historicalDataRoutes } from "./server/routes/historical-data"
 import { protocolHealthRoutes } from "./server/routes/protocol-health"
+import { operatorHistoryRoutes } from "./server/routes/operator-history"
 import { ogRoutes } from "./server/routes/og"
 import { sitemapRoutes } from "./server/routes/sitemap"
 
@@ -41,6 +42,7 @@ const app = new Elysia({ adapter: node() })
           { name: "Delegations", description: "Staking/unstaking event history per operator" },
           { name: "Historical Data", description: "Daily aggregated network snapshots from the backfill pipeline" },
           { name: "Protocol Health", description: "Network-wide health metrics: participation, economics, tokenomics, decentralization" },
+          { name: "Operator History", description: "Per-operator daily history of stake, weight, and estimated earnings" },
           { name: "Backfill Logs", description: "Ingestion pipeline execution logs for auditing data continuity" },
           { name: "Audit", description: "DB-vs-on-chain reconciliation time series with per-row reference queries" },
           { name: "Open Graph Images", description: "Dynamic OG image generation for social media link previews" },
@@ -56,6 +58,7 @@ const app = new Elysia({ adapter: node() })
   .use(delegationsRoutes)
   .use(historicalDataRoutes)
   .use(protocolHealthRoutes)
+  .use(operatorHistoryRoutes)
   .use(ogRoutes)
   .use(sitemapRoutes)
   .listen(port)

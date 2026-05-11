@@ -25,6 +25,19 @@ export type ProtocolHealthRevenue = {
   userFeeWAL: number | null
   fixedRateSubsidyWAL: number | null
   usageSubsidyWAL: number | null
+  poolFundingWAL: number | null
+  poolDrainWAL: number | null
+}
+
+export type ProtocolHealthMover = {
+  operatorId: string
+  currentWeightPct: number
+  weightPctChange: number
+}
+
+export type ProtocolHealthMovers = {
+  gainers: ProtocolHealthMover[]
+  losers: ProtocolHealthMover[]
 }
 
 export type ProtocolHealthDecentralization = {
@@ -52,6 +65,7 @@ export type ProtocolHealthResponse = {
   revenue: ProtocolHealthRevenue[]
   decentralization: ProtocolHealthDecentralization[]
   churn: ProtocolHealthChurn[]
+  movers: ProtocolHealthMovers
 }
 
 export const useProtocolHealth = () => {

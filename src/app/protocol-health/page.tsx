@@ -8,12 +8,15 @@ import { formatter } from "@/lib/formatter"
 import { ActiveStakeRatioCard } from "./_components/active-stake-ratio-card"
 import { CentralizationRiskCard } from "./_components/centralization-risk-card"
 import { HeroKpi } from "./_components/hero-kpi"
+import { MoversShakersCard } from "./_components/movers-shakers-card"
+import { NetPoolFlowCard } from "./_components/net-pool-flow-card"
 import { NetworkCapacityCard } from "./_components/network-capacity-card"
 import { NodeParticipationCard } from "./_components/node-participation-card"
 import { OperatorChurnCard } from "./_components/operator-churn-card"
 import { OperatorProfitabilityCard } from "./_components/operator-profitability-card"
 import { PriceVolatilityCard } from "./_components/price-volatility-card"
 import { ProtocolRevenueCard } from "./_components/protocol-revenue-card"
+import { RevenueCompositionCard } from "./_components/revenue-composition-card"
 import { SectionHeading } from "./_components/section-heading"
 import { StakeDistributionEqualityCard } from "./_components/stake-distribution-equality-card"
 import { StakeStorageCorrelationCard } from "./_components/stake-storage-correlation-card"
@@ -38,6 +41,7 @@ export default function ProtocolHealthPage() {
   const revenue = data?.revenue ?? []
   const decentralization = data?.decentralization ?? []
   const churn = data?.churn ?? []
+  const movers = data?.movers
 
   const hero = useMemo(() => {
     const latestDaily = daily[daily.length - 1]
@@ -59,6 +63,13 @@ export default function ProtocolHealthPage() {
       (a, c) => a + c.joined - c.exited,
       0
     )
+    // Cumulative lifetime revenue
+    const cumulativeRevenue: number[] = []
+    let runningTotal = 0
+    for (const r of revenue) {
+      runningTotal += r.grossInflowWAL ?? 0
+      cumulativeRevenue.push(runningTotal)
+    }
     return {
       latestDaily,
       latestDecent,
@@ -66,12 +77,15 @@ export default function ProtocolHealthPage() {
       tvlDelta30,
       nakDelta30,
       netChange30,
+      lifetimeRevenue: runningTotal,
+      revenueEpochsTracked: revenue.length,
       sparklineActive: daily.slice(-30).map((d) => d.activeCount),
       sparklineTVL: daily.slice(-30).map((d) => d.totalStakedWAL),
       sparklineNak: decentralization.slice(-30).map((d) => d.nakamoto33),
       sparklineChurn: last30Epochs.map((c) => c.joined - c.exited),
+      sparklineRevenue: cumulativeRevenue.slice(-30),
     }
-  }, [daily, decentralization, churn])
+  }, [daily, decentralization, churn, revenue])
 
   return (
     <div className="space-y-8">
@@ -90,7 +104,7 @@ export default function ProtocolHealthPage() {
       </div>
 
       {/* Hero KPI strip */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <HeroKpi
           label="Active Operators"
           value={
@@ -169,6 +183,22 @@ export default function ProtocolHealthPage() {
           }
           loading={isLoading}
         />
+        <HeroKpi
+          label="Total Protocol Revenue"
+          value={
+            hero.revenueEpochsTracked > 0
+              ? `${formatter.numberReadable(hero.lifetimeRevenue, 2)} WAL`
+              : "—"
+          }
+          context={
+            hero.revenueEpochsTracked > 0
+              ? `since launch · ${formatter.number(hero.revenueEpochsTracked, 0)} epochs`
+              : null
+          }
+          sparkline={hero.sparklineRevenue}
+          trendColor="var(--color-accent-purple-light)"
+          loading={isLoading}
+        />
       </div>
 
       {/* Section 1: 2 cards (wider for emphasis) */}
@@ -199,6 +229,8 @@ export default function ProtocolHealthPage() {
             loading={isLoading}
           />
           <SubsidyRelianceCard revenue={revenue} range={range} loading={isLoading} />
+          <RevenueCompositionCard revenue={revenue} range={range} loading={isLoading} />
+          <NetPoolFlowCard revenue={revenue} range={range} loading={isLoading} />
         </div>
       </section>
 
@@ -244,6 +276,7 @@ export default function ProtocolHealthPage() {
             loading={isLoading}
           />
           <OperatorChurnCard churn={churn} range={range} loading={isLoading} />
+          <MoversShakersCard movers={movers} loading={isLoading} />
         </div>
       </section>
     </div>

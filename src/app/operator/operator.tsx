@@ -15,6 +15,9 @@ import { GradientBorderCard } from "@/components/gradient-border-card"
 import { SafeImage } from "@/components/safe-image"
 import { StakeDialog } from "@/components/stake-dialog"
 import { useOperatorMetadatas, useOperatorWithSharesAndBaseApy } from "@/hooks"
+import { useOperatorHistory } from "@/hooks/use-operator-history"
+
+import { OperatorHistorySection } from "./_components/operator-history-section"
 
 const OperatorDelegators = lazy(() =>
   import("./delegators").then((m) => ({ default: m.OperatorDelegators }))
@@ -55,6 +58,8 @@ export function Operator({
     id,
   })
 
+  const { data: historyMeta } = useOperatorHistory(id)
+
   const [tab, setTab] = useState<(typeof tabs)[number]["label"]>(
     tabs.find((t) => t.label === defaultTab)?.label || tabs[0].label
   )
@@ -77,6 +82,12 @@ export function Operator({
                 <Skeleton className="inline-block h-7 w-40" />
               )}
             </h1>
+            {historyMeta?.firstEpoch != null && historyMeta?.tenureEpochs ? (
+              <div className="text-tertiary text-xs font-medium">
+                Active since Ep {historyMeta.firstEpoch} ·{" "}
+                {formatter.number(historyMeta.tenureEpochs, 0)} epochs
+              </div>
+            ) : null}
             <div className="flex flex-wrap items-center gap-1">
               <p className="font-mono text-sm font-medium sm:text-base">
                 {id.slice(0, 8)}...
@@ -170,6 +181,9 @@ export function Operator({
           ))}
         </div>
       </GradientBorderCard>
+
+      <OperatorHistorySection operatorId={id} />
+
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="w-full shrink-0 space-y-2 text-sm font-medium lg:w-[330px]">
           <h2 className="font-bold">Info</h2>

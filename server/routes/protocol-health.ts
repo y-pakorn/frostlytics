@@ -32,6 +32,19 @@ type RevenueRow = {
   userFeeWAL: number | null
   fixedRateSubsidyWAL: number | null
   usageSubsidyWAL: number | null
+  poolFundingWAL: number | null
+  poolDrainWAL: number | null
+}
+
+type MoverEntry = {
+  operatorId: string
+  currentWeightPct: number
+  weightPctChange: number
+}
+
+type Movers = {
+  gainers: MoverEntry[]
+  losers: MoverEntry[]
 }
 
 type DecentralizationRow = {
@@ -116,6 +129,8 @@ const _getProtocolHealth = async () => {
     userFeeWAL: r.userFeeWAL,
     fixedRateSubsidyWAL: r.fixedRateSubsidyWAL,
     usageSubsidyWAL: r.usageSubsidyWAL,
+    poolFundingWAL: r.poolFundingWAL,
+    poolDrainWAL: r.poolDrainWAL,
   }))
 
   // Group operator_daily by day → decentralization metrics.
@@ -212,7 +227,49 @@ const _getProtocolHealth = async () => {
     prevIds = bucket.ids
   }
 
-  return { daily, revenue, decentralization, churn }
+  // Movers & Shakers: per-operator weight_percentage change over last ~30 epochs.
+  // Re-iterate operatorRows organized by operator, finding their latest and
+  // ~30-epoch-ago weight_percentage values.
+  const perOp = new Map<
+    string,
+    Array<{ epoch: number; weightPct: number }>
+  >()
+  for (const row of operatorRows) {
+    if (row.epoch == null || row.weightPercentage == null) continue
+    let arr = perOp.get(row.operatorId)
+    if (!arr) {
+      arr = []
+      perOp.set(row.operatorId, arr)
+    }
+    arr.push({ epoch: row.epoch, weightPct: row.weightPercentage })
+  }
+  const moverEntries: MoverEntry[] = []
+  perOp.forEach((points, operatorId) => {
+    if (points.length === 0) return
+    points.sort((a, b) => a.epoch - b.epoch)
+    const latest = points[points.length - 1]
+    // Pick a baseline ~30 epochs back (or earliest available if shorter).
+    const baselineEpoch = latest.epoch - 30
+    let baseline = points[0]
+    for (const p of points) {
+      if (p.epoch <= baselineEpoch) baseline = p
+      else break
+    }
+    moverEntries.push({
+      operatorId,
+      currentWeightPct: latest.weightPct,
+      weightPctChange: latest.weightPct - baseline.weightPct,
+    })
+  })
+  const sortedByDelta = [...moverEntries].sort(
+    (a, b) => b.weightPctChange - a.weightPctChange
+  )
+  const movers: Movers = {
+    gainers: sortedByDelta.slice(0, 3),
+    losers: sortedByDelta.slice(-3).reverse(),
+  }
+
+  return { daily, revenue, decentralization, churn, movers }
 }
 
 const getProtocolHealth = memoizee(_getProtocolHealth, {
@@ -260,6 +317,8 @@ export const protocolHealthRoutes = new Elysia({
             userFeeWAL: t.Union([t.Number(), t.Null()]),
             fixedRateSubsidyWAL: t.Union([t.Number(), t.Null()]),
             usageSubsidyWAL: t.Union([t.Number(), t.Null()]),
+            poolFundingWAL: t.Union([t.Number(), t.Null()]),
+            poolDrainWAL: t.Union([t.Number(), t.Null()]),
           })
         ),
         decentralization: t.Array(
@@ -284,6 +343,22 @@ export const protocolHealthRoutes = new Elysia({
             activeOperators: t.Number(),
           })
         ),
+        movers: t.Object({
+          gainers: t.Array(
+            t.Object({
+              operatorId: t.String(),
+              currentWeightPct: t.Number(),
+              weightPctChange: t.Number(),
+            })
+          ),
+          losers: t.Array(
+            t.Object({
+              operatorId: t.String(),
+              currentWeightPct: t.Number(),
+              weightPctChange: t.Number(),
+            })
+          ),
+        }),
       }),
     },
   }
