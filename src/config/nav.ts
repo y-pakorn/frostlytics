@@ -1,4 +1,5 @@
 import {
+  Activity,
   Gem,
   LayoutDashboard,
   MessageCircleQuestionMark,
@@ -21,6 +22,11 @@ export const navItems = [
         label: "Profile",
         icon: User,
         href: "/profile",
+      },
+      {
+        label: "Protocol Health",
+        icon: Activity,
+        href: "/protocol-health",
       },
       {
         label: "Reward Calculator",
