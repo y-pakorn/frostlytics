@@ -29,6 +29,8 @@ import { PaginationManual } from "@/components/pagination"
 import { useDelegations } from "@/hooks"
 import { DelegationResponse } from "@/types"
 
+import { DelegationRowCard } from "./_components/delegation-row-card"
+
 const columns = [
   {
     header: "Address",
@@ -160,8 +162,8 @@ export function OperatorDelegations({
   })
 
   return (
-    <div>
-      <Table>
+    <div className="space-y-2">
+      <Table className="hidden md:table">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -214,7 +216,25 @@ export function OperatorDelegations({
           )}
         </TableBody>
       </Table>
-      <div className="flex items-center justify-between">
+
+      {/* Mobile card list */}
+      <div className="space-y-2 md:hidden">
+        {isPending
+          ? range(8).map((i) => (
+              <Skeleton key={i} className="h-[140px] w-full" />
+            ))
+          : table.getRowModel().rows.length
+            ? table.getRowModel().rows.map((row) => (
+                <DelegationRowCard key={row.id} row={row.original} />
+              ))
+            : (
+                <div className="text-tertiary py-8 text-center text-sm">
+                  No results.
+                </div>
+              )}
+      </div>
+
+      <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div className="text-tertiary text-sm font-medium">
           Delegation data is provided by{" "}
           <Link href={links.blockberry} target="_blank" className="underline">

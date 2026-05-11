@@ -64,69 +64,71 @@ export function Operator({
 
   return (
     <div className="space-y-4">
-      <GradientBorderCard className="flex items-center gap-4">
-        <SafeImage
-          src={operatorMetadata?.imageUrl}
-          alt={operator?.name ?? id}
-          className="size-16 shrink-0 rounded-full"
-        />
-        <div className="space-y-1">
-          <h1 className="text-foreground text-2xl font-bold">
-            {operator?.name ?? (
-              <Skeleton className="inline-block h-7 w-40" />
-            )}
-          </h1>
-          <div className="flex items-center gap-1">
-            <p className="font-mono font-medium">
-              {id.slice(0, 8)}...
-              {id.slice(-8)}
-            </p>
-            <Button
-              variant="ghost"
-              size="iconXs"
-              onClick={() => {
-                navigator.clipboard.writeText(id)
-                toast.success("Copied to clipboard")
-                track("CopyToClipboard", { contentType: "operatorId" })
-              }}
-            >
-              <Copy />
-            </Button>
-            <Link
-              href={links.object(id)}
-              target="_blank"
-              onClick={() =>
-                track("ExternalLinkClick", {
-                  url: links.object(id),
-                  label: "SuiScan Operator",
-                })
-              }
-            >
-              <Button variant="ghost" size="iconXs">
-                <ExternalLink />
+      <GradientBorderCard className="flex flex-col gap-4 sm:flex-row sm:items-center">
+        <div className="flex items-center gap-4">
+          <SafeImage
+            src={operatorMetadata?.imageUrl}
+            alt={operator?.name ?? id}
+            className="size-16 shrink-0 rounded-full"
+          />
+          <div className="min-w-0 space-y-1">
+            <h1 className="text-foreground text-xl font-bold sm:text-2xl">
+              {operator?.name ?? (
+                <Skeleton className="inline-block h-7 w-40" />
+              )}
+            </h1>
+            <div className="flex flex-wrap items-center gap-1">
+              <p className="font-mono text-sm font-medium sm:text-base">
+                {id.slice(0, 8)}...
+                {id.slice(-8)}
+              </p>
+              <Button
+                variant="ghost"
+                size="iconXs"
+                onClick={() => {
+                  navigator.clipboard.writeText(id)
+                  toast.success("Copied to clipboard")
+                  track("CopyToClipboard", { contentType: "operatorId" })
+                }}
+              >
+                <Copy />
               </Button>
-            </Link>
-          </div>
-          <div className="flex items-center gap-2">
-            {operator ? (
-              <StakeDialog operator={operator}>
-                <Button variant="purple" size="sm" className="w-[120px]">
+              <Link
+                href={links.object(id)}
+                target="_blank"
+                onClick={() =>
+                  track("ExternalLinkClick", {
+                    url: links.object(id),
+                    label: "SuiScan Operator",
+                  })
+                }
+              >
+                <Button variant="ghost" size="iconXs">
+                  <ExternalLink />
+                </Button>
+              </Link>
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              {operator ? (
+                <StakeDialog operator={operator}>
+                  <Button variant="purple" size="sm" className="flex-1 sm:w-[120px] sm:flex-initial">
+                    Stake
+                  </Button>
+                </StakeDialog>
+              ) : (
+                <Button variant="purple" size="sm" className="flex-1 sm:w-[120px] sm:flex-initial" disabled>
                   Stake
                 </Button>
-              </StakeDialog>
-            ) : (
-              <Button variant="purple" size="sm" className="w-[120px]" disabled>
-                Stake
-              </Button>
-            )}
-            <Link href="/profile">
-              <Button variant="outline" size="sm" className="w-[120px]">
-                Manage
-              </Button>
-            </Link>
+              )}
+              <Link href="/profile" className="flex-1 sm:flex-initial">
+                <Button variant="outline" size="sm" className="w-full sm:w-[120px]">
+                  Manage
+                </Button>
+              </Link>
+            </div>
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-4 rounded-2xl bg-black/20 p-4">
+        <div className="grid grid-cols-2 gap-3 rounded-2xl bg-black/20 p-4 sm:ml-auto sm:flex sm:items-center sm:gap-4">
           {[
             {
               label: "Total Staked",
@@ -156,11 +158,11 @@ export function Operator({
             },
           ].map(({ label, value, isLoading }, i) => (
             <div key={i} className="space-y-1">
-              <div>{label}</div>
+              <div className="text-xs sm:text-sm">{label}</div>
               {isLoading ? (
                 <Skeleton className="h-7 w-18" />
               ) : (
-                <div className="text-foreground text-lg font-medium">
+                <div className="text-foreground text-base font-medium sm:text-lg">
                   {value}
                 </div>
               )}
@@ -168,8 +170,8 @@ export function Operator({
           ))}
         </div>
       </GradientBorderCard>
-      <div className="flex gap-6">
-        <div className="w-[330px] shrink-0 space-y-2 text-sm font-medium">
+      <div className="flex flex-col gap-6 lg:flex-row">
+        <div className="w-full shrink-0 space-y-2 text-sm font-medium lg:w-[330px]">
           <h2 className="font-bold">Info</h2>
           <div className="space-y-2 rounded-2xl bg-black/20 p-4">
             {[
@@ -314,12 +316,13 @@ export function Operator({
             ))}
           </div>
         </div>
-        <div className="flex-1 space-y-4">
-          <div className="flex items-center gap-2">
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4">
             {tabs.map((t) => (
               <Button
                 key={t.label}
                 variant={t.label === tab ? "active" : "inactive"}
+                className="shrink-0"
                 onClick={() => {
                   setTab(t.label)
                   track("TabChange", { tabName: t.label, operatorId: id })

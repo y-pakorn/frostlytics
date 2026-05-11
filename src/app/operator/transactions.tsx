@@ -27,6 +27,8 @@ import { PaginationLeftRight } from "@/components/pagination"
 import { useOperatorTransactions } from "@/hooks"
 import { OperatorTransaction } from "@/types"
 
+import { TransactionRowCard } from "./_components/transaction-row-card"
+
 const columns = [
   {
     header: "Transaction",
@@ -146,8 +148,8 @@ export function OperatorTransactions({
   })
 
   return (
-    <div>
-      <Table>
+    <div className="space-y-2">
+      <Table className="hidden md:table">
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
@@ -200,6 +202,24 @@ export function OperatorTransactions({
           )}
         </TableBody>
       </Table>
+
+      {/* Mobile card list */}
+      <div className="space-y-2 md:hidden">
+        {isFetching
+          ? range(8).map((i) => (
+              <Skeleton key={i} className="h-[160px] w-full" />
+            ))
+          : table.getRowModel().rows.length
+            ? table.getRowModel().rows.map((row) => (
+                <TransactionRowCard key={row.id} tx={row.original} />
+              ))
+            : (
+                <div className="text-tertiary py-8 text-center text-sm">
+                  No results.
+                </div>
+              )}
+      </div>
+
       <PaginationLeftRight
         currentPageIndex={pageIndex}
         onPrev={() => setPageIndex((p) => p - 1)}

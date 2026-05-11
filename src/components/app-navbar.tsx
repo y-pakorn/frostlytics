@@ -25,6 +25,7 @@ import {
 } from "./ui/command"
 import { Input } from "./ui/input"
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover"
+import { SidebarTrigger } from "./ui/sidebar"
 import { WalletButton } from "./wallet-button"
 
 const NAV_HEIGHT = "64px"
@@ -114,16 +115,28 @@ export function AppNavbar() {
       }}
     >
       <div className="z-10 container flex h-full shrink-0 items-center gap-2">
-        <h1 className="font-bold">{label}</h1>
+        <SidebarTrigger className="md:hidden" />
+        <h1 className="min-w-0 truncate font-bold">{label}</h1>
         <div className="flex-1" />
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
-            <div className="relative md:w-[320px]">
-              <Input placeholder="Search" className="pl-10" readOnly />
-              <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+            <div className="relative">
+              {/* Mobile: icon-only search button */}
+              <button
+                type="button"
+                aria-label="Search"
+                className="bg-input/60 text-muted-foreground hover:text-foreground flex size-9 items-center justify-center rounded-md border md:hidden"
+              >
+                <Search className="size-4" />
+              </button>
+              {/* Tablet+: full search input */}
+              <div className="relative hidden md:block md:w-[320px]">
+                <Input placeholder="Search" className="pl-10" readOnly />
+                <Search className="text-muted-foreground pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+              </div>
             </div>
           </PopoverTrigger>
-          <PopoverContent className="w-[320px] p-0">
+          <PopoverContent className="w-[min(320px,calc(100vw-2rem))] p-0">
             <Command>
               <CommandInput
                 placeholder="Search operators or enter wallet address"

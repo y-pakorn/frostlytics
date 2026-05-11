@@ -72,6 +72,8 @@ import {
 } from "@/hooks"
 import { StakedWalWithStatus } from "@/types"
 
+import { StakingRowCard } from "./_components/staking-row-card"
+
 export function Profile({
   address,
   readOnly = false,
@@ -294,48 +296,49 @@ export function Profile({
     <div className="space-y-6">
       <GradientBorderCard>
         <div className="space-y-3">
-          <div className="flex items-center gap-2">
-            <img
-              src={blo(address as any)}
-              className="size-12 shrink-0 rounded-full"
-            />
-            <div className="break-all">
-              <h1 className="text-foreground line-clamp-1 text-2xl font-medium">
-                {name || `${address.slice(0, 6)}...${address.slice(-4)}`}
-              </h1>
-              <div className="flex items-center gap-1">
-                <p className="line-clamp-1 font-mono text-sm">
-                  {address.slice(0, 10)}...{address.slice(-10)}
-                </p>
-                <Button
-                  variant="ghost"
-                  size="iconXs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(address)
-                    toast.success("Address copied to clipboard")
-                    track("CopyToClipboard", { contentType: "walletAddress" })
-                  }}
-                >
-                  <Copy />
-                </Button>
-                <Link
-                  href={links.account(address)}
-                  target="_blank"
-                  onClick={() =>
-                    track("ExternalLinkClick", {
-                      url: links.account(address),
-                      label: "SuiScan Profile",
-                    })
-                  }
-                >
-                  <Button variant="ghost" size="iconXs">
-                    <ExternalLink />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
+            <div className="flex items-center gap-2">
+              <img
+                src={blo(address as any)}
+                className="size-12 shrink-0 rounded-full"
+              />
+              <div className="min-w-0 break-all">
+                <h1 className="text-foreground line-clamp-1 text-xl font-medium sm:text-2xl">
+                  {name || `${address.slice(0, 6)}...${address.slice(-4)}`}
+                </h1>
+                <div className="flex items-center gap-1">
+                  <p className="line-clamp-1 font-mono text-xs sm:text-sm">
+                    {address.slice(0, 10)}...{address.slice(-10)}
+                  </p>
+                  <Button
+                    variant="ghost"
+                    size="iconXs"
+                    onClick={() => {
+                      navigator.clipboard.writeText(address)
+                      toast.success("Address copied to clipboard")
+                      track("CopyToClipboard", { contentType: "walletAddress" })
+                    }}
+                  >
+                    <Copy />
                   </Button>
-                </Link>
+                  <Link
+                    href={links.account(address)}
+                    target="_blank"
+                    onClick={() =>
+                      track("ExternalLinkClick", {
+                        url: links.account(address),
+                        label: "SuiScan Profile",
+                      })
+                    }
+                  >
+                    <Button variant="ghost" size="iconXs">
+                      <ExternalLink />
+                    </Button>
+                  </Link>
+                </div>
               </div>
             </div>
-            <div className="flex-1" />
-            <div className="flex items-center gap-2 rounded-lg bg-black/20 p-2">
+            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-black/20 p-2 sm:ml-auto">
               <img
                 src={tier.imageUrl}
                 alt={tier.label}
@@ -376,7 +379,7 @@ export function Profile({
               </Button>
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             {[
               {
                 icon: Wallet,
@@ -431,7 +434,7 @@ export function Profile({
           <div className="mt-0.5">{stakedWalWithStatus?.length || 0}</div>
         </div>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2">
         {[
           {
             label: "All",
@@ -479,8 +482,8 @@ export function Profile({
             </Button>
           )
         })}
-        <div className="flex-1" />
-        <div className="relative md:w-[330px]">
+        <div className="hidden flex-1 md:block" />
+        <div className="relative order-last w-full md:order-none md:w-[330px]">
           <Input
             placeholder="Enter Operator Name"
             className="pl-10"
@@ -513,7 +516,8 @@ export function Profile({
         </WithdrawDialog>
       </div>
       {stakedWalWithStatus?.length !== 0 ? (
-        <Table className="flex-1">
+        <>
+        <Table className="hidden flex-1 md:table">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -588,6 +592,26 @@ export function Profile({
                 ))}
           </TableBody>
         </Table>
+
+        {/* Mobile card list */}
+        <div className="space-y-2 md:hidden">
+          {!stakedWalWithStatus
+            ? range(5).map((i) => (
+                <Skeleton key={i} className="h-[220px] w-full" />
+              ))
+            : table.getRowModel().rows.map((row) => (
+                <StakingRowCard
+                  key={row.id}
+                  stakedWal={row.original}
+                  operator={validatorMap[row.original.nodeId]}
+                  estimatedReward={
+                    estimatedReward?.rewards[row.original.id] || 0
+                  }
+                  readOnly={readOnly}
+                />
+              ))}
+        </div>
+        </>
       ) : (
         <div className="text-disabled flex h-[320px] flex-col items-center justify-center space-y-2.5 text-center font-medium">
           <div>

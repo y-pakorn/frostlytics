@@ -26,7 +26,7 @@ export function SectionHeading({
             <Info className="size-4" />
           </button>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[280px] text-left">
+        <TooltipContent className="max-w-[min(280px,calc(100vw-2rem))] text-left">
           {description}
         </TooltipContent>
       </Tooltip>

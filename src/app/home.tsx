@@ -73,6 +73,8 @@ import { StakeDialog } from "@/components/stake-dialog"
 import { useFullOperators, useStakedWal, useSystem } from "@/hooks"
 import { HistoricalData } from "@/types"
 
+import { OperatorRowCard } from "./_components/operator-row-card"
+
 const operatorTypeFilters = [
   {
     label: "All Operators",
@@ -287,8 +289,8 @@ export default function Home({
   return (
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-4 md:flex-row">
-        <CircleCountdown className="size-[256px] shrink-0" />
-        <div className="shrink-0 space-y-2">
+        <CircleCountdown className="size-[280px] shrink-0" />
+        <div className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 md:flex md:w-auto md:shrink-0 md:flex-col md:gap-2">
           <GradientBorderCard className="space-y-1">
             <div>Average Staking APY%</div>
             <div className="flex items-center justify-between gap-2">
@@ -321,7 +323,7 @@ export default function Home({
                     label: "APY%",
                   },
                 }}
-                className="h-[56px] w-[83px]"
+                className="h-[56px] w-full max-w-[83px]"
               >
                 <LineChart
                   data={fullOperators?.filter((o) => o.apyWithCommission > 0)}
@@ -466,17 +468,9 @@ export default function Home({
           </ChartContainer>
         </GradientBorderCard>
       </div>
-      <div className="flex items-center gap-2">
-        <Button variant="active" size="sm">
-          Staking
-        </Button>
-        <Button disabled variant="inactive" size="sm">
-          Ecosystem
-        </Button>
-      </div>
       <div className="space-y-6">
-        <div className="flex items-center gap-2">
-          <div className="shrink-0 space-y-2">
+        <div className="flex flex-col gap-2 md:flex-row md:items-center">
+          <div className="space-y-2 md:shrink-0">
             <GradientBorderCard className="space-y-1">
               <div>Shards</div>
               {system ? (
@@ -488,8 +482,8 @@ export default function Home({
               )}
               <div>Individual Data Partitions</div>
             </GradientBorderCard>
-            <div className="flex items-center gap-2">
-              <GradientBorderCard className="space-y-1">
+            <div className="flex items-stretch gap-2">
+              <GradientBorderCard className="flex-1 space-y-1">
                 <div>Storage Price</div>
                 {system ? (
                   <div className="text-foreground text-base font-bold">
@@ -500,7 +494,7 @@ export default function Home({
                 )}
                 <div>Frost/MiB/Epoch</div>
               </GradientBorderCard>
-              <GradientBorderCard className="space-y-1">
+              <GradientBorderCard className="flex-1 space-y-1">
                 <div>Write Price</div>
                 {system ? (
                   <div className="text-foreground text-base font-bold">
@@ -646,13 +640,13 @@ export default function Home({
             </ChartContainer>
           </GradientBorderCard>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="font-semibold">All Operators</div>
           <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
             {table.getRowCount()}
           </div>
-          <div className="flex-1" />
-          <div className="relative md:w-[330px]">
+          <div className="hidden flex-1 md:block" />
+          <div className="relative order-last w-full md:order-none md:w-[330px]">
             <Input
               className="h-9 pl-10"
               onChange={(e) => {
@@ -708,7 +702,7 @@ export default function Home({
             </Button>
           </Link>
         </div>
-        <Table className="max-w-auto">
+        <Table className="max-w-auto hidden md:table">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -794,6 +788,31 @@ export default function Home({
             )}
           </TableBody>
         </Table>
+
+        {/* Mobile card list (replaces table below md) */}
+        <div className="space-y-2 md:hidden">
+          {!fullOperators
+            ? _.range(5).map((i) => (
+                <Skeleton key={i} className="h-[220px] w-full" />
+              ))
+            : table.getRowModel().rows.length
+              ? table.getRowModel().rows.map((row) => {
+                  const s = stakedWalByNodeId[row.original.id]
+                  return (
+                    <OperatorRowCard
+                      key={row.id}
+                      operator={row.original}
+                      yourStake={s?.amount}
+                      yourPositions={s?.count}
+                    />
+                  )
+                })
+              : (
+                  <div className="text-tertiary py-8 text-center text-sm">
+                    No results.
+                  </div>
+                )}
+        </div>
       </div>
     </div>
   )

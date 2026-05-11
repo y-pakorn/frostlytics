@@ -72,7 +72,7 @@ export function MetricCard({
                   <Info className="size-3" />
                 </button>
               </TooltipTrigger>
-              <TooltipContent className="max-w-[260px] text-left">
+              <TooltipContent className="max-w-[min(260px,calc(100vw-2rem))] text-left">
                 {description}
               </TooltipContent>
             </Tooltip>

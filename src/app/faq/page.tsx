@@ -71,10 +71,10 @@ export default function FAQPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-accent-purple-light text-4xl font-semibold">
+        <h1 className="text-accent-purple-light text-2xl font-semibold sm:text-3xl md:text-4xl">
           Frequently asked questions (FAQ)
         </h1>
-        <p className="text-tertiary text-xl">
+        <p className="text-tertiary text-base sm:text-lg md:text-xl">
           Everything you need to know about Frostlytics
         </p>
       </div>

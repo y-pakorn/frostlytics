@@ -69,6 +69,8 @@ import { Icons } from "@/components/icons"
 import { Pagination } from "@/components/pagination"
 import { useFullOperators } from "@/hooks"
 
+import { OperatorRewardRowCard } from "./_components/operator-reward-row-card"
+
 const MAIN_SECTION_WIDTH = "383px"
 
 const rewardFormSchema = z.object({
@@ -124,7 +126,7 @@ export default function RewardCalculator() {
             return (
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <div className="flex w-[250px] items-center gap-2">
+                  <div className="flex w-full max-w-[250px] items-center gap-2">
                     {metadata?.imageUrl ? (
                       <img
                         src={metadata.imageUrl}
@@ -276,10 +278,10 @@ export default function RewardCalculator() {
   return (
     <div className="space-y-4">
       <div className="space-y-1.5">
-        <h1 className="text-accent-purple-light text-4xl font-semibold">
+        <h1 className="text-accent-purple-light text-2xl font-semibold sm:text-3xl md:text-4xl">
           Reward Calculator
         </h1>
-        <p className="font-medium">
+        <p className="text-sm font-medium sm:text-base">
           Estimate your potential rewards based on staking amount and staking
           period
         </p>
@@ -287,13 +289,13 @@ export default function RewardCalculator() {
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="flex max-w-full min-w-0 items-end gap-2"
+          className="flex max-w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-end sm:gap-2"
         >
           <FormField
             control={form.control}
             name="amount"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex-1">
                 <FormLabel asterisk>Staking Amount</FormLabel>
                 <FormControl>
                   <NumericFormat
@@ -311,7 +313,7 @@ export default function RewardCalculator() {
             control={form.control}
             name="day"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="flex-1">
                 <FormLabel asterisk>Staking Period (Days)</FormLabel>
                 <FormControl>
                   <NumericFormat
@@ -325,54 +327,59 @@ export default function RewardCalculator() {
               </FormItem>
             )}
           />
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => {
-              form.setValue("day", 30)
-              track("CalculatorPresetClick", { days: 30 })
-            }}
-          >
-            30D
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => {
-              form.setValue("day", 365)
-              track("CalculatorPresetClick", { days: 365 })
-            }}
-          >
-            365D
-          </Button>
-          <Button
-            variant="outline"
-            type="button"
-            onClick={() => {
-              form.setValue("day", 730)
-              track("CalculatorPresetClick", { days: 730 })
-            }}
-          >
-            730D
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              variant="outline"
+              type="button"
+              className="flex-1 sm:flex-initial"
+              onClick={() => {
+                form.setValue("day", 30)
+                track("CalculatorPresetClick", { days: 30 })
+              }}
+            >
+              30D
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              className="flex-1 sm:flex-initial"
+              onClick={() => {
+                form.setValue("day", 365)
+                track("CalculatorPresetClick", { days: 365 })
+              }}
+            >
+              365D
+            </Button>
+            <Button
+              variant="outline"
+              type="button"
+              className="flex-1 sm:flex-initial"
+              onClick={() => {
+                form.setValue("day", 730)
+                track("CalculatorPresetClick", { days: 730 })
+              }}
+            >
+              730D
+            </Button>
+          </div>
           <Button
             type="submit"
             variant="purple"
             disabled={form.formState.isSubmitting}
-            className="flex-1"
+            className="w-full sm:w-auto sm:flex-1"
           >
             Calculate
           </Button>
         </form>
       </Form>
       <div className="space-y-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <div className="font-semibold">All Operators</div>
           <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
             {table.getRowCount()}
           </div>
-          <div className="flex-1" />
-          <div className="relative md:w-[330px]">
+          <div className="hidden flex-1 md:block" />
+          <div className="relative order-last w-full md:order-none md:w-[330px]">
             <Input
               className="h-9 pl-10"
               onChange={(e) => table.setGlobalFilter(e.target.value)}
@@ -381,7 +388,7 @@ export default function RewardCalculator() {
             <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
           </div>
         </div>
-        <div className="w-full overflow-x-auto">
+        <div className="hidden w-full overflow-x-auto md:block">
           <Table>
             <TableHeader>
               {table.getHeaderGroups().map((headerGroup) => (
@@ -460,6 +467,28 @@ export default function RewardCalculator() {
             </TableBody>
           </Table>
         </div>
+
+        {/* Mobile card list */}
+        <div className="space-y-2 md:hidden">
+          {!fullOperators
+            ? range(5).map((i) => (
+                <Skeleton key={i} className="h-[200px] w-full" />
+              ))
+            : table.getRowModel().rows.length
+              ? table.getRowModel().rows.map((row) => (
+                  <OperatorRewardRowCard
+                    key={row.id}
+                    operator={row.original}
+                    reward={operatorRewards?.[row.original.id]?.reward}
+                  />
+                ))
+              : (
+                  <div className="text-disabled py-12 text-center text-sm">
+                    No matched operators found.
+                  </div>
+                )}
+        </div>
+
         <Pagination table={table} />
       </div>
     </div>
