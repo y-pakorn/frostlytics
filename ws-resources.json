@@ -8,10 +8,16 @@
     "creator": "Frostlytics"
   },
   "routes": {
-    "/*": "/index.html",
+    "/profile": "/profile/index.html",
     "/profile/*": "/profile/index.html",
+    "/protocol-health": "/protocol-health/index.html",
+    "/protocol-health/*": "/protocol-health/index.html",
+    "/operator": "/operator/index.html",
     "/operator/*": "/operator/index.html",
+    "/faq": "/faq/index.html",
     "/faq/*": "/faq/index.html",
-    "/reward-calculator/*": "/reward-calculator/index.html"
+    "/reward-calculator": "/reward-calculator/index.html",
+    "/reward-calculator/*": "/reward-calculator/index.html",
+    "/*": "/index.html"
   }
 }
