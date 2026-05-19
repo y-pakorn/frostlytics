@@ -13,6 +13,7 @@ import { toast } from "sonner"
 import { MinimalOperatorWithMetadata } from "@/types/operator"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
+import { TABLE_CELL_CLASS, TABLE_HEAD_CLASS } from "@/lib/glass-table"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { GlassCard } from "@/components/ui/glass-card"
@@ -30,12 +31,6 @@ import { useOperatorTransactions } from "@/hooks"
 import { OperatorTransaction } from "@/types"
 
 import { TransactionRowCard } from "./_components/transaction-row-card"
-
-const TABLE_HEAD_CLASS =
-  "h-11 border-0 bg-[rgba(50,40,84,0.9)] px-6 py-3 text-xs font-semibold tracking-normal text-foreground normal-case shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
-
-const TABLE_CELL_CLASS =
-  "h-16 border-border-secondary/40 border-b px-6 py-3 first:pl-6 last:pr-6"
 
 const columns = [
   {

@@ -1,3 +1,5 @@
+"use client"
+
 import { useState } from "react"
 import {
   useCurrentAccount,
@@ -11,6 +13,10 @@ import { toast } from "sonner"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
 import { track } from "@/lib/analytic"
+import {
+  DIALOG_SUMMARY_BOX_CLASS,
+  WITHDRAW_CTA_CLASS,
+} from "@/lib/dialog-styles"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
@@ -20,6 +26,7 @@ import { StakedWal } from "@/types"
 import { Button } from "./ui/button"
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogTitle,
@@ -43,7 +50,7 @@ export function WithdrawDialog({
   const { mutateAsync: signAndExecuteTransaction } =
     useSignAndExecuteTransaction()
   const queryClient = useQueryClient()
-  const { walBalance, suiBalance } = useBalances()
+  useBalances()
 
   const withdrawWal = useMutation({
     mutationFn: async () => {
@@ -144,82 +151,102 @@ export function WithdrawDialog({
       >
         {children}
       </DialogTrigger>
-      <DialogContent className="gap-4">
-        <DialogTitle>{isWithdrawAll ? "Withdraw All" : "Withdraw"}</DialogTitle>
-        <DialogDescription>
-          You are about to withdraw{" "}
-          {isWithdrawAll ? (
-            <span className="font-bold">
-              all of your staking position and reward.
-            </span>
-          ) : (
-            <span>your staking position and reward.</span>
-          )}{" "}
-          Please confirm the details below.
-        </DialogDescription>
-        <div className="bg-primary rounded-2xl p-4">
-          {[
-            ...(isWithdrawAll
-              ? [
-                  {
-                    label: "From",
-                    value: (
-                      <>
-                        {stakedWal.length}{" "}
-                        <span className="text-tertiary">positions</span>
-                      </>
-                    ),
-                  },
-                ]
-              : []),
-            {
-              label: "Staking Reward",
-              value: (
-                <>
-                  {formatter.number(estimatedReward, 4)}{" "}
-                  <span className="text-tertiary">WAL</span>
-                </>
-              ),
-            },
-            {
-              label: "Transfer To",
-              value: `${account?.address.slice(0, 10)}...${account?.address.slice(-8)}`,
-              className: "break-all font-mono",
-            },
-          ].map((item) => (
-            <div
-              key={item.label}
-              className="line-clamp-1 flex min-w-0 items-center justify-between"
-            >
-              <div className="text-tertiary shrink-0 text-sm font-bold">
-                {item.label}
-              </div>
+      <DialogContent variant="glass" className="gap-0">
+        <div className="space-y-4 px-6 pt-6 pb-4">
+          <DialogTitle className="text-xl font-bold">
+            {isWithdrawAll ? "Withdraw All" : "Withdraw"}
+          </DialogTitle>
+          <DialogDescription>
+            You are about to withdraw{" "}
+            {isWithdrawAll ? (
+              <span className="font-bold">
+                all of your staking positions and rewards.
+              </span>
+            ) : (
+              <span>your staking position and reward.</span>
+            )}{" "}
+            Please confirm the details below.
+          </DialogDescription>
+
+          <div className={DIALOG_SUMMARY_BOX_CLASS}>
+            {[
+              ...(isWithdrawAll
+                ? [
+                    {
+                      label: "From",
+                      value: (
+                        <>
+                          {stakedWal.length}{" "}
+                          <span className="text-tertiary">positions</span>
+                        </>
+                      ),
+                      className: undefined,
+                    },
+                  ]
+                : []),
+              {
+                label: "Staking Reward",
+                value: (
+                  <>
+                    {formatter.number(estimatedReward, 4)}{" "}
+                    <span className="text-tertiary">WAL</span>
+                  </>
+                ),
+                className: undefined,
+              },
+              {
+                label: "Transfer To",
+                value: `${account?.address.slice(0, 10)}...${account?.address.slice(-8)}`,
+                className: "font-mono",
+              },
+            ].map((item) => (
               <div
-                className={cn(
-                  "text-foreground line-clamp-1 truncate font-medium break-all",
-                  item.className
-                )}
+                key={item.label}
+                className="flex items-center justify-between gap-3 text-sm"
               >
-                {item.value}
+                <span className="text-tertiary shrink-0 font-bold">
+                  {item.label}
+                </span>
+                <span
+                  className={cn(
+                    "text-foreground truncate font-medium",
+                    item.className
+                  )}
+                >
+                  {item.value}
+                </span>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-        <Button
-          variant="purple"
-          size="lg"
-          className="w-full"
-          onClick={() => withdrawWal.mutateAsync()}
-          disabled={withdrawWal.isPending}
-        >
-          {!withdrawWal.isPending ? (
-            "Withdraw"
-          ) : (
-            <>
-              Withdrawing <Loader2 className="animate-spin" />
-            </>
-          )}
-        </Button>
+
+        <div className="flex gap-3 px-6 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom))] md:pb-6">
+          <DialogClose asChild>
+            <Button
+              variant="outline"
+              className="h-auto flex-1 rounded-full py-2.5"
+            >
+              Cancel
+            </Button>
+          </DialogClose>
+          <Button
+            variant="error"
+            className={cn(
+              WITHDRAW_CTA_CLASS,
+              withdrawWal.isPending && "opacity-60"
+            )}
+            disabled={withdrawWal.isPending}
+            onClick={() => withdrawWal.mutateAsync()}
+          >
+            {!withdrawWal.isPending ? (
+              isWithdrawAll ? "Withdraw All" : "Withdraw"
+            ) : (
+              <>
+                Withdrawing <Loader2 className="animate-spin" />
+              </>
+            )}
+          </Button>
+        </div>
       </DialogContent>
     </Dialog>
   )

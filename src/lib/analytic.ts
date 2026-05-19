@@ -111,6 +111,9 @@ const TRACK_EVENT = {
   StakeStatusFilter: z.object({
     status: z.string(),
   }),
+  ProfileOperatorFilter: z.object({
+    operatorId: z.string(),
+  }),
   CalculatorPresetClick: z.object({
     days: z.number(),
   }),

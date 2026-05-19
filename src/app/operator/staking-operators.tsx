@@ -25,6 +25,8 @@ import {
 } from "lucide-react"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
+import { STAKE_CTA_CLASS } from "@/lib/dialog-styles"
+import { TABLE_CELL_CLASS, TABLE_HEAD_CLASS } from "@/lib/glass-table"
 import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
@@ -58,20 +60,11 @@ import { useFullOperators, useStakedWal } from "@/hooks"
 
 import { OperatorRowCard } from "@/app/_components/operator-row-card"
 
-const STAKE_CTA_CLASS =
-  "h-auto rounded-full border-2 border-white/[0.12] px-3 py-2 text-sm font-semibold [box-shadow:var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
-
 const operatorTypeFilters = [
   { label: "All Operators", value: "all" as const },
   { label: "Committee", value: true },
   { label: "Not-Committee", value: false },
 ] as const
-
-const TABLE_HEAD_CLASS =
-  "h-11 border-0 bg-[rgba(50,40,84,0.9)] px-6 py-3 text-xs font-semibold tracking-normal text-foreground normal-case shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
-
-const TABLE_CELL_CLASS =
-  "h-16 border-border-secondary/40 border-b px-6 py-3 first:pl-6 last:pr-6"
 
 export default function StakingOperatorsPage() {
   const fullOperators = useFullOperators()
@@ -267,7 +260,7 @@ export default function StakingOperatorsPage() {
             <Badge variant="epoch">{table.getFilteredRowModel().rows.length}</Badge>
           </div>
 
-          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:flex-nowrap md:justify-end">
             <GlassInput
               className="w-full md:w-[320px]"
               containerClassName="w-full md:w-[320px]"
@@ -322,8 +315,7 @@ export default function StakingOperatorsPage() {
 
             <Button
               variant="purple"
-              size="sm"
-              className={STAKE_CTA_CLASS}
+              className={cn(STAKE_CTA_CLASS, "shrink-0 whitespace-nowrap")}
               asChild
             >
               <Link href="/profile">Your Position</Link>

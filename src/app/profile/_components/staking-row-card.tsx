@@ -7,7 +7,8 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { links } from "@/config/link"
 import { formatter } from "@/lib/formatter"
 import { track } from "@/lib/analytic"
-import { Surface } from "@/components/ui/surface"
+import { cn } from "@/lib/utils"
+import { GlassCard } from "@/components/ui/glass-card"
 import { SafeImage } from "@/components/safe-image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -15,6 +16,24 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { UnstakeDialog } from "@/components/unstake-dialog"
 import { WithdrawDialog } from "@/components/withdraw-dialog"
 import type { StakedWalWithStatus } from "@/types"
+
+function StatusBadge({ status }: { status: StakedWalWithStatus["status"] }) {
+  const label = status === "claimable" ? "Withdrawable" : startCase(status)
+  return (
+    <Badge
+      variant={
+        status === "staked"
+          ? "success"
+          : status === "claimable"
+            ? "accentPurpleOutline"
+            : "outline"
+      }
+      className="text-[10px]"
+    >
+      {label}
+    </Badge>
+  )
+}
 
 export function StakingRowCard({
   stakedWal,
@@ -28,8 +47,7 @@ export function StakingRowCard({
   readOnly?: boolean
 }) {
   return (
-    <Surface className="space-y-3 p-4">
-      {/* Operator row */}
+    <GlassCard tone="chart" contentClassName="space-y-2 p-4" className="rounded-3xl">
       {operator ? (
         <Link
           href={`/operator?id=${operator.id}`}
@@ -54,9 +72,13 @@ export function StakingRowCard({
         <Skeleton className="h-10 w-full" />
       )}
 
-      {/* Position ID + status */}
+      <div className="flex items-center justify-between border-t border-white/5 pt-2">
+        <span className="text-tertiary text-xs">Status</span>
+        <StatusBadge status={stakedWal.status} />
+      </div>
+
       <div className="space-y-1 border-t border-white/5 pt-2">
-        <div className="text-tertiary text-xs">Position</div>
+        <div className="text-tertiary text-xs">Position ID</div>
         <div className="flex items-center gap-1">
           <div className="text-tertiary font-mono text-xs font-medium">
             {stakedWal.id.slice(0, 8)}…{stakedWal.id.slice(-6)}
@@ -78,20 +100,8 @@ export function StakingRowCard({
             </Button>
           </Link>
         </div>
-        <Badge
-          variant={
-            stakedWal.status === "staked"
-              ? "success"
-              : stakedWal.status === "claimable"
-                ? "accentPurpleOutline"
-                : "outline"
-          }
-        >
-          {startCase(stakedWal.status)}
-        </Badge>
       </div>
 
-      {/* Amount + epoch */}
       <div className="grid grid-cols-2 gap-x-3 gap-y-1 border-t border-white/5 pt-2 text-xs">
         <div>
           <div className="text-tertiary">Amount</div>
@@ -107,33 +117,42 @@ export function StakingRowCard({
         </div>
       </div>
 
-      {/* Action */}
       {!readOnly ? (
-        stakedWal.status === "withdrawing" ? (
-          <div className="text-disabled text-xs font-semibold">
-            Withdrawing Epoch {stakedWal.withdrawEpoch}
-          </div>
-        ) : stakedWal.canWithdrawRightNow ? (
-          <WithdrawDialog
-            stakedWal={[stakedWal]}
-            estimatedReward={estimatedReward}
-          >
-            <Button variant="errorSecondary" size="sm" className="w-full">
-              Withdraw
-            </Button>
-          </WithdrawDialog>
-        ) : (
-          <UnstakeDialog
-            stakedWal={stakedWal}
-            operator={operator || null}
-            estimatedReward={estimatedReward}
-          >
-            <Button variant="purpleSecondary" size="sm" className="w-full">
-              Unstake
-            </Button>
-          </UnstakeDialog>
-        )
+        <div className="border-t border-white/5 pt-2">
+          {stakedWal.status === "withdrawing" ? (
+            <div className="text-disabled text-xs font-semibold">
+              Withdrawable in Epoch {stakedWal.withdrawEpoch}
+            </div>
+          ) : stakedWal.canWithdrawRightNow ? (
+            <WithdrawDialog
+              stakedWal={[stakedWal]}
+              estimatedReward={estimatedReward}
+            >
+              <Button
+                variant="link"
+                className={cn(
+                  "text-brand-400 h-auto w-full p-0 font-semibold"
+                )}
+              >
+                Withdraw
+              </Button>
+            </WithdrawDialog>
+          ) : (
+            <UnstakeDialog
+              stakedWal={stakedWal}
+              operator={operator || null}
+              estimatedReward={estimatedReward}
+            >
+              <Button
+                variant="link"
+                className="text-error-foreground h-auto w-full p-0 font-semibold"
+              >
+                Unstake
+              </Button>
+            </UnstakeDialog>
+          )}
+        </div>
       ) : null}
-    </Surface>
+    </GlassCard>
   )
 }

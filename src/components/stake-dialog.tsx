@@ -58,8 +58,10 @@ const stakeFormSchema = z.object({
     ),
 })
 
-const STAKE_SUBMIT_CLASS =
-  "h-auto flex-1 rounded-full border-2 border-white/[0.12] px-4 py-2.5 text-base font-semibold [box-shadow:var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
+import {
+  DIALOG_OPERATOR_BOX_CLASS,
+  STAKE_CTA_CLASS,
+} from "@/lib/dialog-styles"
 
 export function StakeDialog({
   children,
@@ -226,7 +228,7 @@ export function StakeDialog({
             details below.
           </DialogDescription>
 
-          <div className="border-brand-400 space-y-3 rounded-sm border p-4">
+          <div className={DIALOG_OPERATOR_BOX_CLASS}>
             <OperatorHeader operator={operator} className="w-full" />
             <div className="space-y-1 text-sm">
               {[
@@ -370,7 +372,7 @@ export function StakeDialog({
           <Button
             type="submit"
             variant="purple"
-            className={cn(STAKE_SUBMIT_CLASS, !canSubmit && "opacity-60")}
+            className={cn(STAKE_CTA_CLASS, "flex-1", !canSubmit && "opacity-60")}
             disabled={!canSubmit}
             onClick={form.handleSubmit(onSubmit)}
           >

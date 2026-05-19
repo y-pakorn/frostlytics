@@ -43,7 +43,7 @@ export function OperatorTabToolbar({
           variant="glass"
           size="md"
           activeTone="purple"
-          className="max-w-full overflow-x-auto"
+          className="w-full sm:w-auto sm:min-w-[320px]"
           options={TAB_OPTIONS.map((option) => ({
             ...option,
             label:

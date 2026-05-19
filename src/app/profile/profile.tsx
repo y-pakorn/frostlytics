@@ -1,78 +1,24 @@
 "use client"
 
-import { useCallback, useEffect, useMemo, useState } from "react"
-import Link from "next/link"
-import { useCurrentAccount, useResolveSuiNSName } from "@mysten/dapp-kit"
-import { bcs } from "@mysten/sui/bcs"
-import { Transaction } from "@mysten/sui/transactions"
-import { useQuery } from "@tanstack/react-query"
-import {
-  ColumnDef,
-  ColumnFiltersState,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  SortingState,
-  useReactTable,
-} from "@tanstack/react-table"
-import BigNumber from "bignumber.js"
-import { blo } from "blo"
+import { useEffect, useMemo } from "react"
+import { useCurrentAccount } from "@mysten/dapp-kit"
 import keyBy from "lodash/keyBy"
 import last from "lodash/last"
 import minBy from "lodash/minBy"
-import range from "lodash/range"
-import startCase from "lodash/startCase"
 import sumBy from "lodash/sumBy"
-import {
-  ArrowUpRight,
-  ChevronDown,
-  ChevronsUpDown,
-  ChevronUp,
-  Copy,
-  ExternalLink,
-  Gem,
-  PackageCheck,
-  Search,
-  Share,
-  Wallet,
-} from "lucide-react"
-import { toast } from "sonner"
 
-import { links } from "@/config/link"
 import { tiers } from "@/config/tier"
-import { walrus } from "@/config/walrus"
 import { track } from "@/lib/analytic"
-import { formatter } from "@/lib/formatter"
-import { cn } from "@/lib/utils"
 import { useBalances } from "@/hooks/use-balances"
-import { suiClient } from "@/services/client"
-import { Badge } from "@/components/ui/badge"
-import { Button, buttonVariants } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Skeleton } from "@/components/ui/skeleton"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import { Surface } from "@/components/ui/surface"
-import { OperatorHeader } from "@/components/operator-header"
-import { ReportCardDialog } from "@/components/report-card-dialog"
-import { UnstakeDialog } from "@/components/unstake-dialog"
-import { WithdrawDialog } from "@/components/withdraw-dialog"
 import {
   useEstimatedReward,
   useFullOperators,
   useStakedWalWithStatus,
   useStaking,
 } from "@/hooks"
-import { StakedWalWithStatus } from "@/types"
 
-import { StakingRowCard } from "./_components/staking-row-card"
+import { ProfileHeroSection } from "./_components/profile-hero-section"
+import { ProfilePositionsSection } from "./_components/profile-positions-section"
 
 export function Profile({
   address,
@@ -81,7 +27,6 @@ export function Profile({
   address: string
   readOnly?: boolean
 }) {
-  const { data: name } = useResolveSuiNSName(address)
   const currentAccount = useCurrentAccount()
 
   useEffect(() => {
@@ -92,192 +37,28 @@ export function Profile({
   }, [address, currentAccount?.address])
 
   const staking = useStaking()
-  const stakedWalWithStatus = useStakedWalWithStatus({
-    address,
-  })
-
+  const stakedWalWithStatus = useStakedWalWithStatus({ address })
   const validators = useFullOperators()
-  const validatorMap = useMemo(() => {
-    return keyBy(validators, "id")
-  }, [validators])
+  const validatorMap = useMemo(() => keyBy(validators, "id"), [validators])
 
   const { walBalance } = useBalances({ address })
-  const totalStakedBalance = useMemo(() => {
-    return sumBy(stakedWalWithStatus, "amount")
-  }, [stakedWalWithStatus])
+  const totalStakedBalance = useMemo(
+    () => sumBy(stakedWalWithStatus, "amount"),
+    [stakedWalWithStatus]
+  )
 
   const estimatedReward = useEstimatedReward({
     address,
     stakedWals: stakedWalWithStatus,
   })
 
-  const columns = useMemo(() => {
-    return [
-      {
-        header: "Name/ID",
-        accessorFn: (stakedWal) =>
-          validatorMap[stakedWal.nodeId]?.name || stakedWal.nodeId,
-        enableSorting: false,
-        enableGlobalFilter: true,
-        cell: ({ row }) =>
-          validatorMap[row.original.nodeId] ? (
-            <OperatorHeader operator={validatorMap[row.original.nodeId]} />
-          ) : (
-            <Skeleton className="h-3/4 w-full" />
-          ),
-      },
-      {
-        header: "Position ID",
-        accessorKey: "status",
-        enableSorting: false,
-        enableGlobalFilter: false,
-        cell: ({ row }) => {
-          return (
-            <div className="space-y-1">
-              <div className="flex items-center gap-1">
-                <div className="text-tertiary font-mono font-medium">
-                  {row.original.id.slice(0, 8)}...{row.original.id.slice(-8)}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="iconXs"
-                  onClick={() => {
-                    navigator.clipboard.writeText(row.original.id)
-                    toast.success("Copied to clipboard")
-                    track("CopyToClipboard", { contentType: "positionId" })
-                  }}
-                >
-                  <Copy />
-                </Button>
-                <Link href={links.object(row.original.id)} target="_blank">
-                  <Button variant="ghost" size="iconXs">
-                    <ExternalLink />
-                  </Button>
-                </Link>
-              </div>
-              <Badge
-                variant={
-                  row.original.status === "staked"
-                    ? "success"
-                    : row.original.status === "claimable"
-                      ? "accentPurpleOutline"
-                      : "outline"
-                }
-              >
-                {startCase(row.original.status)}
-              </Badge>
-            </div>
-          )
-        },
-      },
-      {
-        header: "Amount",
-        accessorKey: "amount",
-        enableSorting: true,
-        enableGlobalFilter: false,
-        cell: ({ row }) => {
-          return (
-            <div className="font-bold">
-              {formatter.number(row.original.amount)} WAL
-            </div>
-          )
-        },
-      },
-      {
-        header: "Activation Epoch",
-        accessorKey: "activationEpoch",
-        enableSorting: true,
-        sortDescFirst: false,
-        enableGlobalFilter: false,
-        cell: ({ row }) => {
-          return (
-            <div className="text-tertiary font-semibold">
-              Epoch {row.original.activationEpoch}
-            </div>
-          )
-        },
-      },
-      ...(readOnly
-        ? []
-        : ([
-            {
-              header: "Action",
-              accessorKey: "action",
-              enableSorting: false,
-              enableGlobalFilter: false,
-              cell: ({ row }) => {
-                const thisEstimatedReward =
-                  estimatedReward?.rewards[row.original.id] || 0
-                if (row.original.status === "withdrawing") {
-                  return (
-                    <div className="text-disabled font-semibold">
-                      Withdrawing Epoch {row.original.withdrawEpoch}
-                    </div>
-                  )
-                }
-                if (row.original.canWithdrawRightNow) {
-                  return (
-                    <WithdrawDialog
-                      stakedWal={[row.original]}
-                      estimatedReward={thisEstimatedReward}
-                    >
-                      <Button variant="errorSecondary" size="sm">
-                        Withdraw
-                      </Button>
-                    </WithdrawDialog>
-                  )
-                }
-                return (
-                  <UnstakeDialog
-                    stakedWal={row.original}
-                    operator={validatorMap[row.original.nodeId] || null}
-                    estimatedReward={thisEstimatedReward}
-                  >
-                    <Button variant="purpleSecondary" size="sm">
-                      Unstake
-                    </Button>
-                  </UnstakeDialog>
-                )
-              },
-            },
-          ] satisfies ColumnDef<StakedWalWithStatus>[])),
-    ] satisfies ColumnDef<StakedWalWithStatus>[]
-  }, [validatorMap, estimatedReward])
-
-  const [sorting, setSorting] = useState<SortingState>([
-    {
-      id: "amount",
-      desc: true,
-    },
-  ])
-  const [globalFilter, setGlobalFilter] = useState<any>([])
-  const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const data = useMemo(() => {
-    return stakedWalWithStatus || []
-  }, [stakedWalWithStatus])
-  const table = useReactTable({
-    data,
-    columns,
-    getCoreRowModel: getCoreRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    onSortingChange: setSorting,
-    onGlobalFilterChange: setGlobalFilter,
-    onColumnFiltersChange: setColumnFilters,
-    state: {
-      sorting,
-      globalFilter,
-      columnFilters,
-    },
-  })
-
   const { tier, stakingPeriod } = useMemo(() => {
-    if (!staking || !stakedWalWithStatus)
+    if (!staking || !stakedWalWithStatus) {
       return {
         tier: last(tiers)!,
-        stakingPeriodMs: null,
+        stakingPeriod: null as number | null,
       }
-    // percentile distribution is from first staking epoch to current epoch - first staking epoch is at 1% percentile
+    }
     const userEpoch =
       minBy(stakedWalWithStatus, "activationEpoch")?.activationEpoch ||
       staking.epoch + 1
@@ -287,345 +68,37 @@ export function Profile({
         : null
     const percentile = ((staking.epoch - (userEpoch - 1)) / staking.epoch) * 100
     return {
-      tier: tiers.find((tier) => percentile >= tier.percentile)!,
+      tier: tiers.find((t) => percentile >= t.percentile)!,
       stakingPeriod: stakingPeriodMs ? stakingPeriodMs / 1000 : null,
     }
   }, [stakedWalWithStatus, staking])
 
   return (
-    <div className="space-y-6">
-      <Surface>
-        <div className="space-y-3">
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
-            <div className="flex items-center gap-2">
-              <img
-                src={blo(address as any)}
-                className="size-12 shrink-0 rounded-full"
-              />
-              <div className="min-w-0 break-all">
-                <h1 className="font-heading text-foreground line-clamp-1 text-xl font-semibold sm:text-2xl">
-                  {name || `${address.slice(0, 6)}...${address.slice(-4)}`}
-                </h1>
-                <div className="flex items-center gap-1">
-                  <p className="line-clamp-1 font-mono text-xs sm:text-sm">
-                    {address.slice(0, 10)}...{address.slice(-10)}
-                  </p>
-                  <Button
-                    variant="ghost"
-                    size="iconXs"
-                    onClick={() => {
-                      navigator.clipboard.writeText(address)
-                      toast.success("Address copied to clipboard")
-                      track("CopyToClipboard", { contentType: "walletAddress" })
-                    }}
-                  >
-                    <Copy />
-                  </Button>
-                  <Link
-                    href={links.account(address)}
-                    target="_blank"
-                    onClick={() =>
-                      track("ExternalLinkClick", {
-                        url: links.account(address),
-                        label: "SuiScan Profile",
-                      })
-                    }
-                  >
-                    <Button variant="ghost" size="iconXs">
-                      <ExternalLink />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            </div>
-            <div className="flex flex-wrap items-center gap-2 rounded-lg bg-black/20 p-2 sm:ml-auto">
-              <img
-                src={tier.imageUrl}
-                alt={tier.label}
-                className="aspect-auto w-11 shrink-0"
-              />
-              {stakingPeriod && (
-                <div className="-space-y-1">
-                  <div className="text-foreground text-lg font-bold">
-                    {formatter.duration(stakingPeriod)}
-                  </div>
-                  <div>Staking Period</div>
-                </div>
-              )}
-              {tier?.reportImageUrl && stakingPeriod && (
-                <ReportCardDialog
-                  imageUrl={tier.reportImageUrl}
-                  address={address}
-                  stakingPeriod={stakingPeriod}
-                >
-                  <Button variant="outline" size="sm">
-                    Report Card
-                  </Button>
-                </ReportCardDialog>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(
-                    `${window.location.origin}/profile?addr=${address}`
-                  )
-                  toast.success("Link copied to clipboard")
-                  track("ShareAddress", { address })
-                  track("CopyToClipboard", { contentType: "profileLink" })
-                }}
-              >
-                Share Address <Share />
-              </Button>
-            </div>
-          </div>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            {[
-              {
-                icon: Wallet,
-                label: "WAL Balance",
-                isLoading: walBalance === null,
-                value: formatter.number(walBalance || 0),
-              },
-              {
-                icon: PackageCheck,
-                label: "Staked WAL",
-                isLoading: stakedWalWithStatus === null,
-                value: formatter.number(totalStakedBalance),
-              },
-              {
-                icon: Gem,
-                label: "Estimated Reward",
-                isLoading: !estimatedReward,
-                value: formatter.number(estimatedReward?.total || 0, 4),
-              },
-            ].map(({ icon: Icon, label, value, isLoading }) => (
-              <div
-                key={label}
-                className="flex w-full gap-3 rounded-lg bg-black/20 p-4 shadow-xs"
-              >
-                <div
-                  className={buttonVariants({
-                    variant: "outline",
-                    size: "icon",
-                    className: "rounded-md",
-                  })}
-                >
-                  <Icon className="size-4" />
-                </div>
-                <div>
-                  <h3>{label}</h3>
-                  {isLoading ? (
-                    <Skeleton className="h-7 w-24" />
-                  ) : (
-                    <p className="text-foreground text-xl font-medium">
-                      {value} WAL
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </Surface>
-      <div className="bg-accent-purple-light text-primary flex h-9 w-fit items-center gap-1 rounded-full px-3 text-sm font-semibold">
-        Staking
-        <div className="bg-accent-purple-deep! text-foreground flex size-5.5 items-center justify-center rounded-full text-center text-xs tracking-tight">
-          <div className="mt-0.5">{stakedWalWithStatus?.length || 0}</div>
-        </div>
-      </div>
-      <div className="flex flex-wrap items-center gap-2">
-        {[
-          {
-            label: "All",
-            status: undefined,
-          },
-          {
-            label: "Staking",
-            status: "staked",
-          },
-          {
-            label: "Withdrawing",
-            status: "withdrawing",
-          },
-          {
-            label: "Claimable",
-            status: "claimable",
-          },
-        ].map(({ label, status }) => {
-          const isSelected = columnFilters[0]?.value === status
-          return (
-            <Button
-              key={label}
-              size="sm"
-              variant={isSelected ? "default" : "ghost"}
-              onClick={() => {
-                if (status === undefined) {
-                  setColumnFilters([])
-                } else {
-                  setColumnFilters([
-                    {
-                      id: "status",
-                      value: status,
-                    },
-                  ])
-                }
-                track("StakeStatusFilter", { status: label })
-              }}
-            >
-              {label}{" "}
-              <div className="bg-accent flex size-5.5 items-center justify-center rounded-full border text-sm">
-                {sumBy(stakedWalWithStatus, (s) =>
-                  !status || s.status === status ? 1 : 0
-                )}
-              </div>
-            </Button>
-          )
-        })}
-        <div className="hidden flex-1 md:block" />
-        <div className="relative order-last w-full md:order-none md:w-[330px]">
-          <Input
-            placeholder="Enter Operator Name"
-            className="pl-10"
-            onChange={(e) => table.setGlobalFilter(e.target.value)}
-          />
-          <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
-        </div>
-        <WithdrawDialog
-          stakedWal={
-            stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || []
-          }
-          estimatedReward={sumBy(
-            stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow) || [],
-            (s) => estimatedReward?.rewards[s.id] || 0
-          )}
-          isWithdrawAll
-        >
-          {!readOnly && (
-            <Button
-              variant="purple"
-              size="sm"
-              disabled={
-                !stakedWalWithStatus?.filter((s) => s.canWithdrawRightNow)
-                  .length
-              }
-            >
-              Withdraw All
-            </Button>
-          )}
-        </WithdrawDialog>
-      </div>
-      {stakedWalWithStatus?.length !== 0 ? (
-        <>
-        <Table className="hidden flex-1 md:table">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => {
-                  const sorted = header.column.getIsSorted()
-                  const canSort = header.column.getCanSort()
+    <div className="flex flex-col gap-3">
+      <h1 className="font-heading text-foreground text-2xl font-bold tracking-[-0.01em]">
+        Profile
+      </h1>
 
-                  const Icon =
-                    sorted === "asc"
-                      ? ChevronUp
-                      : sorted === "desc"
-                        ? ChevronDown
-                        : ChevronsUpDown
-                  return (
-                    <TableHead
-                      key={header.id}
-                      style={{ width: `${header.getSize()}px` }}
-                      className={cn(canSort && "cursor-default select-none")}
-                      onClick={() => {
-                        if (canSort) {
-                          header.column.toggleSorting()
-                          track("TableSort", {
-                            table: "staking",
-                            column: header.id,
-                            direction: header.column.getIsSorted() === "desc" ? "asc" : "desc",
-                          })
-                        }
-                      }}
-                    >
-                      <div className="flex items-center gap-1">
-                        {header.isPlaceholder
-                          ? null
-                          : flexRender(
-                              header.column.columnDef.header,
-                              header.getContext()
-                            )}
-                        {header.column.getCanSort() && (
-                          <Button variant="ghost" size="iconXs">
-                            <Icon />
-                          </Button>
-                        )}
-                      </div>
-                    </TableHead>
-                  )
-                })}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {!stakedWalWithStatus
-              ? range(10).map((i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={columns.length}>
-                      <Skeleton className="h-3/4 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              : table.getRowModel().rows?.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
-                  >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                ))}
-          </TableBody>
-        </Table>
+      <ProfileHeroSection
+        address={address}
+        readOnly={readOnly}
+        walBalance={walBalance}
+        walBalanceLoading={walBalance === null}
+        totalStakedBalance={totalStakedBalance}
+        stakedLoading={stakedWalWithStatus === null}
+        totalPositions={stakedWalWithStatus?.length ?? 0}
+        estimatedRewardTotal={estimatedReward?.total ?? 0}
+        estimatedRewardLoading={!estimatedReward}
+        tier={tier}
+        stakingPeriod={stakingPeriod}
+      />
 
-        {/* Mobile card list */}
-        <div className="space-y-2 md:hidden">
-          {!stakedWalWithStatus
-            ? range(5).map((i) => (
-                <Skeleton key={i} className="h-[220px] w-full" />
-              ))
-            : table.getRowModel().rows.map((row) => (
-                <StakingRowCard
-                  key={row.id}
-                  stakedWal={row.original}
-                  operator={validatorMap[row.original.nodeId]}
-                  estimatedReward={
-                    estimatedReward?.rewards[row.original.id] || 0
-                  }
-                  readOnly={readOnly}
-                />
-              ))}
-        </div>
-        </>
-      ) : (
-        <div className="text-disabled flex h-[320px] flex-col items-center justify-center space-y-2.5 text-center font-medium">
-          <div>
-            No staked validators yet.
-            <br />
-            Get started by finding a Operator to stake with
-          </div>
-          <Link href="/">
-            <Button variant="outline" size="sm">
-              Find Operators <ArrowUpRight />
-            </Button>
-          </Link>
-        </div>
-      )}
+      <ProfilePositionsSection
+        readOnly={readOnly}
+        stakedWalWithStatus={stakedWalWithStatus}
+        validatorMap={validatorMap}
+        estimatedRewards={estimatedReward?.rewards}
+      />
     </div>
   )
 }

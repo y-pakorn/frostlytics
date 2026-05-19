@@ -22,6 +22,7 @@ import { NumericFormat } from "react-number-format"
 import z from "zod"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
+import { TABLE_CELL_CLASS, TABLE_HEAD_CLASS } from "@/lib/glass-table"
 import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
@@ -74,12 +75,6 @@ const operatorTypeFilters = [
 ] as const
 
 const PERIOD_PRESETS = [30, 365, 730] as const
-
-const TABLE_HEAD_CLASS =
-  "h-11 border-0 bg-[rgba(50,40,84,0.9)] px-6 py-3 text-xs font-semibold tracking-normal text-foreground normal-case shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
-
-const TABLE_CELL_CLASS =
-  "h-16 border-border-secondary/40 border-b px-6 py-3 first:pl-6 last:pr-6"
 
 type OperatorWithReward = OperatorWithSharesAndBaseApy & {
   reward: number

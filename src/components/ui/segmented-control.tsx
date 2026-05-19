@@ -13,6 +13,7 @@ export function SegmentedControl<T extends string>({
   variant = "pill",
   activeTone = "default",
   size = "sm",
+  fill = false,
   className,
 }: {
   options: { label: ReactNode; value: T }[]
@@ -21,54 +22,55 @@ export function SegmentedControl<T extends string>({
   variant?: "pill" | "figma" | "glass"
   activeTone?: "default" | "purple"
   size?: "sm" | "md"
+  /** Equal-width tabs that grow to fill the container width */
+  fill?: boolean
   className?: string
 }) {
   if (variant === "glass") {
     return (
       <LiquidGlass
         radius={size === "md" ? 20 : 12}
-        className={cn(
-          "inline-flex shrink-0",
-          size === "md" && "h-10",
-          className
-        )}
-        contentClassName={cn(
-          "flex items-stretch p-1",
-          size === "md" ? "h-full" : "p-0.5"
-        )}
+        className={cn("h-10 min-w-0", className)}
+        contentClassName="flex h-full min-w-0 items-center p-1"
       >
         <div
-          role="tablist"
           className={cn(
-            "inline-flex w-full items-stretch gap-0.5",
-            size === "md" ? "h-full" : ""
+            "flex h-full w-full min-w-0 items-center overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+            fill && "overflow-x-visible"
           )}
         >
-          {options.map((option) => {
-            const isActive = value === option.value
-            return (
-              <button
-                key={option.value}
-                type="button"
-                role="tab"
-                aria-selected={isActive}
-                onClick={() => onChange(option.value)}
-                className={cn(
-                  "relative rounded-full font-semibold transition-colors",
-                  size === "md"
-                    ? "flex h-full items-center px-3 text-sm"
-                    : "px-2.5 py-1 text-xs",
-                  isActive
-                    ? activeTone === "purple"
-                      ? "bg-brand-400 text-foreground shadow-[var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
-                      : "text-foreground bg-white/[0.12] shadow-[var(--shadow-xs)]"
-                    : "text-tertiary hover:text-secondary-foreground"
-                )}
-              >
-                {option.label}
-              </button>
-            )
-          })}
+          <div
+            role="tablist"
+            className={cn(
+              "flex h-full items-center gap-0.5",
+              fill ? "w-full" : "w-max"
+            )}
+          >
+            {options.map((option) => {
+              const isActive = value === option.value
+              return (
+                <button
+                  key={option.value}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => onChange(option.value)}
+                  className={cn(
+                    "relative flex h-8 items-center justify-center rounded-full font-semibold whitespace-nowrap transition-colors",
+                    fill ? "min-w-0 flex-1" : "shrink-0",
+                    size === "md" ? "px-3 text-sm" : "px-2.5 text-xs",
+                    isActive
+                      ? activeTone === "purple"
+                        ? "bg-brand-400 text-foreground shadow-[var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
+                        : "text-foreground bg-white/[0.12] shadow-[var(--shadow-xs)]"
+                      : "text-tertiary hover:text-secondary-foreground"
+                  )}
+                >
+                  {option.label}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </LiquidGlass>
     )
