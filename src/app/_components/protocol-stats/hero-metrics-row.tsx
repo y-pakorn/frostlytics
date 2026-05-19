@@ -16,7 +16,7 @@ import { TotalStakedSnapshotCard } from "./total-staked-snapshot-card"
 import { useHomeMetrics } from "./use-home-metrics"
 import { YourPositionCard } from "./your-position-card"
 
-const HERO_ROW_HEIGHT = "h-[197px]"
+const HERO_ROW_HEIGHT = "md:h-[197px]"
 
 function CountdownPill({
   children,
@@ -126,8 +126,8 @@ export function HeroMetricsRow({
         contentClassName="h-full"
         innerClassName="h-full justify-between"
       >
-        <div className="flex min-w-0 items-center justify-between gap-3 overflow-hidden">
-          <div className="min-w-0 shrink">
+        <div className="grid min-w-0 grid-cols-2 items-start gap-3 overflow-hidden md:flex md:items-center md:justify-between">
+          <div className="min-w-0 overflow-hidden md:shrink">
             {staking ? (
               <p className="font-heading text-foreground truncate text-base leading-normal font-bold tracking-[-0.01em]">
                 {epochLabel}
@@ -140,45 +140,45 @@ export function HeroMetricsRow({
             </p>
             <div
               className={cn(
-                "mt-1",
+                "mt-1 max-w-full overflow-hidden",
                 remaining.d > 0
-                  ? "inline-grid grid-cols-[auto_1fr] grid-rows-1"
-                  : "inline-flex"
+                  ? "grid grid-cols-[auto_1fr] grid-rows-1"
+                  : "inline-flex max-w-full"
               )}
             >
               {remaining.d > 0 && (
                 <CountdownPill className="col-start-1 rounded-r-none">
-                  <span className="font-heading text-foreground text-2xl leading-normal font-semibold tracking-[-0.02em] tabular-nums">
+                  <span className="font-heading text-foreground text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:text-2xl">
                     {remaining.d}d
                   </span>
                 </CountdownPill>
               )}
               <CountdownPill
                 className={cn(
-                  "flex items-center gap-0 px-3",
+                  "flex max-w-full items-center gap-0 px-2 md:px-3",
                   remaining.d > 0 ? "col-start-2 rounded-l-none" : ""
                 )}
               >
-                <span className="font-heading text-foreground px-1 text-2xl leading-normal font-semibold tracking-[-0.02em] tabular-nums">
+                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
                   {String(remaining.h).padStart(2, "0")}
                 </span>
-                <span className="text-foreground w-[7px] shrink-0 text-center text-2xl leading-normal font-extralight">
+                <span className="text-foreground w-[7px] shrink-0 text-center text-xl leading-normal font-extralight md:text-2xl">
                   :
                 </span>
-                <span className="font-heading text-foreground px-1 text-2xl leading-normal font-semibold tracking-[-0.02em] tabular-nums">
+                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
                   {String(remaining.m).padStart(2, "0")}
                 </span>
-                <span className="text-foreground w-[7px] shrink-0 text-center text-2xl leading-normal font-extralight">
+                <span className="text-foreground w-[7px] shrink-0 text-center text-xl leading-normal font-extralight md:text-2xl">
                   :
                 </span>
-                <span className="font-heading text-foreground px-1 text-2xl leading-normal font-semibold tracking-[-0.02em] tabular-nums">
+                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
                   {String(remaining.s).padStart(2, "0")}
                 </span>
               </CountdownPill>
             </div>
           </div>
 
-          <div className="min-w-0 shrink text-right">
+          <div className="min-w-0 overflow-hidden text-right md:shrink">
             {estEpochRewardUsd != null ? (
               <p className="font-heading text-foreground truncate text-[28px] leading-none font-bold">
                 ${formatter.number(estEpochRewardUsd)}
@@ -186,13 +186,13 @@ export function HeroMetricsRow({
             ) : (
               <Skeleton className="ml-auto h-7 w-24" />
             )}
-            <p className="text-brand-300 mt-1 truncate text-sm leading-5 font-bold">
+            <p className="text-brand-300 mt-1 min-w-0 truncate text-sm leading-5 font-bold">
               Est. Total Reward ({epochLabel})
             </p>
           </div>
         </div>
 
-        <Separator className="mx-auto" />
+        <Separator className="mx-auto not-md:my-2" />
 
         <div className="grid w-full min-w-0 grid-cols-3 gap-3">
           <HeroMetric

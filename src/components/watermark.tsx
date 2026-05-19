@@ -13,7 +13,7 @@ export function Watermark({ className, ...props }: ComponentProps<"div">) {
       )}
       {...props}
     >
-      <Icons.logo className="size-1/4" /> <Icons.logoText className="w-1/3" />
+      <Icons.logoText className="aspect-auto h-1/3" />
     </div>
   )
 }
