@@ -14,8 +14,6 @@
     "/protocol-health/*": "/protocol-health/index.html",
     "/operator": "/operator/index.html",
     "/operator/*": "/operator/index.html",
-    "/staking-operators": "/operator/index.html",
-    "/staking-operators/*": "/operator/index.html",
     "/faq": "/faq/index.html",
     "/faq/*": "/faq/index.html",
     "/reward-calculator": "/reward-calculator/index.html",
