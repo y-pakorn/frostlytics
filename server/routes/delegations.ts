@@ -21,13 +21,18 @@ const _getDelegations = async ({
     }
   )
   const data = (await response.json()) as any
+  if (!response.ok || !Array.isArray(data.content)) {
+    throw new Error(
+      `Blockberry staking-history failed (${response.status}): ${JSON.stringify(data).slice(0, 200)}`
+    )
+  }
   return {
     delegations: data.content.map((d: any) => [
       d.owner,
       d.amount,
       d.activationEpoch,
       d.timestamp,
-      d.state,
+      d.state ?? "Unknown",
       d.txDigest,
     ]) as [string, number, number, number, string, string][],
     totalPages: data.totalPages as number,
@@ -94,7 +99,7 @@ export const delegationsRoutes = new Elysia({ tags: ["Delegations"] }).get(
             t.Number({ description: "Amount of WAL (in base units, divide by 10^9 for WAL)" }),
             t.Number({ description: "Epoch when the delegation was activated" }),
             t.Number({ description: "Unix timestamp (milliseconds) of the delegation event" }),
-            t.String({ description: "Delegation state: STAKED, UNSTAKED, WITHDRAWN, etc." }),
+            t.String({ description: "Delegation state: STAKED, UNSTAKED, WITHDRAWN, Unknown when absent, etc." }),
             t.String({ description: "Sui transaction digest for this delegation event" }),
             t.Union([t.String(), t.Null()], { description: "Resolved Sui Name Service name, or null" }),
           ]),
