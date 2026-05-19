@@ -21,11 +21,11 @@ import {
 import { formatter } from "@/lib/formatter"
 import { useOperatorHistory } from "@/hooks/use-operator-history"
 
-import { EmptyChartState } from "../../protocol-health/_components/empty-chart-state"
-import { MetricCard } from "../../protocol-health/_components/metric-card"
+import { EmptyChartState } from "@/components/ui/empty-chart-state"
+import { MetricCard } from "@/components/ui/metric-card"
 
-const STAKE_COLOR = "var(--color-accent-blue)"
-const WEIGHT_COLOR = "var(--color-accent-purple)"
+const STAKE_COLOR = "var(--color-brand-400)"
+const WEIGHT_COLOR = "var(--color-brand-400)"
 const EARNINGS_COLOR = "var(--color-success-foreground)"
 
 export function OperatorHistorySection({ operatorId }: { operatorId: string }) {
@@ -45,7 +45,7 @@ export function OperatorHistorySection({ operatorId }: { operatorId: string }) {
   }, [history])
 
   return (
-    <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
       {/* Staked WAL */}
       <MetricCard
         title="Staked WAL History"

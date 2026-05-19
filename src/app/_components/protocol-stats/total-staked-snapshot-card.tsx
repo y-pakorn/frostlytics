@@ -10,7 +10,7 @@ import { Separator } from "@/components/ui/separator"
 import { Skeleton } from "@/components/ui/skeleton"
 import { HistoricalData } from "@/types"
 
-import { HomeGlassCard } from "./home-glass-card"
+import { GlassCard } from "@/components/ui/glass-card"
 import { useHomeMetrics } from "./use-home-metrics"
 
 function pctDelta(current: number | null, previous: number | null) {
@@ -61,7 +61,7 @@ export function TotalStakedSnapshotCard({
   }, [totalStakedWAL, prices.data])
 
   return (
-    <HomeGlassCard
+    <GlassCard
       tone="chart"
       className={cn(
         "h-[197px] w-full shrink-0",
@@ -104,6 +104,6 @@ export function TotalStakedSnapshotCard({
             : "—"}
         </span>
       </div>
-    </HomeGlassCard>
+    </GlassCard>
   )
 }

@@ -7,7 +7,7 @@ import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 import { HistoricalData } from "@/types"
 
-import { HomeCardTone, HomeGlassCard } from "./home-glass-card"
+import { GlassCard, GlassCardTone } from "@/components/ui/glass-card"
 
 function DeltaBadge({ value }: { value: number | null }) {
   if (value == null || !Number.isFinite(value)) return null
@@ -42,10 +42,10 @@ function SummaryCard({
   value: string
   delta: number | null
   prevValue: string
-  tone: HomeCardTone
+  tone: GlassCardTone
 }) {
   return (
-    <HomeGlassCard
+    <GlassCard
       tone={tone}
       className="h-full min-w-0 flex-1"
       innerClassName="h-full justify-between"
@@ -65,7 +65,7 @@ function SummaryCard({
         <span>Yesterday</span>
         <span>{prevValue}</span>
       </div>
-    </HomeGlassCard>
+    </GlassCard>
   )
 }
 

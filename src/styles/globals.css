@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "./liquid-glass.css";
-@import "./home-cards.css";
+@import "./glass-cards.css";
 
 @plugin "tailwindcss-animate";
 
@@ -11,9 +11,9 @@
   --font-heading: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
   --radius-lg: 24px;
+  --radius-sm: calc(var(--radius-lg) - 8px);
+  --radius-md: calc(var(--radius-lg) - 4px);
   --radius-xl: calc(var(--radius-lg) + 4px);
   --radius-sidebar: 24px;
   --radius-full: 9999px;
@@ -93,6 +93,7 @@
   --color-brand-900: var(--brand-900);
   --color-brand-950: var(--brand-950);
   --color-nav-active: var(--nav-active-bg);
+  --color-background-overlay: var(--background-overlay);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -215,6 +216,7 @@
   --nav: rgba(12, 14, 18, 0.7);
   --nav-foreground: #f7f7f7;
   --nav-active-bg: rgba(82, 70, 93, 0.8);
+  --background-overlay: rgba(12, 14, 18, 0.8);
 
   /* Charts */
   --chart-1: #5925dc;
@@ -230,21 +232,21 @@
   /* Glass surfaces & elevation — Figma shadow tokens */
   --surface-glass: rgba(26, 26, 26, 0.38);
 
-  /* Home card layout tokens */
-  --home-card-radius: var(--radius-lg);
-  --home-card-padding: 24px;
+  /* Glass card layout tokens */
+  --glass-card-radius: var(--radius-lg);
+  --glass-card-padding: 24px;
 
-  /* Home card fill — #0E0E0E @ 80% */
-  --home-card-base: rgba(14, 14, 14, 0.8);
-  --home-hero-from: rgba(14, 11, 30, 0.72);
-  --home-hero-to: rgba(39, 17, 95, 0.78);
-  --home-epoch-success-from: rgba(12, 10, 21, 0.78);
-  --home-epoch-success-to: rgba(10, 54, 32, 0.82);
-  --home-epoch-error-to: rgba(46, 11, 9, 0.82);
-  --home-storage-from: rgba(14, 11, 30, 0.78);
-  --home-storage-to: rgba(50, 40, 84, 0.82);
-  --home-chart-tint: rgba(14, 14, 14, 0.8);
-  --home-card-highlight: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  /* Glass card fill — #0E0E0E @ 80% */
+  --glass-card-base: rgba(14, 14, 14, 0.8);
+  --glass-tone-hero-from: rgba(14, 11, 30, 0.72);
+  --glass-tone-hero-to: rgba(39, 17, 95, 0.78);
+  --glass-tone-epoch-success-from: rgba(12, 10, 21, 0.78);
+  --glass-tone-epoch-success-to: rgba(10, 54, 32, 0.82);
+  --glass-tone-epoch-error-to: rgba(46, 11, 9, 0.82);
+  --glass-tone-storage-from: rgba(14, 11, 30, 0.78);
+  --glass-tone-storage-to: rgba(50, 40, 84, 0.82);
+  --glass-chart-tint: rgba(14, 14, 14, 0.8);
+  --glass-card-highlight: inset 0 1px 2px rgba(255, 255, 255, 0.3);
   --shadow-xs: 0px 1px 2px rgba(10, 13, 18, 0.05);
   --shadow-elevated:
     0px 4px 8px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.2);

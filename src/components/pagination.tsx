@@ -21,7 +21,7 @@ export function Pagination<T>({
         variant="outlineTransparent"
         size="icon"
         className={cn("rounded-none rounded-l-md border-r-0", buttonClassName)}
-        onClick={() => table.setPageIndex(0)}
+        onClick={() => table.setPageIndex((p) => p - 1)}
         disabled={table.getState().pagination.pageIndex === 0}
         {...buttonProps}
       >

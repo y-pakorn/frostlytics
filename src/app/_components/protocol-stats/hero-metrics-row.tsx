@@ -11,7 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton"
 import { useStaking, useSystem } from "@/hooks"
 import { HistoricalData } from "@/types"
 
-import { HomeGlassCard } from "./home-glass-card"
+import { GlassCard } from "@/components/ui/glass-card"
 import { TotalStakedSnapshotCard } from "./total-staked-snapshot-card"
 import { useHomeMetrics } from "./use-home-metrics"
 import { YourPositionCard } from "./your-position-card"
@@ -120,7 +120,7 @@ export function HeroMetricsRow({
         HERO_ROW_HEIGHT
       )}
     >
-      <HomeGlassCard
+      <GlassCard
         tone="chart"
         className={cn("min-w-0 flex-1", HERO_ROW_HEIGHT)}
         contentClassName="h-full"
@@ -223,7 +223,7 @@ export function HeroMetricsRow({
             loading={!system}
           />
         </div>
-      </HomeGlassCard>
+      </GlassCard>
 
       <TotalStakedSnapshotCard historicalData={historicalData} />
 

@@ -1,7 +1,7 @@
 import { Info, TrendingDown, TrendingUp } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { Surface } from "@/components/ui/surface"
+import { GlassCard } from "@/components/ui/glass-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -47,27 +47,23 @@ export function MetricCard({
   className?: string
 }) {
   return (
-    <Surface
-      className={cn(
-        "flex h-full min-h-[280px] flex-col gap-2 p-5",
-        // Bump card surface contrast locally without touching shared component.
-        "!bg-[linear-gradient(180deg,hsla(237,37%,8%,0.55)_0%,hsla(254,36%,24%,0.4)_100%)]",
-        className
-      )}
+    <GlassCard
+      tone="chart"
+      className={cn("min-h-[280px]", className)}
+      contentClassName="flex h-full flex-col gap-2 p-5"
+      innerClassName="h-full gap-2"
     >
       {/* Title row — label + info icon + legend */}
       <div className="flex items-start justify-between gap-2">
         <div className="flex items-center gap-1.5">
-          <span className="text-secondary-foreground text-[11px] font-medium uppercase tracking-wider">
-            {title}
-          </span>
+          <span className="text-brand-300 text-sm font-semibold">{title}</span>
           {description ? (
             <Tooltip>
               <TooltipTrigger asChild>
                 <button
                   type="button"
                   aria-label={`About ${title}`}
-                  className="text-secondary-foreground hover:text-foreground transition-colors"
+                  className="text-tertiary hover:text-foreground transition-colors"
                 >
                   <Info className="size-3" />
                 </button>
@@ -83,7 +79,7 @@ export function MetricCard({
             {legend.map((item) => (
               <div
                 key={item.label}
-                className="text-secondary-foreground flex items-center gap-1 text-[10px]"
+                className="text-tertiary flex items-center gap-1 text-xs"
               >
                 <span
                   className="size-2 rounded-full"
@@ -103,14 +99,14 @@ export function MetricCard({
         ) : (
           <>
             <div className="text-foreground flex flex-wrap items-baseline gap-x-1.5 text-2xl font-bold leading-tight">
-              {value ?? <span className="text-secondary-foreground">—</span>}
+              {value ?? <span className="text-tertiary">—</span>}
               {valueSuffix ? (
-                <span className="text-secondary-foreground text-sm font-medium">
+                <span className="text-tertiary text-sm font-medium">
                   {valueSuffix}
                 </span>
               ) : null}
             </div>
-            <div className="text-secondary-foreground mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
+            <div className="text-tertiary mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-[11px]">
               {delta ? (
                 <span
                   className={cn(
@@ -130,7 +126,7 @@ export function MetricCard({
                     forceSign: true,
                   })}
                   {delta.label ? (
-                    <span className="text-secondary-foreground ml-0.5 font-normal">
+                    <span className="text-tertiary ml-0.5 font-normal">
                       {delta.label}
                     </span>
                   ) : null}
@@ -149,10 +145,10 @@ export function MetricCard({
 
       {/* Plain-English interpretation */}
       {!loading && interpretation ? (
-        <div className="text-secondary-foreground border-t border-white/5 pt-2 text-[11px] italic">
+        <div className="text-tertiary border-t border-white/5 pt-2 text-[11px] italic">
           {interpretation}
         </div>
       ) : null}
-    </Surface>
+    </GlassCard>
   )
 }

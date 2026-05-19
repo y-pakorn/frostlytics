@@ -11,7 +11,7 @@ import {
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
-import { MetricCard } from "./metric-card"
+import { MetricCard } from "@/components/ui/metric-card"
 import { projectDaysUntil } from "./stats"
 import { filterByRange, type Timerange } from "./timerange-picker"
 import type { ProtocolHealthDaily } from "@/hooks/use-protocol-health"

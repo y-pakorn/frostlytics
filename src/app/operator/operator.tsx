@@ -1,17 +1,17 @@
 "use client"
 
-import { lazy, Suspense, useMemo, useState } from "react"
+import { lazy, Suspense, useMemo, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { Copy, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
-import { images } from "@/config/image"
 import { links } from "@/config/link"
 import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { Button } from "@/components/ui/button"
+import { GlassCard } from "@/components/ui/glass-card"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Surface } from "@/components/ui/surface"
 import { SafeImage } from "@/components/safe-image"
 import { StakeDialog } from "@/components/stake-dialog"
 import { useOperatorMetadatas, useOperatorWithSharesAndBaseApy } from "@/hooks"
@@ -29,20 +29,28 @@ const OperatorTransactions = lazy(() =>
   import("./transactions").then((m) => ({ default: m.OperatorTransactions }))
 )
 
+const STAKE_CTA_CLASS =
+  "h-auto rounded-full border-2 border-white/[0.12] px-3 py-2 text-sm font-semibold [box-shadow:var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
+
 const tabs = [
-  {
-    label: "Delegators",
-    component: OperatorDelegators,
-  },
-  {
-    label: "Delegations",
-    component: OperatorDelegations,
-  },
-  {
-    label: "Transactions",
-    component: OperatorTransactions,
-  },
+  { label: "Delegators", component: OperatorDelegators },
+  { label: "Delegations", component: OperatorDelegations },
+  { label: "Transactions", component: OperatorTransactions },
 ] as const
+
+type TabLabel = (typeof tabs)[number]["label"]
+
+function InfoGlassPanel({ children }: { children: ReactNode }) {
+  return (
+    <GlassCard
+      tone="chart"
+      contentClassName="space-y-2 p-4"
+      innerClassName="gap-2"
+    >
+      {children}
+    </GlassCard>
+  )
+}
 
 export function Operator({
   id,
@@ -60,16 +68,27 @@ export function Operator({
 
   const { data: historyMeta } = useOperatorHistory(id)
 
-  const [tab, setTab] = useState<(typeof tabs)[number]["label"]>(
+  const [tab, setTab] = useState<TabLabel>(
     tabs.find((t) => t.label === defaultTab)?.label || tabs[0].label
   )
   const TabComponent = useMemo(() => {
     return tabs.find((t) => t.label === tab)!.component
   }, [tab])
 
+  const operatorMeta = {
+    id,
+    name: operator?.name ?? "",
+    imageUrl: operatorMetadata?.imageUrl ?? "",
+    description: operatorMetadata?.description ?? "",
+    projectUrl: operatorMetadata?.projectUrl ?? "",
+  }
+
   return (
-    <div className="space-y-4">
-      <Surface className="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div className="flex flex-col gap-8">
+      <GlassCard
+        tone="hero"
+        innerClassName="flex flex-col gap-4 sm:flex-row sm:items-center"
+      >
         <div className="flex items-center gap-4">
           <SafeImage
             src={operatorMetadata?.imageUrl}
@@ -77,7 +96,7 @@ export function Operator({
             className="size-16 shrink-0 rounded-full"
           />
           <div className="min-w-0 space-y-1">
-            <h1 className="text-foreground text-xl font-bold sm:text-2xl">
+            <h1 className="font-heading text-foreground text-2xl font-bold">
               {operator?.name ?? (
                 <Skeleton className="inline-block h-7 w-40" />
               )}
@@ -119,27 +138,40 @@ export function Operator({
                 </Button>
               </Link>
             </div>
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2 pt-1">
               {operator ? (
                 <StakeDialog operator={operator}>
-                  <Button variant="purple" size="sm" className="flex-1 sm:w-[120px] sm:flex-initial">
+                  <Button
+                    variant="purple"
+                    size="sm"
+                    className={`flex-1 sm:w-[120px] sm:flex-initial ${STAKE_CTA_CLASS}`}
+                  >
                     Stake
                   </Button>
                 </StakeDialog>
               ) : (
-                <Button variant="purple" size="sm" className="flex-1 sm:w-[120px] sm:flex-initial" disabled>
+                <Button
+                  variant="purple"
+                  size="sm"
+                  className="flex-1 sm:w-[120px] sm:flex-initial"
+                  disabled
+                >
                   Stake
                 </Button>
               )}
               <Link href="/profile" className="flex-1 sm:flex-initial">
-                <Button variant="outline" size="sm" className="w-full sm:w-[120px]">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="w-full sm:w-[120px]"
+                >
                   Manage
                 </Button>
               </Link>
             </div>
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3 rounded-2xl bg-black/20 p-4 sm:ml-auto sm:flex sm:items-center sm:gap-4">
+        <div className="grid grid-cols-2 gap-3 rounded-2xl bg-white/[0.04] p-4 sm:ml-auto sm:flex sm:items-center sm:gap-4">
           {[
             {
               label: "Total Staked",
@@ -169,7 +201,7 @@ export function Operator({
             },
           ].map(({ label, value, isLoading }, i) => (
             <div key={i} className="space-y-1">
-              <div className="text-xs sm:text-sm">{label}</div>
+              <div className="text-brand-300 text-xs font-semibold">{label}</div>
               {isLoading ? (
                 <Skeleton className="h-7 w-18" />
               ) : (
@@ -180,14 +212,14 @@ export function Operator({
             </div>
           ))}
         </div>
-      </Surface>
+      </GlassCard>
 
       <OperatorHistorySection operatorId={id} />
 
       <div className="flex flex-col gap-6 lg:flex-row">
-        <div className="w-full shrink-0 space-y-2 text-sm font-medium lg:w-[330px]">
-          <h2 className="font-heading font-bold">Info</h2>
-          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
+        <div className="w-full shrink-0 space-y-3 text-sm font-medium lg:w-[330px]">
+          <h2 className="font-heading text-2xl font-bold">Info</h2>
+          <InfoGlassPanel>
             {[
               {
                 label: "Pending Stake",
@@ -230,9 +262,9 @@ export function Operator({
                 )}
               </div>
             ))}
-          </div>
+          </InfoGlassPanel>
 
-          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
+          <InfoGlassPanel>
             {[
               {
                 label: "Commission receiver",
@@ -287,10 +319,10 @@ export function Operator({
                 )}
               </div>
             ))}
-          </div>
+          </InfoGlassPanel>
 
-          <h2 className="font-heading font-bold">Voting Params</h2>
-          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
+          <h2 className="font-heading text-2xl font-bold">Voting Params</h2>
+          <InfoGlassPanel>
             {[
               {
                 label: "Node Capacity",
@@ -328,32 +360,30 @@ export function Operator({
                 )}
               </div>
             ))}
-          </div>
+          </InfoGlassPanel>
         </div>
+
         <div className="min-w-0 flex-1 space-y-4">
-          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border-secondary bg-surface-elevated p-1">
-            {tabs.map((t) => (
-              <Button
-                key={t.label}
-                variant={t.label === tab ? "active" : "inactive"}
-                className="shrink-0 rounded-full"
-                onClick={() => {
-                  setTab(t.label)
-                  track("TabChange", { tabName: t.label, operatorId: id })
-                  window.history.replaceState(
-                    null,
-                    "",
-                    `/operator?id=${id}&tab=${t.label}`
-                  )
-                }}
-              >
-                {t.label}
-              </Button>
-            ))}
-          </div>
-          <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-            <TabComponent operator={{ id, name: operator?.name ?? "", imageUrl: operatorMetadata?.imageUrl ?? "", description: operatorMetadata?.description ?? "", projectUrl: operatorMetadata?.projectUrl ?? "" }} />
-          </Suspense>
+          <SegmentedControl
+            variant="figma"
+            className="w-full max-w-full overflow-x-auto"
+            options={tabs.map((t) => ({ label: t.label, value: t.label }))}
+            value={tab}
+            onChange={(value) => {
+              setTab(value)
+              track("TabChange", { tabName: value, operatorId: id })
+              window.history.replaceState(
+                null,
+                "",
+                `/operator?id=${id}&tab=${value}`
+              )
+            }}
+          />
+          <GlassCard tone="chart" innerClassName="min-h-[320px] gap-4">
+            <Suspense fallback={<Skeleton className="h-64 w-full" />}>
+              <TabComponent operator={operatorMeta} />
+            </Suspense>
+          </GlassCard>
         </div>
       </div>
     </div>

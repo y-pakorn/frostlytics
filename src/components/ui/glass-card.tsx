@@ -3,14 +3,14 @@ import { ComponentProps, ReactNode } from "react"
 import { cn } from "@/lib/utils"
 import { LiquidGlass } from "@/components/ui/liquid-glass"
 
-export type HomeCardTone =
+export type GlassCardTone =
   | "hero"
   | "epoch-success"
   | "epoch-error"
   | "storage"
   | "chart"
 
-export function HomeGlassCard({
+export function GlassCard({
   tone = "hero",
   className,
   contentClassName,
@@ -18,7 +18,7 @@ export function HomeGlassCard({
   children,
   ...props
 }: ComponentProps<"div"> & {
-  tone?: HomeCardTone
+  tone?: GlassCardTone
   contentClassName?: string
   innerClassName?: string
   children: ReactNode
@@ -26,17 +26,17 @@ export function HomeGlassCard({
   return (
     <LiquidGlass
       opaque={false}
-      className={cn("home-glass-card h-full w-full", className)}
+      className={cn("glass-card h-full w-full", className)}
       contentClassName={cn(
-        "relative flex h-full min-h-full flex-col overflow-hidden p-[var(--home-card-padding)] text-foreground",
+        "relative flex h-full min-h-full flex-col overflow-hidden p-[var(--glass-card-padding)] text-foreground",
         contentClassName
       )}
       {...props}
     >
-      <div className="home-card-tone" data-tone={tone} aria-hidden />
+      <div className="glass-card-tone" data-tone={tone} aria-hidden />
       <div
         className={cn(
-          "home-card-inner flex min-h-0 flex-1 flex-col",
+          "glass-card-inner flex min-h-0 flex-1 flex-col",
           innerClassName
         )}
       >

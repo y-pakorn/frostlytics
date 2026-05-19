@@ -10,7 +10,7 @@ import { useStakedWal } from "@/hooks"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 
-import { HomeGlassCard } from "./home-glass-card"
+import { GlassCard } from "@/components/ui/glass-card"
 
 function PositionRow({
   label,
@@ -46,7 +46,7 @@ export function YourPositionCard() {
   const totalPositions = stakedWal.data?.length ?? 0
 
   return (
-    <HomeGlassCard
+    <GlassCard
       tone="chart"
       className={cn(
         "h-[197px] w-full shrink-0",
@@ -89,6 +89,6 @@ export function YourPositionCard() {
       >
         <Link href="/staking-operators">Stake</Link>
       </Button>
-    </HomeGlassCard>
+    </GlassCard>
   )
 }

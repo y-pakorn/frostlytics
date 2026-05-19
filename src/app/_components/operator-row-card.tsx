@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { formatter } from "@/lib/formatter"
-import { Surface } from "@/components/ui/surface"
+import { GlassCard } from "@/components/ui/glass-card"
 import { SafeImage } from "@/components/safe-image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,7 @@ export function OperatorRowCard({
   yourPositions?: number
 }) {
   return (
-    <Surface className="space-y-3 p-4">
+    <GlassCard tone="chart" contentClassName="p-4" innerClassName="gap-3">
       <Link
         href={`/operator?id=${operator.id}`}
         prefetch={false}
@@ -51,7 +51,7 @@ export function OperatorRowCard({
       <div className="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
         <div>
           <div className="text-tertiary">APY</div>
-          <div className="text-accent-blue font-bold">
+          <div className="text-accent-teal font-bold">
             {formatter.percentage(operator.apyWithCommission)}
           </div>
         </div>
@@ -95,10 +95,10 @@ export function OperatorRowCard({
       </div>
 
       <StakeDialog operator={operator}>
-        <Button variant="purpleSecondary" size="sm" className="w-full">
+        <Button variant="outline" size="sm" className="w-full">
           Stake
         </Button>
       </StakeDialog>
-    </Surface>
+    </GlassCard>
   )
 }

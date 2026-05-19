@@ -11,8 +11,8 @@ import {
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
-import { EmptyChartState } from "./empty-chart-state"
-import { MetricCard } from "./metric-card"
+import { EmptyChartState } from "@/components/ui/empty-chart-state"
+import { MetricCard } from "@/components/ui/metric-card"
 import { filterByRange, type Timerange } from "./timerange-picker"
 import type {
   ProtocolHealthDaily,

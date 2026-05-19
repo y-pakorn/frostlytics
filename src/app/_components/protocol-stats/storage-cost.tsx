@@ -4,7 +4,7 @@ import { formatter } from "@/lib/formatter"
 import { Skeleton } from "@/components/ui/skeleton"
 import { useSystem } from "@/hooks"
 
-import { HomeGlassCard } from "./home-glass-card"
+import { GlassCard } from "@/components/ui/glass-card"
 
 export function StorageCostSection() {
   const system = useSystem()
@@ -34,7 +34,7 @@ export function StorageCostSection() {
       </h2>
       <div className="flex min-h-[120px] flex-1 flex-col gap-1 sm:flex-row sm:items-stretch lg:min-h-0">
         {items.map((item) => (
-          <HomeGlassCard
+          <GlassCard
             key={item.label}
             tone="storage"
             className="h-full min-w-0 flex-1"
@@ -52,7 +52,7 @@ export function StorageCostSection() {
             <p className="text-secondary-foreground text-sm font-bold">
               {item.desc}
             </p>
-          </HomeGlassCard>
+          </GlassCard>
         ))}
       </div>
     </div>

@@ -8,7 +8,7 @@ import { useFullOperators } from "@/hooks"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
 
-import { MetricCard } from "./metric-card"
+import { MetricCard } from "@/components/ui/metric-card"
 import type { ProtocolHealthMovers } from "@/hooks/use-protocol-health"
 
 const POS_COLOR = "var(--color-success-foreground)"

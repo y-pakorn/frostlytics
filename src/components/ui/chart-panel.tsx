@@ -1,8 +1,6 @@
 import { ReactNode } from "react"
 
-import { cn } from "@/lib/utils"
-
-import { HomeGlassCard } from "./home-glass-card"
+import { GlassCard } from "@/components/ui/glass-card"
 
 export function ChartPanel({
   title,
@@ -18,7 +16,7 @@ export function ChartPanel({
   children: ReactNode
 }) {
   return (
-    <HomeGlassCard
+    <GlassCard
       tone="chart"
       className={className}
       innerClassName="h-full gap-2"
@@ -30,6 +28,6 @@ export function ChartPanel({
         {action}
       </div>
       <div className="min-h-0 flex-1">{children}</div>
-    </HomeGlassCard>
+    </GlassCard>
   )
 }

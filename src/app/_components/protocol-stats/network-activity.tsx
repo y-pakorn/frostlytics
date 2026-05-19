@@ -22,7 +22,7 @@ import {
 import { SegmentedControl } from "@/components/ui/segmented-control"
 import { HistoricalData } from "@/types"
 
-import { ChartPanel } from "./chart-panel"
+import { ChartPanel } from "@/components/ui/chart-panel"
 import { useHomeMetrics } from "./use-home-metrics"
 
 type Range = "30d" | "90d" | "all"

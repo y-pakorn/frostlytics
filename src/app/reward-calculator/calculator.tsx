@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useCallback, useMemo, useState } from "react"
 import { zodResolver } from "@hookform/resolvers/zod"
 import {
   ColumnDef,
@@ -10,35 +10,34 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  PaginationState,
   SortingState,
   useReactTable,
 } from "@tanstack/react-table"
+import debounce from "lodash/debounce"
 import keyBy from "lodash/keyBy"
 import range from "lodash/range"
-import {
-  ArrowLeft,
-  ArrowRight,
-  ChevronDown,
-  ChevronLeft,
-  ChevronRight,
-  ChevronsUpDown,
-  ChevronUp,
-  Copy,
-  Search,
-} from "lucide-react"
+import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react"
 import { useForm } from "react-hook-form"
 import { NumericFormat } from "react-number-format"
-import { toast } from "sonner"
 import z from "zod"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
-import { images } from "@/config/image"
 import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
-import { cn, getPaginationPages } from "@/lib/utils"
+import { cn } from "@/lib/utils"
+import { OperatorHeader } from "@/components/operator-header"
+import { Pagination } from "@/components/pagination"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import {
   Form,
   FormControl,
@@ -47,36 +46,40 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form"
-import { Input } from "@/components/ui/input"
-import { Separator } from "@/components/ui/separator"
+import { GlassCard } from "@/components/ui/glass-card"
+import { GlassInput } from "@/components/ui/glass-input"
+import { GlassPill } from "@/components/ui/glass-pill"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
   TableBody,
   TableCell,
-  TableFooter,
   TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { Surface } from "@/components/ui/surface"
-import { Icons } from "@/components/icons"
-import { Pagination } from "@/components/pagination"
 import { useFullOperators } from "@/hooks"
 
 import { OperatorRewardRowCard } from "./_components/operator-reward-row-card"
-
-const MAIN_SECTION_WIDTH = "383px"
 
 const rewardFormSchema = z.object({
   amount: z.coerce.number().gt(0, "Staking amount must be greater than 0"),
   day: z.coerce.number().gt(0, "Staking period must be greater than 0"),
 })
+
+const operatorTypeFilters = [
+  { label: "All Operators", value: "all" as const },
+  { label: "Committee", value: true },
+  { label: "Not-Committee", value: false },
+] as const
+
+const PERIOD_PRESETS = [30, 365, 730] as const
+
+const TABLE_HEAD_CLASS =
+  "h-11 border-0 bg-[rgba(50,40,84,0.9)] px-6 py-3 text-xs font-semibold tracking-normal text-foreground normal-case shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
+
+const TABLE_CELL_CLASS =
+  "h-16 border-border-secondary/40 border-b px-6 py-3 first:pl-6 last:pr-6"
 
 type OperatorWithReward = OperatorWithSharesAndBaseApy & {
   reward: number
@@ -91,6 +94,7 @@ export default function RewardCalculator() {
     z.output<typeof rewardFormSchema>
   >({
     resolver: zodResolver(rewardFormSchema),
+    mode: "onChange",
   })
 
   const [operatorRewards, setOperatorRewards] = useState<Record<
@@ -98,12 +102,16 @@ export default function RewardCalculator() {
     OperatorWithReward
   > | null>(null)
 
+  const amount = form.watch("amount")
+  const day = form.watch("day")
+  const canCalculate = useMemo(() => {
+    return rewardFormSchema.safeParse({ amount, day }).success
+  }, [amount, day])
+
   const onSubmit = ({ amount, day }: z.output<typeof rewardFormSchema>) => {
     const operators =
       fullOperators?.map((o) => ({
         ...o,
-        // Compound reward calculation for each operator
-        // reward = final amount - initial amount, compounded weekly
         reward:
           amount * Math.pow(1 + o.apyWithCommission / 52, 52 * (day / 365)) -
           amount,
@@ -116,124 +124,52 @@ export default function RewardCalculator() {
     () =>
       [
         {
-          header: "Name/ID",
+          header: "Name / ID",
           accessorKey: "name",
           enableSorting: false,
           filterFn: "isCommittee" as any,
-          cell: ({ row }) => {
-            const operator = row.original
-            const metadata = operator.metadata
-            return (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div className="flex w-full max-w-[250px] items-center gap-2">
-                    {metadata?.imageUrl ? (
-                      <img
-                        src={metadata.imageUrl}
-                        alt={operator.name}
-                        className="size-8 shrink-0 rounded-full"
-                        onError={(e) => (e.currentTarget.src = images.avatar)}
-                      />
-                    ) : (
-                      <Icons.avatar className="size-8 shrink-0 rounded-full" />
-                    )}
-                    <div className="min-w-0">
-                      <div className="flex items-center justify-start gap-1 overflow-hidden font-medium">
-                        <div className="truncate">{operator.name}</div>
-                        {!operator.isCommittee && (
-                          <Badge
-                            variant="outline"
-                            size="sm"
-                            className="shrink-0"
-                          >
-                            Not Committee
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
-                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}{" "}
-                        <Button
-                          size="iconXs"
-                          variant="ghost"
-                          onClick={() => {
-                            navigator.clipboard.writeText(operator.id)
-                            toast.success("Copied to clipboard")
-                          }}
-                        >
-                          <Copy />
-                        </Button>
-                      </div>
-                    </div>
-                  </div>
-                </TooltipTrigger>
-                <TooltipContent className="max-w-[250px] space-y-2">
-                  <div className="flex items-center gap-2">
-                    {metadata?.imageUrl ? (
-                      <img
-                        src={metadata.imageUrl}
-                        alt={operator.name}
-                        className="size-6 shrink-0 rounded-full"
-                      />
-                    ) : (
-                      <Icons.avatar className="size-6 shrink-0 rounded-full" />
-                    )}
-                    <div className="min-w-0">
-                      <div className="line-clamp-1 truncate font-medium">
-                        {operator.name}
-                      </div>
-                      <div className="text-tertiary font-mono text-xs">
-                        {operator.id.slice(0, 8)}...{operator.id.slice(-8)}
-                      </div>
-                    </div>
-                  </div>
-                  <Separator />
-                  <div className="space-y-1">
-                    <div className="text-tertiary font-bold">Description</div>
-                    <div className="text-secondary">
-                      {metadata?.description || "-"}
-                    </div>
-                  </div>
-                </TooltipContent>
-              </Tooltip>
-            )
-          },
+          cell: ({ row }) => <OperatorHeader operator={row.original} />,
         },
         {
-          header: "APY",
+          header: () => <div className="ml-auto text-end">APY%</div>,
           id: "apyWithCommission",
           accessorKey: "apyWithCommission",
           enableSorting: true,
-          cell: ({ row }) => {
-            return (
-              <div className="text-accent-blue font-bold">
-                {formatter.percentage(row.original.apyWithCommission)}
-              </div>
-            )
-          },
+          cell: ({ row }) => (
+            <div className="text-success-foreground text-end font-medium">
+              {formatter.percentage(row.original.apyWithCommission)}
+            </div>
+          ),
         },
         {
           id: "staked",
-          header: "Total Staked",
+          header: () => <div className="ml-auto text-end">Total Stake</div>,
           accessorKey: "staked",
           enableSorting: true,
-          cell: ({ row }) => {
-            if (!row.original.staked)
-              return <div className="text-tertiary">-</div>
-            return (
-              <div>{formatter.numberReadable(row.original.staked)} WAL</div>
-            )
-          },
+          cell: ({ row }) =>
+            !row.original.staked ? (
+              <div className="text-tertiary text-end">-</div>
+            ) : (
+              <div className="text-secondary-foreground text-end">
+                {formatter.numberReadable(row.original.staked)} WAL
+              </div>
+            ),
         },
         {
           id: "reward",
-          header: "Estimated Reward",
-          accessorKey: "reward",
+          header: () => (
+            <div className="ml-auto text-end">Estimated Reward</div>
+          ),
+          accessorFn: (row) => operatorRewards?.[row.id]?.reward,
           enableSorting: true,
+          sortUndefined: "last",
           cell: ({ row }) => {
             const reward = operatorRewards?.[row.original.id]?.reward
-            if (!reward) return <div className="text-tertiary">-</div>
+            if (!reward) return <div className="text-tertiary text-end">-</div>
             return (
-              <div className="font-bold">{formatter.number(reward, 4)} WAL</div>
+              <div className="text-brand-300 text-end text-sm font-semibold">
+                {formatter.number(reward, 4)} WAL
+              </div>
             )
           },
         },
@@ -241,21 +177,21 @@ export default function RewardCalculator() {
     [operatorRewards]
   )
 
+  const trackSearch = useCallback(
+    debounce((query: string) => {
+      if (query) track("TableSearch", { table: "operators", query })
+    }, 500),
+    []
+  )
+
   const [sorting, setSorting] = useState<SortingState>([
-    {
-      id: "apyWithCommission",
-      desc: true,
-    },
+    { id: "apyWithCommission", desc: true },
   ])
-  const [globalFilter, setGlobalFilter] = useState<any>([])
+  const [globalFilter, setGlobalFilter] = useState("")
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([])
-  const [pagination, setPagination] = useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 10,
-  })
-  const data = useMemo(() => {
-    return fullOperators || []
-  }, [fullOperators])
+
+  const data = useMemo(() => fullOperators || [], [fullOperators])
+
   const table = useReactTable({
     data,
     columns,
@@ -263,219 +199,324 @@ export default function RewardCalculator() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
+    getRowId: (row) => row.id,
     onSortingChange: setSorting,
     onGlobalFilterChange: setGlobalFilter,
     onColumnFiltersChange: setColumnFilters,
-    onPaginationChange: setPagination,
-    state: {
-      sorting,
-      globalFilter,
-      columnFilters,
-      pagination,
+    filterFns: {
+      isCommittee: (row, _columnId, filterValue) =>
+        row.original.isCommittee === filterValue,
     },
+    state: { sorting, globalFilter, columnFilters },
+    sortDescFirst: true,
+    initialState: { pagination: { pageSize: 10 } },
   })
 
+  const activeFilterValue =
+    columnFilters[0]?.value === undefined
+      ? "all"
+      : String(columnFilters[0]?.value)
+
+  const activeFilterLabel =
+    operatorTypeFilters.find(
+      (item) =>
+        item.value === "all"
+          ? activeFilterValue === "all"
+          : String(item.value) === activeFilterValue
+    )?.label ?? "All Operators"
+
   return (
-    <div className="space-y-4">
-      <div className="space-y-1.5">
-        <h1 className="text-accent-purple-light text-2xl font-semibold sm:text-3xl md:text-4xl">
-          Reward Calculator
-        </h1>
-        <p className="text-sm font-medium sm:text-base">
-          Estimate your potential rewards based on staking amount and staking
-          period
-        </p>
-      </div>
-      <Form {...form}>
-        <form
-          onSubmit={form.handleSubmit(onSubmit)}
-          className="flex max-w-full min-w-0 flex-col items-stretch gap-3 sm:flex-row sm:items-end sm:gap-2"
-        >
-          <FormField
-            control={form.control}
-            name="amount"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel asterisk>Staking Amount</FormLabel>
-                <FormControl>
-                  <NumericFormat
-                    {...field}
-                    value={field.value as number | undefined}
-                    customInput={Input}
-                    placeholder="Enter staking amount"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="day"
-            render={({ field }) => (
-              <FormItem className="flex-1">
-                <FormLabel asterisk>Staking Period (Days)</FormLabel>
-                <FormControl>
-                  <NumericFormat
-                    {...field}
-                    value={field.value as number | undefined}
-                    customInput={Input}
-                    placeholder="Enter staking period"
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="outline"
-              type="button"
-              className="flex-1 sm:flex-initial"
-              onClick={() => {
-                form.setValue("day", 30)
-                track("CalculatorPresetClick", { days: 30 })
-              }}
-            >
-              30D
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              className="flex-1 sm:flex-initial"
-              onClick={() => {
-                form.setValue("day", 365)
-                track("CalculatorPresetClick", { days: 365 })
-              }}
-            >
-              365D
-            </Button>
-            <Button
-              variant="outline"
-              type="button"
-              className="flex-1 sm:flex-initial"
-              onClick={() => {
-                form.setValue("day", 730)
-                track("CalculatorPresetClick", { days: 730 })
-              }}
-            >
-              730D
-            </Button>
-          </div>
-          <Button
-            type="submit"
-            variant="purple"
-            disabled={form.formState.isSubmitting}
-            className="w-full sm:w-auto sm:flex-1"
+    <div className="flex flex-col gap-8">
+      <h1 className="font-heading text-foreground text-2xl font-bold">
+        Reward Calculator
+      </h1>
+
+      <GlassCard
+        tone="chart"
+        className="rounded-3xl"
+        contentClassName="p-4 md:p-5"
+      >
+        <Form {...form}>
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="flex flex-col gap-4 md:flex-row md:items-end md:gap-3"
           >
-            Calculate
-          </Button>
-        </form>
-      </Form>
-      <div className="space-y-2">
-        <div className="flex flex-wrap items-center gap-2">
-          <div className="font-semibold">All Operators</div>
-          <div className="bg-accent-purple text-primary-foreground rounded-full px-2 py-1 text-xs font-bold">
-            {table.getRowCount()}
+            <FormField
+              control={form.control}
+              name="amount"
+              render={({ field }) => (
+                <FormItem className="min-w-0 flex-1">
+                  <FormLabel asterisk className="text-secondary-foreground">
+                    Amount
+                  </FormLabel>
+                  <FormControl>
+                    <NumericFormat
+                      {...field}
+                      value={field.value as number | undefined}
+                      customInput={GlassInput}
+                      placeholder="Enter staking amount ($WAL)"
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="day"
+              render={({ field }) => (
+                <FormItem className="min-w-0 flex-1">
+                  <FormLabel asterisk className="text-secondary-foreground">
+                    Staking Period (Days)
+                  </FormLabel>
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                    <FormControl>
+                      <NumericFormat
+                        {...field}
+                        value={field.value as number | undefined}
+                        customInput={GlassInput}
+                        placeholder="Enter staking period"
+                        containerClassName="sm:min-w-[180px]"
+                      />
+                    </FormControl>
+                    <div className="flex gap-1">
+                      {PERIOD_PRESETS.map((days) => (
+                        <GlassPill
+                          key={days}
+                          type="button"
+                          contentClassName="px-3 font-semibold text-secondary-foreground"
+                          onClick={() => {
+                            form.setValue("day", days, { shouldValidate: true })
+                            track("CalculatorPresetClick", { days })
+                          }}
+                        >
+                          {days}d
+                        </GlassPill>
+                      ))}
+                    </div>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <Button
+              type="submit"
+              variant="outline"
+              disabled={!canCalculate || form.formState.isSubmitting}
+              className="h-10 w-full shrink-0 rounded-full md:w-[140px]"
+            >
+              Calculate
+            </Button>
+          </form>
+        </Form>
+      </GlassCard>
+
+      <div className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <p className="text-foreground text-base font-semibold">
+              All Operators
+            </p>
+            <Badge variant="epoch">
+              {table.getFilteredRowModel().rows.length}
+            </Badge>
           </div>
-          <div className="hidden flex-1 md:block" />
-          <div className="relative order-last w-full md:order-none md:w-[330px]">
-            <Input
-              className="h-9 pl-10"
-              onChange={(e) => table.setGlobalFilter(e.target.value)}
+
+          <div className="flex w-full flex-wrap items-center gap-2 md:w-auto md:justify-end">
+            <GlassInput
+              className="w-full md:w-[320px]"
+              containerClassName="w-full md:w-[320px]"
+              icon={<Search className="size-4" />}
+              onChange={(e) => {
+                table.setGlobalFilter(e.target.value)
+                trackSearch(e.target.value)
+              }}
               placeholder="Enter Operator Name"
             />
-            <Search className="text-muted-foreground absolute top-1/2 left-4 size-4 -translate-y-1/2" />
+
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <GlassPill
+                  type="button"
+                  contentClassName="gap-1 font-semibold text-secondary-foreground"
+                >
+                  {activeFilterLabel}
+                  <ChevronDown className="size-4" />
+                </GlassPill>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" variant="glass">
+                <DropdownMenuLabel>Filter by operator type</DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuRadioGroup value={activeFilterValue}>
+                  {operatorTypeFilters.map((item) => (
+                    <DropdownMenuRadioItem
+                      key={item.label}
+                      value={
+                        item.value === "all" ? "all" : String(item.value)
+                      }
+                      onSelect={() => {
+                        if (item.value === "all") {
+                          table.setColumnFilters([])
+                        } else {
+                          table.setColumnFilters([
+                            { id: "name", value: item.value },
+                          ])
+                        }
+                        track("TableFilter", {
+                          table: "operators",
+                          filterValue: item.label,
+                        })
+                      }}
+                    >
+                      {item.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-        <div className="hidden w-full overflow-x-auto md:block">
-          <Table>
-            <TableHeader>
-              {table.getHeaderGroups().map((headerGroup) => (
-                <TableRow key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    const sorted = header.column.getIsSorted()
-                    const canSort = header.column.getCanSort()
 
-                    const Icon =
-                      sorted === "asc"
-                        ? ChevronUp
-                        : sorted === "desc"
-                          ? ChevronDown
-                          : ChevronsUpDown
-                    return (
-                      <TableHead
-                        key={header.id}
-                        style={{ width: `${header.getSize()}px` }}
-                        className={cn(canSort && "cursor-default select-none")}
-                        onClick={() => canSort && header.column.toggleSorting()}
-                      >
-                        <div className="flex items-center gap-1">
-                          {header.isPlaceholder
-                            ? null
-                            : flexRender(
-                                header.column.columnDef.header,
-                                header.getContext()
-                              )}
-                          {header.column.getCanSort() && (
-                            <Button variant="ghost" size="iconXs">
-                              <Icon />
-                            </Button>
-                          )}
-                        </div>
-                      </TableHead>
-                    )
-                  })}
-                </TableRow>
-              ))}
-            </TableHeader>
-            <TableBody>
-              {!fullOperators ? (
-                range(10).map((i) => (
-                  <TableRow key={i}>
-                    <TableCell colSpan={columns.length}>
-                      <Skeleton className="h-3/4 w-full" />
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : table.getRowModel().rows?.length ? (
-                table.getRowModel().rows.map((row) => (
+        <div className="hidden md:block">
+          <GlassCard
+            tone="chart"
+            contentClassName="overflow-hidden p-0"
+            className="rounded-3xl"
+          >
+            <Table>
+              <TableHeader>
+                {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow
-                    key={row.id}
-                    data-state={row.getIsSelected() && "selected"}
+                    key={headerGroup.id}
+                    className="border-0 hover:bg-transparent"
                   >
-                    {row.getVisibleCells().map((cell) => (
-                      <TableCell key={cell.id}>
-                        {flexRender(
-                          cell.column.columnDef.cell,
-                          cell.getContext()
-                        )}
-                      </TableCell>
-                    ))}
+                    {headerGroup.headers.map((header, index) => {
+                      const sorted = header.column.getIsSorted()
+                      const canSort = header.column.getCanSort()
+                      const Icon =
+                        sorted === "asc"
+                          ? ChevronUp
+                          : sorted === "desc"
+                            ? ChevronDown
+                            : ChevronsUpDown
+                      const isFirst = index === 0
+                      const isLast = index === headerGroup.headers.length - 1
+                      return (
+                        <TableHead
+                          key={header.id}
+                          className={cn(
+                            TABLE_HEAD_CLASS,
+                            canSort && "cursor-pointer select-none",
+                            isFirst && "rounded-l-full",
+                            isLast && "rounded-r-full",
+                            !isFirst && header.id !== "name" && "text-end"
+                          )}
+                          onClick={() => {
+                            if (canSort) {
+                              header.column.toggleSorting()
+                              track("TableSort", {
+                                table: "operators",
+                                column: header.id,
+                                direction:
+                                  header.column.getIsSorted() === "desc"
+                                    ? "asc"
+                                    : "desc",
+                              })
+                            }
+                          }}
+                        >
+                          <div
+                            className={cn(
+                              "flex items-center gap-1",
+                              !isFirst &&
+                                header.id !== "name" &&
+                                "justify-end"
+                            )}
+                          >
+                            {header.isPlaceholder
+                              ? null
+                              : flexRender(
+                                  header.column.columnDef.header,
+                                  header.getContext()
+                                )}
+                            {canSort && (
+                              <Button variant="ghost" size="iconXs">
+                                <Icon />
+                              </Button>
+                            )}
+                          </div>
+                        </TableHead>
+                      )
+                    })}
                   </TableRow>
-                ))
-              ) : (
-                <TableRow>
-                  <TableCell
-                    colSpan={columns.length}
-                    className="text-disabled h-[350px] text-center"
-                  >
-                    No matched operators found.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+                ))}
+              </TableHeader>
+              <TableBody>
+                {!fullOperators
+                  ? range(10).map((i) => (
+                      <TableRow
+                        key={i}
+                        className="border-0 hover:bg-transparent"
+                      >
+                        <TableCell
+                          colSpan={columns.length}
+                          className={TABLE_CELL_CLASS}
+                        >
+                          <Skeleton className="h-12 w-full" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  : table.getRowModel().rows?.length
+                    ? table.getRowModel().rows.map((row) => (
+                        <TableRow
+                          key={row.id}
+                          className="border-0 hover:bg-surface-elevated/40"
+                        >
+                          {row.getVisibleCells().map((cell) => (
+                            <TableCell
+                              key={cell.id}
+                              className={TABLE_CELL_CLASS}
+                            >
+                              {flexRender(
+                                cell.column.columnDef.cell,
+                                cell.getContext()
+                              )}
+                            </TableCell>
+                          ))}
+                        </TableRow>
+                      ))
+                    : (
+                        <TableRow className="border-0 hover:bg-transparent">
+                          <TableCell
+                            colSpan={columns.length}
+                            className={cn(
+                              TABLE_CELL_CLASS,
+                              "h-24 text-center"
+                            )}
+                          >
+                            No results.
+                          </TableCell>
+                        </TableRow>
+                      )}
+              </TableBody>
+            </Table>
+          </GlassCard>
         </div>
 
-        {/* Mobile card list */}
-        <div className="space-y-2 md:hidden">
+        {fullOperators && table.getPageCount() > 1 ? (
+          <Pagination table={table} className="hidden px-1 md:flex" />
+        ) : null}
+
+        <div className="block space-y-2 md:hidden">
           {!fullOperators
             ? range(5).map((i) => (
-                <Skeleton key={i} className="h-[200px] w-full" />
+                <Skeleton
+                  key={i}
+                  className="h-[220px] w-full rounded-[var(--glass-card-radius)]"
+                />
               ))
-            : table.getRowModel().rows.length
-              ? table.getRowModel().rows.map((row) => (
+            : table.getFilteredRowModel().rows.length
+              ? table.getFilteredRowModel().rows.map((row) => (
                   <OperatorRewardRowCard
                     key={row.id}
                     operator={row.original}
@@ -483,13 +524,11 @@ export default function RewardCalculator() {
                   />
                 ))
               : (
-                  <div className="text-disabled py-12 text-center text-sm">
-                    No matched operators found.
+                  <div className="text-tertiary py-8 text-center text-sm">
+                    No results.
                   </div>
                 )}
         </div>
-
-        <Pagination table={table} />
       </div>
     </div>
   )

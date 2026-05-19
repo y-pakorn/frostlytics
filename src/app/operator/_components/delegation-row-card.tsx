@@ -5,7 +5,7 @@ import { toast } from "sonner"
 import { links } from "@/config/link"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
-import { Surface } from "@/components/ui/surface"
+import { GlassCard } from "@/components/ui/glass-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import type { DelegationResponse } from "@/types"
@@ -17,7 +17,7 @@ export function DelegationRowCard({
 }) {
   const [address, amount, activationEpoch, age, operation, digest, name] = row
   return (
-    <Surface className="space-y-2 p-4">
+    <GlassCard tone="chart" contentClassName="space-y-2 p-4">
       <div className="flex items-start justify-between gap-2">
         <Link
           href={`/profile?addr=${address}`}
@@ -80,6 +80,6 @@ export function DelegationRowCard({
       >
         View transaction <ExternalLink className="size-3" />
       </Link>
-    </Surface>
+    </GlassCard>
   )
 }

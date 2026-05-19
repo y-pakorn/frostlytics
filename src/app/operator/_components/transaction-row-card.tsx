@@ -4,14 +4,14 @@ import { toast } from "sonner"
 
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
-import { Surface } from "@/components/ui/surface"
+import { GlassCard } from "@/components/ui/glass-card"
 import { Button } from "@/components/ui/button"
 import type { OperatorTransaction } from "@/types"
 
 export function TransactionRowCard({ tx }: { tx: OperatorTransaction }) {
   const gasSui = tx.gas / walrus.denominator
   return (
-    <Surface className="space-y-2 p-4">
+    <GlassCard tone="chart" contentClassName="space-y-2 p-4">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="text-foreground font-medium">
@@ -66,6 +66,6 @@ export function TransactionRowCard({ tx }: { tx: OperatorTransaction }) {
           <div className="text-foreground font-medium">{gasSui} SUI</div>
         </div>
       </div>
-    </Surface>
+    </GlassCard>
   )
 }

@@ -7,10 +7,10 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { links } from "@/config/link"
 import { cn } from "@/lib/utils"
 
+import { OperatorTooltipContent } from "./operator-tooltip-content"
 import { SafeImage } from "./safe-image"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { Separator } from "./ui/separator"
 import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip"
 
 export const OperatorHeader = memo(
@@ -71,29 +71,8 @@ export const OperatorHeader = memo(
             </div>
           </Link>
         </TooltipTrigger>
-        <TooltipContent className="max-w-[250px] space-y-2">
-          <div className="flex items-center gap-2">
-            <SafeImage
-              src={operator.metadata?.imageUrl}
-              alt={operator.name}
-              className="size-6 shrink-0 rounded-full"
-            />
-            <div className="min-w-0">
-              <div className="line-clamp-1 truncate font-medium">
-                {operator.name}
-              </div>
-              <div className="text-tertiary font-mono text-xs">
-                {operator.id.slice(0, 8)}...{operator.id.slice(-8)}
-              </div>
-            </div>
-          </div>
-          <Separator />
-          <div className="space-y-1">
-            <div className="text-tertiary font-bold">Description</div>
-            <div className="text-secondary">
-              {operator.metadata?.description || "-"}
-            </div>
-          </div>
+        <TooltipContent variant="glass" sideOffset={8}>
+          <OperatorTooltipContent operator={operator} />
         </TooltipContent>
       </Tooltip>
     )
