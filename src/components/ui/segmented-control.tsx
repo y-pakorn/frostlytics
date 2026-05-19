@@ -1,28 +1,86 @@
 "use client"
 
-import { ComponentProps } from "react"
+import { ComponentProps, ReactNode } from "react"
 
 import { cn } from "@/lib/utils"
+
+import { LiquidGlass } from "./liquid-glass"
 
 export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
   variant = "pill",
+  activeTone = "default",
+  size = "sm",
   className,
 }: {
-  options: { label: string; value: T }[]
+  options: { label: ReactNode; value: T }[]
   value: T
   onChange: (value: T) => void
-  variant?: "pill" | "figma"
+  variant?: "pill" | "figma" | "glass"
+  activeTone?: "default" | "purple"
+  size?: "sm" | "md"
   className?: string
 }) {
+  if (variant === "glass") {
+    return (
+      <LiquidGlass
+        radius={size === "md" ? 20 : 12}
+        className={cn(
+          "inline-flex shrink-0",
+          size === "md" && "h-10",
+          className
+        )}
+        contentClassName={cn(
+          "flex items-stretch p-1",
+          size === "md" ? "h-full" : "p-0.5"
+        )}
+      >
+        <div
+          role="tablist"
+          className={cn(
+            "inline-flex w-full items-stretch gap-0.5",
+            size === "md" ? "h-full" : ""
+          )}
+        >
+          {options.map((option) => {
+            const isActive = value === option.value
+            return (
+              <button
+                key={option.value}
+                type="button"
+                role="tab"
+                aria-selected={isActive}
+                onClick={() => onChange(option.value)}
+                className={cn(
+                  "relative rounded-full font-semibold transition-colors",
+                  size === "md"
+                    ? "flex h-full items-center px-3 text-sm"
+                    : "px-2.5 py-1 text-xs",
+                  isActive
+                    ? activeTone === "purple"
+                      ? "bg-brand-400 text-foreground shadow-[var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
+                      : "text-foreground bg-white/[0.12] shadow-[var(--shadow-xs)]"
+                    : "text-tertiary hover:text-secondary-foreground"
+                )}
+              >
+                {option.label}
+              </button>
+            )
+          })}
+        </div>
+      </LiquidGlass>
+    )
+  }
+
   if (variant === "figma") {
     return (
       <div
         className={cn(
           "border-border-primary inline-flex overflow-hidden rounded-xl border",
           "shadow-[var(--shadow-xs)] isolate",
+          size === "md" && "h-10 items-stretch",
           className
         )}
         role="tablist"
@@ -37,10 +95,15 @@ export function SegmentedControl<T extends string>({
               aria-selected={isActive}
               onClick={() => onChange(option.value)}
               className={cn(
-                "relative px-2 py-0.5 text-xs font-semibold transition-colors",
+                "relative font-semibold transition-colors",
+                size === "md"
+                  ? "flex h-full items-center px-3 text-sm"
+                  : "px-2 py-0.5 text-xs",
                 index < options.length - 1 && "border-border-primary border-r",
                 isActive
-                  ? "text-secondary-foreground bg-white/[0.08]"
+                  ? activeTone === "purple"
+                    ? "bg-brand-400 text-foreground"
+                    : "text-secondary-foreground bg-white/[0.08]"
                   : "text-tertiary bg-black/20 hover:text-secondary-foreground"
               )}
             >

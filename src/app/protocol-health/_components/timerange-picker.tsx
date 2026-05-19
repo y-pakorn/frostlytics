@@ -1,6 +1,6 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
+import { SegmentedControl } from "@/components/ui/segmented-control"
 import { cn } from "@/lib/utils"
 
 export type Timerange = "7d" | "30d" | "90d" | "all"
@@ -29,22 +29,17 @@ export function TimerangePicker({
   className?: string
 }) {
   return (
-    <div className={cn("flex items-center gap-1", className)}>
-      {OPTIONS.map((opt) => (
-        <Button
-          key={opt.value}
-          variant={value === opt.value ? "active" : "inactive"}
-          size="sm"
-          onClick={() => onChange(opt.value)}
-        >
-          {opt.label}
-        </Button>
-      ))}
-    </div>
+    <SegmentedControl
+      variant="glass"
+      activeTone="purple"
+      className={cn("shrink-0", className)}
+      options={OPTIONS}
+      value={value}
+      onChange={onChange}
+    />
   )
 }
 
-// Filter a daily-keyed (timestamp) array down to the selected range.
 export const filterByRange = <T extends { timestamp: string }>(
   rows: T[],
   range: Timerange

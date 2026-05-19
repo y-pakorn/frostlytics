@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -15,7 +22,7 @@ import { MetricCard } from "@/components/ui/metric-card"
 import { filterByRange, type Timerange } from "./timerange-picker"
 import type { ProtocolHealthDecentralization } from "@/hooks/use-protocol-health"
 
-const COLOR = "var(--color-accent-purple)"
+const COLOR = "var(--color-brand-400)"
 
 const qualitative = (g: number) =>
   g < 0.3
@@ -44,6 +51,7 @@ export function StakeDistributionEqualityCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Stake Distribution"
       description="Gini coefficient of operator stake weight (0 = perfectly equal, 1 = perfectly unequal). Complements Nakamoto with a continuous measure."
       legend={[{ label: "Gini", color: COLOR }]}
@@ -54,11 +62,11 @@ export function StakeDistributionEqualityCard({
     >
       <ChartContainer
         watermark={false}
-        className="h-full w-full"
+        className={METRIC_CHART_CLASS}
         config={{ gini: { color: COLOR, label: "Gini" } }}
       >
-        <LineChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeOpacity={0.1} />
+        <LineChart data={rows} margin={METRIC_CHART_MARGIN}>
+          <CartesianGrid {...METRIC_GRID_PROPS} />
           <YAxis hide domain={[0, 1]} />
           <XAxis
             dataKey="timestamp"
@@ -67,7 +75,7 @@ export function StakeDistributionEqualityCard({
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 10 }}
+            tick={METRIC_AXIS_TICK}
           />
           <ChartTooltip
             cursor={false}

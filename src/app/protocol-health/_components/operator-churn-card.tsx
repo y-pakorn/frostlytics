@@ -15,6 +15,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { formatter } from "@/lib/formatter"
 
 import { EmptyChartState } from "@/components/ui/empty-chart-state"
@@ -59,6 +66,7 @@ export function OperatorChurnCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Operator Retention & Churn"
       description="Operators joining and exiting per epoch, with the most recent IDs surfaced. Tracks operator-set stability."
       legend={[
@@ -86,93 +94,95 @@ export function OperatorChurnCard({
           : null
       }
       interpretation={
-        churn.length
-          ? net30 === 0
-            ? "Operator set is exactly balanced across the last 30 epochs."
-            : net30 > 0
-              ? `Net growth of ${formatter.number(net30, 0)} operators over the last 30 epochs.`
-              : `Net loss of ${formatter.number(-net30, 0)} operators over the last 30 epochs.`
-          : undefined
+        churn.length ? (
+          <div className="space-y-2">
+            <p>
+              {net30 === 0
+                ? "Operator set is exactly balanced across the last 30 epochs."
+                : net30 > 0
+                  ? `Net growth of ${formatter.number(net30, 0)} operators over the last 30 epochs.`
+                  : `Net loss of ${formatter.number(-net30, 0)} operators over the last 30 epochs.`}
+            </p>
+            {(recentJoined.length || recentExited.length) > 0 ? (
+              <div className="not-italic grid grid-cols-2 gap-2 text-[10px]">
+                <div className="text-secondary-foreground space-y-1 rounded-xl border border-white/[0.08] bg-black/20 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  <div className="text-success-foreground font-semibold">
+                    Recently joined
+                  </div>
+                  {recentJoined.length ? (
+                    recentJoined.map((j) => (
+                      <div key={`j-${j.epoch}-${j.id}`} className="truncate">
+                        Ep {j.epoch} · {shortId(j.id)}
+                      </div>
+                    ))
+                  ) : (
+                    <div>—</div>
+                  )}
+                </div>
+                <div className="text-secondary-foreground space-y-1 rounded-xl border border-white/[0.08] bg-black/20 p-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
+                  <div className="text-error-foreground font-semibold">
+                    Recently exited
+                  </div>
+                  {recentExited.length ? (
+                    recentExited.map((e) => (
+                      <div key={`e-${e.epoch}-${e.id}`} className="truncate">
+                        Ep {e.epoch} · {shortId(e.id)}
+                      </div>
+                    ))
+                  ) : (
+                    <div>—</div>
+                  )}
+                </div>
+              </div>
+            ) : null}
+          </div>
+        ) : undefined
       }
       loading={loading}
     >
       {series.length === 0 ? (
         <EmptyChartState message="No churn history yet" />
       ) : (
-        <div className="flex h-full flex-col gap-2">
-          <ChartContainer
-            watermark={false}
-            className="h-[120px] w-full"
-            config={{
-              joined: { color: JOINED_COLOR, label: "Joined" },
-              exited: { color: EXITED_COLOR, label: "Exited" },
-            }}
+        <ChartContainer
+          watermark={false}
+          className={METRIC_CHART_CLASS}
+          config={{
+            joined: { color: JOINED_COLOR, label: "Joined" },
+            exited: { color: EXITED_COLOR, label: "Exited" },
+          }}
+        >
+          <BarChart
+            data={series}
+            margin={METRIC_CHART_MARGIN}
+            stackOffset="sign"
           >
-            <BarChart
-              data={series}
-              margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
-              stackOffset="sign"
-            >
-              <CartesianGrid vertical={false} strokeOpacity={0.1} />
-              <YAxis hide />
-              <XAxis
-                dataKey="epoch"
-                tickLine={false}
-                axisLine={false}
-                tickMargin={8}
-                minTickGap={32}
-                tickFormatter={(v) => `Ep ${v}`}
-                tick={{ fontSize: 10 }}
-              />
-              <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.25} />
-              <ChartTooltip
-                cursor={false}
-                content={
-                  <ChartTooltipContent
-                    hideLabel
-                    valueFormatter={(v) =>
-                      formatter.number(Math.abs(Number(v)), 0)
-                    }
-                  />
-                }
-              />
-              <Bar dataKey="joined" fill={JOINED_COLOR} radius={[2, 2, 0, 0]} />
-              <Bar dataKey="exited" fill={EXITED_COLOR} radius={[0, 0, 2, 2]} />
-            </BarChart>
-          </ChartContainer>
-          {(recentJoined.length || recentExited.length) > 0 ? (
-            <div className="text-secondary-foreground grid grid-cols-2 gap-2 text-[10px]">
-              <div className="space-y-0.5">
-                <div className="text-success-foreground font-semibold">
-                  Recently joined
-                </div>
-                {recentJoined.length ? (
-                  recentJoined.map((j) => (
-                    <div key={`j-${j.epoch}-${j.id}`} className="truncate">
-                      Ep {j.epoch} · {shortId(j.id)}
-                    </div>
-                  ))
-                ) : (
-                  <div>—</div>
-                )}
-              </div>
-              <div className="space-y-0.5">
-                <div className="text-error-foreground font-semibold">
-                  Recently exited
-                </div>
-                {recentExited.length ? (
-                  recentExited.map((e) => (
-                    <div key={`e-${e.epoch}-${e.id}`} className="truncate">
-                      Ep {e.epoch} · {shortId(e.id)}
-                    </div>
-                  ))
-                ) : (
-                  <div>—</div>
-                )}
-              </div>
-            </div>
-          ) : null}
-        </div>
+            <CartesianGrid {...METRIC_GRID_PROPS} />
+            <YAxis hide />
+            <XAxis
+              dataKey="epoch"
+              tickLine={false}
+              axisLine={false}
+              tickMargin={4}
+              minTickGap={32}
+              tickFormatter={(v) => `Ep ${v}`}
+              tick={METRIC_AXIS_TICK}
+            />
+            <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.25} />
+            <ChartTooltip
+              cursor={false}
+              content={
+                <ChartTooltipContent
+                  hideLabel
+                  valueFormatter={(v) =>
+                    formatter.number(Math.abs(Number(v)), 0)
+                  }
+                />
+              }
+            />
+            <Bar dataKey="joined" fill={JOINED_COLOR} radius={[2, 2, 0, 0]} />
+            <Bar dataKey="exited" fill={EXITED_COLOR} radius={[0, 0, 2, 2]} />
+          </BarChart>
+        </ChartContainer>
       )}
     </MetricCard>
   )

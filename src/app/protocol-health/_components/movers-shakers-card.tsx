@@ -35,6 +35,7 @@ export function MoversShakersCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Movers & Shakers"
       description="Top-3 operators by weight-share change over the last ~30 epochs. Surfaces concentration shifts in the active set."
       legend={[
@@ -103,7 +104,7 @@ function Row({
   positive?: boolean
 }) {
   return (
-    <div className="space-y-0.5">
+    <div className="rounded-xl border border-white/[0.08] bg-black/20 px-3 py-2 shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]">
       <div className="text-foreground truncate font-medium">{name}</div>
       <div className="flex items-center justify-between gap-2 text-[11px]">
         <span className="text-tertiary">

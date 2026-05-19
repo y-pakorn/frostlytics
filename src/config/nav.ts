@@ -23,8 +23,9 @@ export const navGroups = [
       {
         label: "Staking & Operators",
         icon: Coins,
-        href: "/staking-operators",
-        matchFn: (pathname: string) => pathname === "/staking-operators",
+        href: "/operator",
+        matchFn: (pathname: string) =>
+          pathname === "/operator" || pathname === "/operator/",
       },
       {
         label: "Protocol Health",

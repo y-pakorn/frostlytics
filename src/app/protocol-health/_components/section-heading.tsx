@@ -14,16 +14,18 @@ export function SectionHeading({
   description: string
 }) {
   return (
-    <div className="border-accent-purple flex items-center gap-2 border-l-2 pl-3">
-      <h2 className="text-foreground text-lg font-semibold">{title}</h2>
+    <div className="flex items-center gap-2">
+      <h2 className="font-heading text-foreground text-xl font-bold tracking-[-0.01em]">
+        {title}
+      </h2>
       <Tooltip>
         <TooltipTrigger asChild>
           <button
             type="button"
             aria-label={`About ${title}`}
-            className="text-secondary-foreground hover:text-foreground transition-colors"
+            className="text-tertiary hover:text-foreground transition-colors"
           >
-            <Info className="size-4" />
+            <Info className="size-3.5" />
           </button>
         </TooltipTrigger>
         <TooltipContent className="max-w-[min(280px,calc(100vw-2rem))] text-left">

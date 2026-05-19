@@ -88,14 +88,13 @@ export default function ProtocolHealthPage() {
   }, [daily, decentralization, churn, revenue])
 
   return (
-    <div className="space-y-8">
-      {/* Page title + timerange picker */}
-      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+    <div className="flex flex-col gap-6">
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-foreground text-3xl font-bold">
+          <h1 className="font-heading text-foreground text-2xl font-bold tracking-[-0.01em]">
             Protocol Health
           </h1>
-          <p className="text-secondary-foreground mt-1 text-sm">
+          <p className="text-tertiary mt-1 text-sm">
             Network-wide health across participation, economics, tokenomics, and
             decentralization.
           </p>
@@ -103,8 +102,7 @@ export default function ProtocolHealthPage() {
         <TimerangePicker value={range} onChange={setRange} />
       </div>
 
-      {/* Hero KPI strip */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5 [&>*]:h-full">
         <HeroKpi
           label="Active Operators"
           value={
@@ -157,7 +155,7 @@ export default function ProtocolHealthPage() {
               : null
           }
           sparkline={hero.sparklineNak}
-          trendColor="var(--color-accent-purple)"
+          trendColor="var(--color-brand-400)"
           loading={isLoading}
         />
         <HeroKpi
@@ -196,30 +194,28 @@ export default function ProtocolHealthPage() {
               : null
           }
           sparkline={hero.sparklineRevenue}
-          trendColor="var(--color-accent-purple-light)"
+          trendColor="var(--color-brand-500)"
           loading={isLoading}
         />
       </div>
 
-      {/* Section 1: 2 cards (wider for emphasis) */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeading
           title="Network Health & Growth"
           description="Key metrics tracking the network's operational status and expansion."
         />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-2 [&>*]:h-full">
           <NodeParticipationCard daily={daily} range={range} loading={isLoading} />
           <NetworkCapacityCard daily={daily} range={range} loading={isLoading} />
         </div>
       </section>
 
-      {/* Section 2: 4 cards */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeading
           title="Economic & Revenue"
           description="Financial signals on usage demand, cost stability, and operator incentives."
         />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-2 [&>*]:h-full">
           <ProtocolRevenueCard daily={daily} range={range} loading={isLoading} />
           <PriceVolatilityCard daily={daily} range={range} loading={isLoading} />
           <OperatorProfitabilityCard
@@ -234,13 +230,12 @@ export default function ProtocolHealthPage() {
         </div>
       </section>
 
-      {/* Section 3: 4 cards */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeading
           title="Tokenomics & Staking"
           description="Stake distribution, barrier to entry, and security alignment."
         />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-2 [&>*]:h-full">
           <TVLCard daily={daily} range={range} loading={isLoading} />
           <StakingBarrierCard daily={daily} range={range} loading={isLoading} />
           <ActiveStakeRatioCard
@@ -253,13 +248,12 @@ export default function ProtocolHealthPage() {
         </div>
       </section>
 
-      {/* Section 4: 4 cards */}
-      <section className="space-y-3">
+      <section className="flex flex-col gap-3">
         <SectionHeading
           title="Decentralization & Security"
           description="Concentration risk, whale dominance, and operator-set stability."
         />
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 items-stretch gap-3 lg:grid-cols-2 [&>*]:h-full">
           <CentralizationRiskCard
             decentralization={decentralization}
             range={range}

@@ -56,7 +56,7 @@ import { OperatorHeader } from "@/components/operator-header"
 import { StakeDialog } from "@/components/stake-dialog"
 import { useFullOperators, useStakedWal } from "@/hooks"
 
-import { OperatorRowCard } from "../_components/operator-row-card"
+import { OperatorRowCard } from "@/app/_components/operator-row-card"
 
 const STAKE_CTA_CLASS =
   "h-auto rounded-full border-2 border-white/[0.12] px-3 py-2 text-sm font-semibold [box-shadow:var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"

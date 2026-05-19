@@ -1,14 +1,16 @@
 "use client"
 
-import type { ReactNode } from "react"
+import { useMemo, type ReactNode } from "react"
 import { TrendingDown, TrendingUp } from "lucide-react"
-import { Area, AreaChart } from "recharts"
+import { Area, AreaChart, YAxis } from "recharts"
 
-import { Surface } from "@/components/ui/surface"
 import { ChartContainer } from "@/components/ui/chart"
+import { GlassCard } from "@/components/ui/glass-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatter } from "@/lib/formatter"
 import { cn } from "@/lib/utils"
+
+import { paddedDomain } from "./chart-styles"
 
 export function HeroKpi({
   label,
@@ -16,7 +18,7 @@ export function HeroKpi({
   context,
   delta,
   sparkline,
-  trendColor = "var(--color-accent-purple)",
+  trendColor = "var(--color-brand-400)",
   loading,
   className,
 }: {
@@ -30,66 +32,75 @@ export function HeroKpi({
   className?: string
 }) {
   const gradientId = `hero-spark-${label.replace(/[^a-z0-9]/gi, "")}`
+
+  const sparkDomain = useMemo(
+    () => paddedDomain(sparkline ?? []),
+    [sparkline]
+  )
+
+  const showSparkline = !loading && sparkline && sparkline.length > 1
+
   return (
-    <Surface
-      className={cn(
-        "relative flex min-h-[140px] flex-col justify-between gap-2 overflow-hidden p-5",
-        "!bg-[linear-gradient(180deg,hsla(237,37%,8%,0.55)_0%,hsla(254,36%,24%,0.4)_100%)]",
-        className
-      )}
+    <GlassCard
+      tone="chart"
+      className={cn("flex h-full flex-col", className)}
+      contentClassName="flex flex-1 flex-col gap-3 p-4"
+      innerClassName="flex flex-1 flex-col gap-3"
     >
-      <div className="text-secondary-foreground relative z-10 text-[10px] font-medium uppercase tracking-wider">
+      <p className="text-brand-300 text-[10px] font-semibold uppercase tracking-wider">
         {label}
-      </div>
-      <div className="relative z-10 space-y-1.5">
+      </p>
+
+      <div className="space-y-1">
         {loading ? (
-          <Skeleton className="h-9 w-36" />
+          <Skeleton className="h-7 w-28" />
         ) : (
-          <div className="text-foreground text-3xl font-bold leading-tight">
+          <p className="font-heading text-foreground text-2xl font-bold leading-none tracking-[-0.01em]">
             {value}
-          </div>
+          </p>
         )}
-        <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]">
-          {delta ? (
-            <span
-              className={cn(
-                "inline-flex items-center gap-0.5 font-medium",
-                delta.value >= 0
-                  ? "text-success-foreground"
-                  : "text-error-foreground"
-              )}
-            >
-              {delta.value >= 0 ? (
-                <TrendingUp className="size-3" />
-              ) : (
-                <TrendingDown className="size-3" />
-              )}
-              {formatter.percentage(delta.value, {
-                mantissa: 1,
-                forceSign: true,
-              })}
-            </span>
-          ) : null}
-          {context ? (
-            <span className="text-secondary-foreground">{context}</span>
-          ) : null}
-        </div>
+        {!loading && (delta || context) ? (
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px]">
+            {delta ? (
+              <span
+                className={cn(
+                  "inline-flex items-center gap-0.5 font-medium",
+                  delta.value >= 0
+                    ? "text-success-foreground"
+                    : "text-error-foreground"
+                )}
+              >
+                {delta.value >= 0 ? (
+                  <TrendingUp className="size-3" />
+                ) : (
+                  <TrendingDown className="size-3" />
+                )}
+                {formatter.percentage(delta.value, {
+                  mantissa: 1,
+                  forceSign: true,
+                })}
+              </span>
+            ) : null}
+            {context ? <span className="text-tertiary">{context}</span> : null}
+          </div>
+        ) : null}
       </div>
-      {/* Full-width sparkline anchored to bottom edge */}
-      {sparkline && sparkline.length > 1 ? (
-        <div className="absolute inset-x-0 bottom-0 z-0 h-[56px] opacity-70">
+
+      {showSparkline ? (
+        <div className="mt-auto h-9 w-full shrink-0">
           <ChartContainer
             watermark={false}
-            className="h-full w-full"
+            className="!aspect-auto h-full w-full"
             config={{ v: { color: trendColor } }}
           >
             <AreaChart
               data={sparkline.map((v, i) => ({ i, v }))}
-              margin={{ top: 0, right: 0, bottom: 0, left: 0 }}
+              margin={{ top: 2, right: 0, left: 0, bottom: 0 }}
             >
+              <YAxis hide domain={sparkDomain} />
               <defs>
                 <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={trendColor} stopOpacity={0.4} />
+                  <stop offset="0%" stopColor={trendColor} stopOpacity={0.35} />
                   <stop offset="100%" stopColor={trendColor} stopOpacity={0} />
                 </linearGradient>
               </defs>
@@ -97,7 +108,7 @@ export function HeroKpi({
                 type="monotone"
                 dataKey="v"
                 stroke={trendColor}
-                strokeWidth={2}
+                strokeWidth={1.5}
                 fill={`url(#${gradientId})`}
                 dot={false}
                 isAnimationActive={false}
@@ -106,6 +117,6 @@ export function HeroKpi({
           </ChartContainer>
         </div>
       ) : null}
-    </Surface>
+    </GlassCard>
   )
 }

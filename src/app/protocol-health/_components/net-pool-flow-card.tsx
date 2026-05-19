@@ -16,6 +16,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { formatter } from "@/lib/formatter"
 
 import { EmptyChartState } from "@/components/ui/empty-chart-state"
@@ -56,6 +63,7 @@ export function NetPoolFlowCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Reward Pool Flow"
       description="Net change in the rewards pool per epoch: total funding (user fees + subsidies) minus payouts to stakers. Tracks whether the pool is accumulating reserves or paying them out."
       legend={[
@@ -93,14 +101,14 @@ export function NetPoolFlowCard({
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{ net: { color: POS_COLOR, label: "Net WAL" } }}
         >
           <BarChart
             data={series}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            margin={METRIC_CHART_MARGIN}
           >
-            <CartesianGrid vertical={false} strokeOpacity={0.1} />
+            <CartesianGrid {...METRIC_GRID_PROPS} />
             <YAxis hide domain={["auto", "auto"]} />
             <XAxis
               dataKey="epoch"
@@ -110,7 +118,7 @@ export function NetPoolFlowCard({
               tickMargin={8}
               interval="preserveStartEnd"
               tickFormatter={(v) => `Ep ${v}`}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
             />
             <ReferenceLine y={0} stroke="currentColor" strokeOpacity={0.3} />
             <ChartTooltip

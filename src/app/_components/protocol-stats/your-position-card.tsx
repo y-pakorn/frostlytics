@@ -87,7 +87,7 @@ export function YourPositionCard() {
         className="h-auto w-full shrink-0 rounded-full border-2 border-white/[0.12] px-3 py-2 text-sm leading-5 font-semibold [box-shadow:var(--shadow-xs),var(--shadow-skeu-inner-border),var(--shadow-skeu-inner)]"
         asChild
       >
-        <Link href="/staking-operators">Stake</Link>
+        <Link href="/operator">Stake</Link>
       </Button>
     </GlassCard>
   )

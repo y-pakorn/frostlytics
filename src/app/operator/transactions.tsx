@@ -13,7 +13,9 @@ import { toast } from "sonner"
 import { MinimalOperatorWithMetadata } from "@/types/operator"
 import { links } from "@/config/link"
 import { walrus } from "@/config/walrus"
+import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
+import { GlassCard } from "@/components/ui/glass-card"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Table,
@@ -29,6 +31,12 @@ import { OperatorTransaction } from "@/types"
 
 import { TransactionRowCard } from "./_components/transaction-row-card"
 
+const TABLE_HEAD_CLASS =
+  "h-11 border-0 bg-[rgba(50,40,84,0.9)] px-6 py-3 text-xs font-semibold tracking-normal text-foreground normal-case shadow-[inset_0_1px_2px_rgba(255,255,255,0.2)]"
+
+const TABLE_CELL_CLASS =
+  "h-16 border-border-secondary/40 border-b px-6 py-3 first:pl-6 last:pr-6"
+
 const columns = [
   {
     header: "Transaction",
@@ -40,7 +48,7 @@ const columns = [
       return (
         <div>
           <div className="font-medium">Programmable Tx</div>
-          <div className="font-xs text-tertiary font-mono">{label}</div>
+          <div className="text-tertiary font-mono text-xs">{label}</div>
         </div>
       )
     },
@@ -55,7 +63,7 @@ const columns = [
       return (
         <Link href={`/profile?addr=${address}`} prefetch={false}>
           {name && <div className="font-medium">{name}</div>}
-          <div className="text-tertiary flex items-center gap-1 font-mono">
+          <div className="text-tertiary flex items-center gap-1 font-mono text-xs">
             {address.slice(0, 8)}...{address.slice(-8)}
             <Button
               variant="ghost"
@@ -84,41 +92,44 @@ const columns = [
     },
   },
   {
-    header: "Txs",
+    header: () => <div className="ml-auto text-end">Txs</div>,
     id: "txCount",
     accessorKey: "txCount",
-    cell: ({ getValue }) => {
-      const txCount = getValue<number>()
-      return <div className="text-secondary">{txCount}</div>
-    },
+    cell: ({ getValue }) => (
+      <div className="text-secondary-foreground text-end">
+        {getValue<number>()}
+      </div>
+    ),
   },
   {
-    header: "Gas",
+    header: () => <div className="ml-auto text-end">Gas</div>,
     id: "gas",
     accessorKey: "gas",
     cell: ({ getValue }) => {
       const gas = getValue<number>()
       const gasSui = gas / walrus.denominator
       return (
-        <div>
-          <div className="text-secondary">{gasSui} SUI</div>
-          <div className="font-xs text-tertiary">{gas} FROST</div>
+        <div className="text-end">
+          <div className="text-secondary-foreground">{gasSui} SUI</div>
+          <div className="text-tertiary text-xs">{gas} FROST</div>
         </div>
       )
     },
   },
   {
-    header: "Digest",
+    header: () => <div className="ml-auto text-end">Digest</div>,
     id: "digest",
     accessorFn: (row) => row.digest,
     cell: ({ getValue }) => {
       const digest = getValue<string>()
       return (
-        <Link href={links.transaction(digest)} target="_blank">
-          <Button variant="ghost" size="iconXs" className="text-tertiary">
-            <ExternalLink />
-          </Button>
-        </Link>
+        <div className="text-end">
+          <Link href={links.transaction(digest)} target="_blank">
+            <Button variant="ghost" size="iconXs" className="text-tertiary">
+              <ExternalLink />
+            </Button>
+          </Link>
+        </div>
       )
     },
   },
@@ -126,8 +137,10 @@ const columns = [
 
 export function OperatorTransactions({
   operator,
+  searchQuery = "",
 }: {
   operator: MinimalOperatorWithMetadata
+  searchQuery?: string
 }) {
   const [pageIndex, setPageIndex] = useState(0)
   const {
@@ -138,9 +151,19 @@ export function OperatorTransactions({
   } = useOperatorTransactions({
     operatorId: operator.id,
   })
+
   const data = useMemo(() => {
-    return transactions?.pages[pageIndex]?.transactions ?? []
-  }, [transactions, pageIndex])
+    const rows = transactions?.pages[pageIndex]?.transactions ?? []
+    const q = searchQuery.trim().toLowerCase()
+    if (!q) return rows
+    return rows.filter(
+      (tx) =>
+        tx.digest.toLowerCase().includes(q) ||
+        tx.sender.toLowerCase().includes(q) ||
+        tx.txLabel?.toLowerCase().includes(q)
+    )
+  }, [transactions, pageIndex, searchQuery])
+
   const table = useReactTable({
     data,
     columns,
@@ -148,66 +171,101 @@ export function OperatorTransactions({
   })
 
   return (
-    <div className="space-y-2">
-      <Table className="hidden md:table">
-        <TableHeader>
-          {table.getHeaderGroups().map((headerGroup) => (
-            <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
-                return (
-                  <TableHead
-                    key={header.id}
-                    style={{ width: `${header.getSize()}px` }}
-                  >
-                    {header.isPlaceholder
-                      ? null
-                      : flexRender(
-                          header.column.columnDef.header,
-                          header.getContext()
+    <div className="flex flex-col gap-3">
+      <div className="hidden md:block">
+        <GlassCard
+          tone="chart"
+          contentClassName="overflow-hidden p-0"
+          className="rounded-3xl"
+        >
+          <Table>
+            <TableHeader>
+              {table.getHeaderGroups().map((headerGroup) => (
+                <TableRow
+                  key={headerGroup.id}
+                  className="border-0 hover:bg-transparent"
+                >
+                  {headerGroup.headers.map((header, index) => {
+                    const isFirst = index === 0
+                    const isLast = index === headerGroup.headers.length - 1
+                    return (
+                      <TableHead
+                        key={header.id}
+                        className={cn(
+                          TABLE_HEAD_CLASS,
+                          isFirst && "rounded-l-full",
+                          isLast && "rounded-r-full",
+                          !isFirst &&
+                            header.id !== "transaction" &&
+                            header.id !== "sender" &&
+                            "text-end"
                         )}
-                  </TableHead>
-                )
-              })}
-            </TableRow>
-          ))}
-        </TableHeader>
-        <TableBody>
-          {isFetching ? (
-            range(20).map((i) => (
-              <TableRow key={i}>
-                <TableCell colSpan={columns.length}>
-                  <Skeleton className="h-3/4 w-full" />
-                </TableCell>
-              </TableRow>
-            ))
-          ) : table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-state={row.getIsSelected() && "selected"}
-              >
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                      >
+                        {header.isPlaceholder
+                          ? null
+                          : flexRender(
+                              header.column.columnDef.header,
+                              header.getContext()
+                            )}
+                      </TableHead>
+                    )
+                  })}
+                </TableRow>
+              ))}
+            </TableHeader>
+            <TableBody>
+              {isFetching ? (
+                range(10).map((i) => (
+                  <TableRow
+                    key={i}
+                    className="border-0 hover:bg-transparent"
+                  >
+                    <TableCell
+                      colSpan={columns.length}
+                      className={TABLE_CELL_CLASS}
+                    >
+                      <Skeleton className="h-12 w-full" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : table.getRowModel().rows?.length ? (
+                table.getRowModel().rows.map((row) => (
+                  <TableRow
+                    key={row.id}
+                    className="border-0 hover:bg-surface-elevated/40"
+                  >
+                    {row.getVisibleCells().map((cell) => (
+                      <TableCell key={cell.id} className={TABLE_CELL_CLASS}>
+                        {flexRender(
+                          cell.column.columnDef.cell,
+                          cell.getContext()
+                        )}
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                ))
+              ) : (
+                <TableRow className="border-0 hover:bg-transparent">
+                  <TableCell
+                    colSpan={columns.length}
+                    className={cn(TABLE_CELL_CLASS, "h-24 text-center")}
+                  >
+                    No results.
                   </TableCell>
-                ))}
-              </TableRow>
-            ))
-          ) : (
-            <TableRow>
-              <TableCell colSpan={columns.length} className="h-24 text-center">
-                No results.
-              </TableCell>
-            </TableRow>
-          )}
-        </TableBody>
-      </Table>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </GlassCard>
+      </div>
 
-      {/* Mobile card list */}
-      <div className="space-y-2 md:hidden">
+      <div className="block space-y-2 md:hidden">
         {isFetching
           ? range(8).map((i) => (
-              <Skeleton key={i} className="h-[160px] w-full" />
+              <Skeleton
+                key={i}
+                className="h-[160px] w-full rounded-[var(--glass-card-radius)]"
+              />
             ))
           : table.getRowModel().rows.length
             ? table.getRowModel().rows.map((row) => (
@@ -221,10 +279,10 @@ export function OperatorTransactions({
       </div>
 
       <PaginationLeftRight
+        className="hidden justify-end md:flex"
         currentPageIndex={pageIndex}
         onPrev={() => setPageIndex((p) => p - 1)}
         onNext={() => {
-          // fetch next page if is at the last page and has next page
           if (
             transactions &&
             pageIndex === transactions.pages.length - 1 &&

@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -54,6 +61,7 @@ export function ActiveStakeRatioCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Active Stake Ratio"
       description="Share of total staked WAL that is in the active operator set (vs pending or inactive pools)."
       legend={[{ label: "Active share", color: COLOR }]}
@@ -80,12 +88,12 @@ export function ActiveStakeRatioCard({
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{ ratio: { color: COLOR, label: "Active share" } }}
         >
           <AreaChart
             data={rows}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            margin={METRIC_CHART_MARGIN}
           >
             <defs>
               <linearGradient id="active-ratio" x1="0" y1="0" x2="0" y2="1">
@@ -93,7 +101,7 @@ export function ActiveStakeRatioCard({
                 <stop offset="95%" stopColor={COLOR} stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid vertical={false} strokeOpacity={0.1} />
+            <CartesianGrid {...METRIC_GRID_PROPS} />
             <YAxis hide domain={["dataMin - 0.02", 1]} />
             <XAxis
               dataKey="timestamp"
@@ -102,7 +110,7 @@ export function ActiveStakeRatioCard({
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(v) => dayjs(v).format("MMM D")}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
             />
             <ChartTooltip
               cursor={false}

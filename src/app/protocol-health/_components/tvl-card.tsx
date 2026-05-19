@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -39,6 +46,7 @@ export function TVLCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Total Value Locked"
       description="Aggregate WAL staked across the network. The headline security and confidence number."
       legend={[{ label: "Staked WAL", color: COLOR }]}
@@ -58,17 +66,17 @@ export function TVLCard({
     >
       <ChartContainer
         watermark={false}
-        className="h-full w-full"
+        className={METRIC_CHART_CLASS}
         config={{ totalStakedWAL: { color: COLOR, label: "Staked WAL" } }}
       >
-        <AreaChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+        <AreaChart data={rows} margin={METRIC_CHART_MARGIN}>
           <defs>
             <linearGradient id="tvl-stake" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="5%" stopColor={COLOR} stopOpacity={0.7} />
-              <stop offset="95%" stopColor={COLOR} stopOpacity={0.05} />
+              <stop offset="0%" stopColor={COLOR} stopOpacity={0.45} />
+              <stop offset="100%" stopColor={COLOR} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} strokeOpacity={0.1} />
+          <CartesianGrid {...METRIC_GRID_PROPS} />
           <YAxis hide domain={["dataMin", "dataMax"]} />
           <XAxis
             dataKey="timestamp"
@@ -77,7 +85,7 @@ export function TVLCard({
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 10 }}
+            tick={METRIC_AXIS_TICK}
           />
           <ChartTooltip
             cursor={false}
@@ -99,7 +107,7 @@ export function TVLCard({
             dataKey="totalStakedWAL"
             stroke={COLOR}
             fill="url(#tvl-stake)"
-            strokeWidth={2}
+            strokeWidth={2.5}
           />
         </AreaChart>
       </ChartContainer>

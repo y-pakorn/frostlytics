@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -17,7 +24,7 @@ import { filterByRange, type Timerange } from "./timerange-picker"
 import type { ProtocolHealthDaily } from "@/hooks/use-protocol-health"
 
 const USED_COLOR = "var(--color-accent-blue)"
-const TOTAL_COLOR = "var(--color-accent-purple)"
+const TOTAL_COLOR = "var(--color-brand-400)"
 
 export function NetworkCapacityCard({
   daily,
@@ -47,6 +54,7 @@ export function NetworkCapacityCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Network Capacity"
       description="Used vs total storage with saturation forecast. Linear projection over the last 90 days of usage."
       legend={[
@@ -77,13 +85,13 @@ export function NetworkCapacityCard({
     >
       <ChartContainer
         watermark={false}
-        className="h-full w-full"
+        className={METRIC_CHART_CLASS}
         config={{
           storageUsedTB: { color: USED_COLOR, label: "Used (TB)" },
           totalStorageTB: { color: TOTAL_COLOR, label: "Total (TB)" },
         }}
       >
-        <AreaChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+        <AreaChart data={rows} margin={METRIC_CHART_MARGIN}>
           <defs>
             <linearGradient id="capacity-used" x1="0" y1="0" x2="0" y2="1">
               <stop offset="5%" stopColor={USED_COLOR} stopOpacity={0.6} />
@@ -94,7 +102,7 @@ export function NetworkCapacityCard({
               <stop offset="95%" stopColor={TOTAL_COLOR} stopOpacity={0.02} />
             </linearGradient>
           </defs>
-          <CartesianGrid vertical={false} strokeOpacity={0.1} />
+          <CartesianGrid {...METRIC_GRID_PROPS} />
           <YAxis hide domain={[0, "dataMax"]} />
           <XAxis
             dataKey="timestamp"
@@ -103,7 +111,7 @@ export function NetworkCapacityCard({
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 10 }}
+            tick={METRIC_AXIS_TICK}
           />
           <ChartTooltip
             cursor={false}

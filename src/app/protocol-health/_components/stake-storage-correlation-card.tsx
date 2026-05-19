@@ -14,6 +14,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { usePoolOperators } from "@/hooks"
 import { formatter } from "@/lib/formatter"
 
@@ -47,6 +54,7 @@ export function StakeStorageCorrelationCard() {
 
   return (
     <MetricCard
+      className="h-full"
       title="Stake vs Storage"
       description="One dot per active operator: staked WAL (x) vs storage capacity (y). Positive r means higher security correlates with higher utility. Log scale on both axes."
       legend={[{ label: "Operator", color: COLOR }]}
@@ -69,10 +77,10 @@ export function StakeStorageCorrelationCard() {
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{ y: { color: COLOR, label: "Capacity (TB)" } }}
         >
-          <ScatterChart margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
+          <ScatterChart margin={METRIC_CHART_MARGIN}>
             <CartesianGrid strokeOpacity={0.1} />
             <XAxis
               type="number"
@@ -84,7 +92,7 @@ export function StakeStorageCorrelationCard() {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(v) => `${formatter.numberReadable(v, 0)}`}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
             />
             <YAxis
               type="number"
@@ -96,7 +104,7 @@ export function StakeStorageCorrelationCard() {
               axisLine={false}
               tickMargin={8}
               tickFormatter={(v) => `${formatter.numberReadable(v, 0)}TB`}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
               width={48}
             />
             <ChartTooltip

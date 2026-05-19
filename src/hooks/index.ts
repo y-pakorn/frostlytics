@@ -13,13 +13,13 @@ import BigNumber from "bignumber.js"
 // Full lodash import required for _.chain() usage
 import _ from "lodash"
 
+import { env } from "@/env.mjs"
 import {
   OperatorMetadataWithId,
   OperatorWithSharesAndBaseApy,
   PoolOperator,
 } from "@/types/operator"
 import { walrus } from "@/config/walrus"
-import { env } from "@/env.mjs"
 import {
   batchGetObject,
   recursiveGetDynamicFields,
@@ -599,7 +599,9 @@ query Transactions($operatorId: String, $last: Int, $before: String) {
       }
       sender {
         address
-        defaultSuinsName
+        defaultNameRecord {
+          domain
+        }
       }
       effects {
         status
@@ -638,7 +640,7 @@ query Transactions($operatorId: String, $last: Int, $before: String) {
               return {
                 digest: node.digest,
                 sender: node.sender.address,
-                name: node.sender.defaultSuinsName,
+                name: node.sender.defaultNameRecord?.domain,
                 txLabel: firstTx?.function.name,
                 txCount: node.kind.commands.nodes.length,
                 timestamp: node.effects.timestamp,

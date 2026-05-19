@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { formatter } from "@/lib/formatter"
 
 import { EmptyChartState } from "@/components/ui/empty-chart-state"
@@ -18,7 +25,7 @@ import type {
   ProtocolHealthRevenue,
 } from "@/hooks/use-protocol-health"
 
-const COLOR = "var(--color-accent-purple)"
+const COLOR = "var(--color-brand-400)"
 
 export function OperatorProfitabilityCard({
   daily,
@@ -65,6 +72,7 @@ export function OperatorProfitabilityCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Operator Profitability"
       description="Average user-fee revenue per active node, per epoch. Indicator of the economic incentive to stay online."
       legend={[{ label: "WAL / node", color: COLOR }]}
@@ -85,14 +93,14 @@ export function OperatorProfitabilityCard({
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{ avgWALPerNode: { color: COLOR, label: "WAL / node" } }}
         >
           <BarChart
             data={series}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            margin={METRIC_CHART_MARGIN}
           >
-            <CartesianGrid vertical={false} strokeOpacity={0.1} />
+            <CartesianGrid {...METRIC_GRID_PROPS} />
             <YAxis hide domain={[0, "dataMax"]} />
             <XAxis
               dataKey="epoch"
@@ -101,7 +109,7 @@ export function OperatorProfitabilityCard({
               tickMargin={8}
               interval="preserveStartEnd"
               tickFormatter={(v) => `Ep ${v}`}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
               type="category"
             />
             <ChartTooltip

@@ -6,13 +6,18 @@ import { CircleX } from "lucide-react"
 import { isValidAddress } from "@/lib/utils"
 
 import { Operator } from "./operator"
+import StakingOperatorsPage from "./staking-operators"
 
 export function OperatorPageClient() {
   const searchParams = useSearchParams()
   const id = searchParams.get("id")
   const tab = searchParams.get("tab") ?? undefined
 
-  if (!id || !isValidAddress(id)) {
+  if (!id) {
+    return <StakingOperatorsPage />
+  }
+
+  if (!isValidAddress(id)) {
     return <InvalidOperator />
   }
 

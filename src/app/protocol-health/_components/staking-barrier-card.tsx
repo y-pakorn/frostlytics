@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -39,6 +46,7 @@ export function StakingBarrierCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Staking Barrier"
       description="Average WAL staked per active node. Rising values mean new operators must commit more capital to compete."
       legend={[{ label: "Avg stake / node", color: COLOR }]}
@@ -62,11 +70,11 @@ export function StakingBarrierCard({
     >
       <ChartContainer
         watermark={false}
-        className="h-full w-full"
+        className={METRIC_CHART_CLASS}
         config={{ averageStakedWAL: { color: COLOR, label: "Avg WAL" } }}
       >
-        <LineChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeOpacity={0.1} />
+        <LineChart data={rows} margin={METRIC_CHART_MARGIN}>
+          <CartesianGrid {...METRIC_GRID_PROPS} />
           <YAxis hide domain={["dataMin", "dataMax"]} />
           <XAxis
             dataKey="timestamp"
@@ -75,7 +83,7 @@ export function StakingBarrierCard({
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 10 }}
+            tick={METRIC_AXIS_TICK}
           />
           <ChartTooltip
             cursor={false}

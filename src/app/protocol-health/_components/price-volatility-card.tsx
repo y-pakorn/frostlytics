@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -18,7 +25,7 @@ import { filterByRange, type Timerange } from "./timerange-picker"
 import type { ProtocolHealthDaily } from "@/hooks/use-protocol-health"
 
 const STORAGE_COLOR = "var(--color-accent-blue)"
-const WRITE_COLOR = "var(--color-accent-purple)"
+const WRITE_COLOR = "var(--color-brand-400)"
 
 export function PriceVolatilityCard({
   daily,
@@ -52,6 +59,7 @@ export function PriceVolatilityCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Price Volatility"
       description="Storage and write prices in raw FROST units (base units). Steady values indicate cost stability."
       legend={[
@@ -83,7 +91,7 @@ export function PriceVolatilityCard({
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{
             storagePrice: { color: STORAGE_COLOR, label: "Storage" },
             writePrice: { color: WRITE_COLOR, label: "Write" },
@@ -91,9 +99,9 @@ export function PriceVolatilityCard({
         >
           <LineChart
             data={rows}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            margin={METRIC_CHART_MARGIN}
           >
-            <CartesianGrid vertical={false} strokeOpacity={0.1} />
+            <CartesianGrid {...METRIC_GRID_PROPS} />
             <YAxis hide domain={["dataMin", "dataMax"]} />
             <XAxis
               dataKey="timestamp"
@@ -102,7 +110,7 @@ export function PriceVolatilityCard({
               tickMargin={8}
               minTickGap={32}
               tickFormatter={(v) => dayjs(v).format("MMM D")}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
             />
             <ChartTooltip
               cursor={false}

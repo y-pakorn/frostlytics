@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { dayjs } from "@/lib/dayjs"
 import { formatter } from "@/lib/formatter"
 
@@ -17,7 +24,7 @@ import { filterByRange, type Timerange } from "./timerange-picker"
 import type { ProtocolHealthDaily } from "@/hooks/use-protocol-health"
 
 const ACTIVE_COLOR = "var(--color-accent-blue)"
-const COMMITTEE_COLOR = "var(--color-accent-purple)"
+const COMMITTEE_COLOR = "var(--color-brand-400)"
 
 export function NodeParticipationCard({
   daily,
@@ -40,6 +47,7 @@ export function NodeParticipationCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Node Participation"
       description="Active operators and committee members over time. Tracks network expansion or contraction."
       legend={[
@@ -63,14 +71,14 @@ export function NodeParticipationCard({
     >
       <ChartContainer
         watermark={false}
-        className="h-full w-full"
+        className={METRIC_CHART_CLASS}
         config={{
           activeCount: { color: ACTIVE_COLOR, label: "Active" },
           committeeCount: { color: COMMITTEE_COLOR, label: "Committee" },
         }}
       >
-        <LineChart data={rows} margin={{ top: 4, right: 4, left: 0, bottom: 0 }}>
-          <CartesianGrid vertical={false} strokeOpacity={0.1} />
+        <LineChart data={rows} margin={METRIC_CHART_MARGIN}>
+          <CartesianGrid {...METRIC_GRID_PROPS} />
           <YAxis hide domain={["dataMin - 5", "dataMax + 5"]} />
           <XAxis
             dataKey="timestamp"
@@ -79,7 +87,7 @@ export function NodeParticipationCard({
             tickMargin={8}
             minTickGap={32}
             tickFormatter={(v) => dayjs(v).format("MMM D")}
-            tick={{ fontSize: 10 }}
+            tick={METRIC_AXIS_TICK}
           />
           <ChartTooltip
             cursor={false}

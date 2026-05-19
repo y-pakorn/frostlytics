@@ -8,6 +8,13 @@ import {
   ChartTooltip,
   ChartTooltipContent,
 } from "@/components/ui/chart"
+
+import {
+  METRIC_AXIS_TICK,
+  METRIC_CHART_CLASS,
+  METRIC_CHART_MARGIN,
+  METRIC_GRID_PROPS,
+} from "./chart-styles"
 import { formatter } from "@/lib/formatter"
 
 import { EmptyChartState } from "@/components/ui/empty-chart-state"
@@ -16,7 +23,7 @@ import type { Timerange } from "./timerange-picker"
 import type { ProtocolHealthRevenue } from "@/hooks/use-protocol-health"
 
 const USER_COLOR = "var(--color-accent-blue)"
-const SUBSIDY_COLOR = "var(--color-accent-purple)"
+const SUBSIDY_COLOR = "var(--color-brand-400)"
 
 export function SubsidyRelianceCard({
   revenue,
@@ -66,6 +73,7 @@ export function SubsidyRelianceCard({
 
   return (
     <MetricCard
+      className="h-full"
       title="Subsidy Reliance"
       description="Share of protocol revenue from real user fees vs protocol-paid subsidies. A healthy network earns more than it subsidizes."
       legend={[
@@ -99,7 +107,7 @@ export function SubsidyRelianceCard({
       ) : (
         <ChartContainer
           watermark={false}
-          className="h-full w-full"
+          className={METRIC_CHART_CLASS}
           config={{
             userShare: { color: USER_COLOR, label: "User fees" },
             subsidyShare: { color: SUBSIDY_COLOR, label: "Subsidies" },
@@ -107,9 +115,9 @@ export function SubsidyRelianceCard({
         >
           <BarChart
             data={series}
-            margin={{ top: 4, right: 4, left: 0, bottom: 0 }}
+            margin={METRIC_CHART_MARGIN}
           >
-            <CartesianGrid vertical={false} strokeOpacity={0.1} />
+            <CartesianGrid {...METRIC_GRID_PROPS} />
             <YAxis hide domain={[0, 1]} />
             <XAxis
               dataKey="epoch"
@@ -119,7 +127,7 @@ export function SubsidyRelianceCard({
               tickMargin={8}
               interval="preserveStartEnd"
               tickFormatter={(v) => `Ep ${v}`}
-              tick={{ fontSize: 10 }}
+              tick={METRIC_AXIS_TICK}
             />
             <ChartTooltip
               cursor={false}
