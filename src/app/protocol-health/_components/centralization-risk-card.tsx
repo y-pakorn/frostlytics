@@ -59,7 +59,6 @@ export function CentralizationRiskCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{ nakamoto33: { color: COLOR, label: "Nakamoto-33" } }}
       >

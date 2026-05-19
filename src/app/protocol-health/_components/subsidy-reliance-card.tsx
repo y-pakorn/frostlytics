@@ -106,7 +106,6 @@ export function SubsidyRelianceCard({
         <EmptyChartState message="No revenue data yet" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{
             userShare: { color: USER_COLOR, label: "User fees" },

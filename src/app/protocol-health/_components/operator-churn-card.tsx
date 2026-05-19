@@ -144,7 +144,6 @@ export function OperatorChurnCard({
         <EmptyChartState message="No churn history yet" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{
             joined: { color: JOINED_COLOR, label: "Joined" },

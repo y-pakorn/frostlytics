@@ -84,7 +84,6 @@ export function RevenueCompositionCard({
         <EmptyChartState message="No revenue data yet" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{
             user: { color: USER_COLOR, label: "User fees" },

@@ -175,7 +175,6 @@ export function OperatorHistorySection({
             />
           ) : (
             <ChartContainer
-              watermark={false}
               className={CHART_CLASS}
               config={{
                 stakedWAL: { color: STAKE_COLOR, label: "Staked WAL" },
@@ -277,7 +276,6 @@ export function OperatorHistorySection({
             />
           ) : (
             <ChartContainer
-              watermark={false}
               className={CHART_CLASS}
               config={{
                 weightPercentage: {
@@ -382,7 +380,6 @@ export function OperatorHistorySection({
             />
           ) : (
             <ChartContainer
-              watermark={false}
               className={CHART_CLASS}
               config={{
                 estimatedEarningsWAL: {

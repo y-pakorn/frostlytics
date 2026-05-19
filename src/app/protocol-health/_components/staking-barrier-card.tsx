@@ -69,7 +69,6 @@ export function StakingBarrierCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{ averageStakedWAL: { color: COLOR, label: "Avg WAL" } }}
       >

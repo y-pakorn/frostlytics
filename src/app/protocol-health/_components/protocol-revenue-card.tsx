@@ -68,7 +68,6 @@ export function ProtocolRevenueCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{ paidFeesUSD: { color: COLOR, label: "Fees (USD)" } }}
       >

@@ -65,7 +65,6 @@ export function TVLCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{ totalStakedWAL: { color: COLOR, label: "Staked WAL" } }}
       >

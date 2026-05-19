@@ -90,7 +90,6 @@ export function PriceVolatilityCard({
         <EmptyChartState message="No price data in selected range" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{
             storagePrice: { color: STORAGE_COLOR, label: "Storage" },

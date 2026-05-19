@@ -84,7 +84,6 @@ export function NetworkCapacityCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{
           storageUsedTB: { color: USED_COLOR, label: "Used (TB)" },

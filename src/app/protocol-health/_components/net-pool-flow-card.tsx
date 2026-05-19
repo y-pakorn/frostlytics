@@ -100,7 +100,6 @@ export function NetPoolFlowCard({
         <EmptyChartState message="No pool-flow data yet" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{ net: { color: POS_COLOR, label: "Net WAL" } }}
         >

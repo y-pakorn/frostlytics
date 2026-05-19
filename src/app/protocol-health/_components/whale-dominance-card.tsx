@@ -71,7 +71,6 @@ export function WhaleDominanceCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{
           top5Share: { color: TOP5_COLOR, label: "Top 5" },

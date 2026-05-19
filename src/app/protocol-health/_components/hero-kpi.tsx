@@ -89,7 +89,6 @@ export function HeroKpi({
       {showSparkline ? (
         <div className="mt-auto h-9 w-full shrink-0">
           <ChartContainer
-            watermark={false}
             className="!aspect-auto h-full w-full"
             config={{ v: { color: trendColor } }}
           >

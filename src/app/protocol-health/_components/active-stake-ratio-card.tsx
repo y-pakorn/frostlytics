@@ -87,7 +87,6 @@ export function ActiveStakeRatioCard({
         <EmptyChartState message="No active-stake data yet" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{ ratio: { color: COLOR, label: "Active share" } }}
         >

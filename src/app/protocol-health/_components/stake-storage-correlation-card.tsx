@@ -76,7 +76,6 @@ export function StakeStorageCorrelationCard() {
         <EmptyChartState message="No active operators with capacity" />
       ) : (
         <ChartContainer
-          watermark={false}
           className={METRIC_CHART_CLASS}
           config={{ y: { color: COLOR, label: "Capacity (TB)" } }}
         >

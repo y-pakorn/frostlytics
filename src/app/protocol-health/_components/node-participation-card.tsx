@@ -70,7 +70,6 @@ export function NodeParticipationCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{
           activeCount: { color: ACTIVE_COLOR, label: "Active" },

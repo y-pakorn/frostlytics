@@ -61,7 +61,6 @@ export function StakeDistributionEqualityCard({
       loading={loading}
     >
       <ChartContainer
-        watermark={false}
         className={METRIC_CHART_CLASS}
         config={{ gini: { color: COLOR, label: "Gini" } }}
       >
