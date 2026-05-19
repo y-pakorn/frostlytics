@@ -24,7 +24,7 @@ import { useBalances } from "@/hooks/use-balances"
 import { suiClient } from "@/services/client"
 import { StakedWalWithStatus } from "@/types"
 
-import { GradientBorderCard } from "./gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
 import {
@@ -200,13 +200,13 @@ export function UnstakeDialog({
           You are about to unstake your WAL from the operator. Please confirm
           the details below.
         </DialogDescription>
-        <GradientBorderCard className="space-y-3">
+        <Surface className="space-y-3">
           {operator ? (
             <OperatorHeader operator={operator} />
           ) : (
             <Skeleton className="h-10 w-full" />
           )}
-        </GradientBorderCard>
+        </Surface>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
             <FormField

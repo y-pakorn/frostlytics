@@ -4,7 +4,7 @@ import { toast } from "sonner"
 
 import { links } from "@/config/link"
 import { formatter } from "@/lib/formatter"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { Button } from "@/components/ui/button"
 import type { DelegatorResponse } from "@/types"
 
@@ -15,7 +15,7 @@ export function DelegatorRowCard({
 }) {
   const [address, amount, activationEpoch, name] = row
   return (
-    <GradientBorderCard className="space-y-2 p-4">
+    <Surface className="space-y-2 p-4">
       <Link
         href={`/profile?addr=${address}`}
         prefetch={false}
@@ -61,6 +61,6 @@ export function DelegatorRowCard({
           <div className="text-foreground font-medium">{activationEpoch}</div>
         </div>
       </div>
-    </GradientBorderCard>
+    </Surface>
   )
 }

@@ -2,6 +2,7 @@ export const links = {
   becomeValidator:
     "https://docs.wal.app/operator-guide/operator-guide.html?highlight=operator#operator-guide",
   twitter: "https://x.com/frostlytics",
+  discord: "https://discord.com/invite/walrusprotocol",
   account: (address: string) => `https://suiscan.xyz/account/${address}`,
   object: (objectId: string) => `https://suiscan.xyz/object/${objectId}`,
   transaction: (transactionId: string) =>

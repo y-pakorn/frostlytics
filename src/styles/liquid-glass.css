@@ -1,0 +1,209 @@
+/* iOS-style liquid glass — theme vars set on .liquid-glass root */
+.liquid-glass {
+  --corner-radius: 24px;
+  --base-strength: 12px;
+  --extra-blur: 2px;
+  --softness: 10px;
+  --tint-amount: 0;
+  --tint-saturation: 2;
+  --tint-hue: 270deg;
+  --contrast: 1;
+  --brightness: 1;
+  --invert: 6%;
+
+  --total-strength: calc(var(--base-strength) + var(--extra-blur));
+  --edge-width: calc(0.3px + (var(--softness) * 0.1));
+  --emboss-width: calc(var(--softness) * 0.38);
+  --refraction-width: calc(var(--softness) * 0.3);
+
+  position: relative;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.liquid-glass::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  display: block;
+  border-radius: var(--corner-radius);
+  backdrop-filter: invert(var(--invert));
+  pointer-events: none;
+}
+
+.liquid-glass-content {
+  position: relative;
+  display: block;
+  z-index: 2;
+  overflow: hidden;
+  border-radius: var(--corner-radius);
+  pointer-events: auto;
+}
+
+.liquid-glass-material {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+.liquid-glass-material::after {
+  content: "";
+  display: block;
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  border-radius: var(--corner-radius);
+  background-color: rgba(128, 128, 128, 0);
+}
+
+.liquid-glass-material::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 11;
+  display: block;
+  border-radius: var(--corner-radius);
+  padding: 1px;
+  border: 0 solid transparent;
+  background: linear-gradient(
+    155deg,
+    hsla(0, 0%, 100%, 0.15) 0%,
+    hsla(0, 0%, 0%, 0.2) 50%,
+    hsla(0, 0%, 100%, 0.15) 100%
+  );
+  backdrop-filter: invert(0.15) opacity(1);
+  mask:
+    linear-gradient(white 0 0) padding-box,
+    linear-gradient(white 0 0) content-box;
+  mask-composite: exclude, exclude;
+}
+
+.liquid-glass-material > div {
+  position: absolute;
+  inset: 0;
+  box-sizing: border-box;
+  border-radius: var(--corner-radius);
+  z-index: 2;
+  overflow: hidden;
+}
+
+.liquid-glass-edge-reflection {
+  z-index: 4;
+  margin: calc(var(--total-strength) * -1);
+  border-radius: calc(var(--corner-radius) + var(--total-strength));
+  backdrop-filter: blur(var(--total-strength)) brightness(1.2) saturate(1.2);
+  padding: var(--edge-width);
+  border: var(--total-strength) solid transparent;
+  mask:
+    linear-gradient(white 0 0) padding-box,
+    linear-gradient(white 0 0) content-box;
+  mask-composite: exclude, exclude;
+}
+
+.liquid-glass-emboss-reflection {
+  backdrop-filter: blur(calc(var(--total-strength) * 1.5)) invert(0.25)
+    brightness(1.11) saturate(1.2) hue-rotate(-10deg) contrast(2.3);
+  padding: var(--emboss-width);
+  border: 0 solid transparent;
+  mask:
+    linear-gradient(white 0 0) padding-box,
+    linear-gradient(white 0 0) content-box;
+  mask-composite: exclude, exclude;
+}
+
+.liquid-glass-refraction {
+  backdrop-filter: invert(0.1) brightness(1.2) contrast(1.5);
+  padding: var(--refraction-width);
+  border: var(--emboss-width) solid transparent;
+  mask:
+    linear-gradient(white 0 0) padding-box,
+    linear-gradient(white 0 0) content-box;
+  mask-composite: exclude, exclude;
+}
+
+.liquid-glass-blur {
+  backdrop-filter: blur(var(--extra-blur)) brightness(1.25);
+  border-radius: calc(
+    var(--corner-radius) - (var(--emboss-width) + var(--refraction-width))
+  );
+  margin: calc(var(--emboss-width) + var(--refraction-width));
+}
+
+.liquid-glass-blend-layers {
+  z-index: 3;
+  backdrop-filter: blur(
+    calc((var(--softness) * 0.2) + (var(--extra-blur) * 0.2))
+  );
+}
+
+.liquid-glass-blend-edge {
+  z-index: 8;
+  backdrop-filter: blur(calc(var(--edge-width) * 0.4)) contrast(1.6)
+    saturate(1.5);
+}
+
+.liquid-glass-highlight {
+  z-index: 12;
+  display: block;
+  border-radius: var(--corner-radius);
+  padding: 1px;
+  border: 0 solid transparent;
+  backdrop-filter: brightness(1.2) contrast(1.6) saturate(1.2) opacity(1);
+  mask:
+    linear-gradient(white 0 0) padding-box,
+    linear-gradient(white 0 0) content-box;
+  mask-composite: exclude, exclude;
+}
+
+/* Menus/popovers — readable over busy page content */
+.liquid-glass-opaque {
+  --scrim-blur: 24px;
+  --scrim-inset: 2px;
+}
+
+/* Portaled popovers/dropdowns — sit above page glass cards (z-20 navbar, etc.) */
+.liquid-glass-overlay {
+  isolation: isolate;
+}
+
+.liquid-glass-overlay::before {
+  display: none;
+}
+
+.liquid-glass-overlay .liquid-glass-content {
+  z-index: 2;
+}
+
+.liquid-glass-overlay .liquid-glass-material {
+  z-index: 1;
+}
+
+.liquid-glass-opaque.liquid-glass-overlay .liquid-glass-scrim {
+  background: rgba(12, 14, 18, 0.94);
+}
+
+.liquid-glass-scrim {
+  position: absolute;
+  inset: var(--scrim-inset, 2px);
+  z-index: 0;
+  border-radius: calc(var(--corner-radius) - var(--scrim-inset, 2px));
+  background: rgba(12, 14, 18, 0.88);
+  backdrop-filter: blur(var(--scrim-blur, 24px)) saturate(1.2);
+  pointer-events: none;
+}
+
+.liquid-glass-inner {
+  position: relative;
+  z-index: 1;
+}
+
+/* Scrim replaces center fill — keep only edge/highlight material layers */
+.liquid-glass-opaque .liquid-glass-blur,
+.liquid-glass-opaque .liquid-glass-blend-layers,
+.liquid-glass-opaque .liquid-glass-blend-edge {
+  display: none;
+}

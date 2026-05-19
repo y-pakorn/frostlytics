@@ -59,7 +59,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { OperatorHeader } from "@/components/operator-header"
 import { ReportCardDialog } from "@/components/report-card-dialog"
 import { UnstakeDialog } from "@/components/unstake-dialog"
@@ -294,7 +294,7 @@ export function Profile({
 
   return (
     <div className="space-y-6">
-      <GradientBorderCard>
+      <Surface>
         <div className="space-y-3">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-2">
             <div className="flex items-center gap-2">
@@ -303,7 +303,7 @@ export function Profile({
                 className="size-12 shrink-0 rounded-full"
               />
               <div className="min-w-0 break-all">
-                <h1 className="text-foreground line-clamp-1 text-xl font-medium sm:text-2xl">
+                <h1 className="font-heading text-foreground line-clamp-1 text-xl font-semibold sm:text-2xl">
                   {name || `${address.slice(0, 6)}...${address.slice(-4)}`}
                 </h1>
                 <div className="flex items-center gap-1">
@@ -427,7 +427,7 @@ export function Profile({
             ))}
           </div>
         </div>
-      </GradientBorderCard>
+      </Surface>
       <div className="bg-accent-purple-light text-primary flex h-9 w-fit items-center gap-1 rounded-full px-3 text-sm font-semibold">
         Staking
         <div className="bg-accent-purple-deep! text-foreground flex size-5.5 items-center justify-center rounded-full text-center text-xs tracking-tight">

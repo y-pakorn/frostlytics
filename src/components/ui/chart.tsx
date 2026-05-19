@@ -5,6 +5,7 @@ import * as RechartsPrimitive from "recharts"
 
 import { cn } from "@/lib/utils"
 
+import { LiquidGlass } from "./liquid-glass"
 import { Watermark } from "../watermark"
 
 // Format: { THEME_NAME: CSS_SELECTOR }
@@ -156,7 +157,7 @@ function ChartTooltipContent({
 
     if (labelFormatter) {
       return (
-        <div className={cn("font-medium", labelClassName)}>
+        <div className={cn("text-foreground text-xs font-medium", labelClassName)}>
           {labelFormatter(value, payload)}
         </div>
       )
@@ -166,7 +167,7 @@ function ChartTooltipContent({
       return null
     }
 
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>
+    return <div className={cn("text-foreground text-xs font-medium", labelClassName)}>{value}</div>
   }, [
     label,
     labelFormatter,
@@ -185,92 +186,94 @@ function ChartTooltipContent({
   const date = includeDate ? payload?.[0]?.payload?.[includeDate.key] : null
 
   return (
-    <div
-      className={cn(
-        "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
-        className
-      )}
+    <LiquidGlass
+      radius={16}
+      opaque
+      className={cn("pointer-events-none w-fit", className)}
+      contentClassName="overflow-hidden text-foreground"
     >
-      {!nestLabel ? tooltipLabel : null}
-      <div className="grid gap-1.5">
-        {payload.map((item, index) => {
-          const key = `${nameKey || item.name || item.dataKey || "value"}`
-          const itemConfig = getPayloadConfigFromPayload(config, item, key)
-          const indicatorColor = color || item.payload.fill || item.color
+      <div className="grid min-w-[10rem] max-w-[min(100vw-2rem,20rem)] items-start gap-2 px-3 py-2 text-xs">
+        {!nestLabel ? tooltipLabel : null}
+        <div className="grid w-full gap-2">
+          {payload.map((item, index) => {
+            const key = `${nameKey || item.name || item.dataKey || "value"}`
+            const itemConfig = getPayloadConfigFromPayload(config, item, key)
+            const indicatorColor = color || item.payload.fill || item.color
 
-          return (
+            return (
+              <div
+                key={item.dataKey}
+                className={cn(
+                  "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
+                  indicator === "dot" && "items-center"
+                )}
+              >
+                {formatter && item?.value !== undefined && item.name ? (
+                  formatter(item.value, item.name, item, index, item.payload)
+                ) : (
+                  <>
+                    {itemConfig?.icon ? (
+                      <itemConfig.icon />
+                    ) : (
+                      !hideIndicator && (
+                        <div
+                          className={cn(
+                            "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
+                            {
+                              "h-2.5 w-2.5": indicator === "dot",
+                              "w-1": indicator === "line",
+                              "w-0 border-[1.5px] border-dashed bg-transparent":
+                                indicator === "dashed",
+                              "my-0.5": nestLabel && indicator === "dashed",
+                            }
+                          )}
+                          style={
+                            {
+                              "--color-bg": indicatorColor,
+                              "--color-border": indicatorColor,
+                            } as React.CSSProperties
+                          }
+                        />
+                      )
+                    )}
+                    <div
+                      className={cn(
+                        "flex min-w-0 flex-1 justify-between gap-3 leading-none",
+                        nestLabel ? "items-end" : "items-center"
+                      )}
+                    >
+                      <div className="grid min-w-0 gap-1">
+                        {nestLabel ? tooltipLabel : null}
+                        <span className="text-secondary-foreground truncate">
+                          {itemConfig?.label || item.name}
+                        </span>
+                      </div>
+                      {item.value != null && item.value !== "" && (
+                        <span className="text-foreground shrink-0 text-xs font-semibold tabular-nums">
+                          {valueFormatter
+                            ? valueFormatter(item.value)
+                            : item.value.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            )
+          })}
+          {date != null && date !== "" && (
             <div
-              key={item.dataKey}
               className={cn(
-                "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
-                indicator === "dot" && "items-center"
+                "text-tertiary border-white/10 border-t pt-1.5 text-xs leading-4 font-normal",
+                includeDate?.className
               )}
             >
-              {formatter && item?.value !== undefined && item.name ? (
-                formatter(item.value, item.name, item, index, item.payload)
-              ) : (
-                <>
-                  {itemConfig?.icon ? (
-                    <itemConfig.icon />
-                  ) : (
-                    !hideIndicator && (
-                      <div
-                        className={cn(
-                          "shrink-0 rounded-[2px] border-(--color-border) bg-(--color-bg)",
-                          {
-                            "h-2.5 w-2.5": indicator === "dot",
-                            "w-1": indicator === "line",
-                            "w-0 border-[1.5px] border-dashed bg-transparent":
-                              indicator === "dashed",
-                            "my-0.5": nestLabel && indicator === "dashed",
-                          }
-                        )}
-                        style={
-                          {
-                            "--color-bg": indicatorColor,
-                            "--color-border": indicatorColor,
-                          } as React.CSSProperties
-                        }
-                      />
-                    )
-                  )}
-                  <div
-                    className={cn(
-                      "flex flex-1 justify-between leading-none",
-                      nestLabel ? "items-end" : "items-center"
-                    )}
-                  >
-                    <div className="grid gap-1.5">
-                      {nestLabel ? tooltipLabel : null}
-                      <span className="text-muted-foreground">
-                        {itemConfig?.label || item.name}
-                      </span>
-                    </div>
-                    {item.value && (
-                      <span className="text-foreground ml-2 font-mono font-medium tabular-nums">
-                        {valueFormatter
-                          ? valueFormatter(item.value)
-                          : item.value.toLocaleString()}
-                      </span>
-                    )}
-                  </div>
-                </>
-              )}
+              {includeDate?.formatter ? includeDate.formatter(date) : String(date)}
             </div>
-          )
-        })}
-        {date && (
-          <div
-            className={cn(
-              "text-secondary text-sm font-medium",
-              includeDate?.className
-            )}
-          >
-            {includeDate?.formatter ? includeDate.formatter(date) : date}
-          </div>
-        )}
+          )}
+        </div>
       </div>
-    </div>
+    </LiquidGlass>
   )
 }
 

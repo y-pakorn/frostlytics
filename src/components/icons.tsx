@@ -4,18 +4,32 @@ import { images } from "@/config/image"
 import { cn } from "@/lib/utils"
 
 export const Icons = {
+  /** Snowflake icon only */
   logo: ({ className, ...props }: ComponentProps<"img">) => (
     <img
       {...props}
       src={images.logo}
-      className={cn("size-10 shrink-0 object-contain", className)}
+      alt="Frostlytics"
+      className={cn("h-6 w-5 shrink-0 object-contain", className)}
     />
   ),
+  /** Text-only wordmark — use with logo icon, not logoText */
+  logoWordmark: ({ className, ...props }: ComponentProps<"img">) => (
+    <img
+      {...props}
+      src={images.logoWordmark}
+      alt=""
+      aria-hidden
+      className={cn("h-[15px] w-[74px] shrink-0 object-contain", className)}
+    />
+  ),
+  /** Full horizontal logo (icon + text) — use alone, not with logo */
   logoText: ({ className, ...props }: ComponentProps<"img">) => (
     <img
       {...props}
       src={images.logoText}
-      className={cn("h-10 shrink-0 object-contain", className)}
+      alt="Frostlytics"
+      className={cn("h-[22px] shrink-0 object-contain", className)}
     />
   ),
   wallet: ({ ...props }: ComponentProps<"svg">) => (

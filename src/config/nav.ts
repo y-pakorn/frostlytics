@@ -1,62 +1,79 @@
+import type { ElementType } from "react"
 import {
-  Activity,
-  Gem,
-  LayoutDashboard,
+  BarChart2,
+  Calculator,
+  Coins,
+  Cross,
   MessageCircleQuestionMark,
   PackageCheck,
-  User,
 } from "lucide-react"
 
 import { links } from "./link"
 
-export const navItems = [
+export const navGroups = [
   {
-    label: "DASHBOARD",
+    label: "ANALYTIC",
     items: [
       {
-        label: "Dashboard",
-        icon: LayoutDashboard,
+        label: "Protocol Stats",
+        icon: BarChart2,
         href: "/",
+        matchFn: (pathname: string) => pathname === "/",
       },
       {
-        label: "Profile",
-        icon: User,
-        href: "/profile",
+        label: "Staking & Operators",
+        icon: Coins,
+        href: "/staking-operators",
+        matchFn: (pathname: string) => pathname === "/staking-operators",
       },
       {
         label: "Protocol Health",
-        icon: Activity,
+        icon: Cross,
         href: "/protocol-health",
-      },
-      {
-        label: "Reward Calculator",
-        icon: Gem,
-        href: "/reward-calculator",
+        matchFn: (pathname: string) => pathname === "/protocol-health",
       },
     ],
   },
   {
-    label: "MORE",
+    label: "UTILITY",
     items: [
       {
-        label: "FAQ",
-        icon: MessageCircleQuestionMark,
-        href: "/faq",
-      },
-
-      {
-        label: "Become an Operator",
-        icon: PackageCheck,
-        href: links.becomeValidator,
-        isExternal: true,
+        label: "Reward Calculator",
+        icon: Calculator,
+        href: "/reward-calculator",
+        matchFn: (pathname: string) => pathname === "/reward-calculator",
       },
     ],
+  },
+] as const
+
+export const navFooterItems = [
+  {
+    label: "FAQ",
+    icon: MessageCircleQuestionMark,
+    href: "/faq",
+    matchFn: (pathname: string) => pathname === "/faq",
+  },
+  {
+    label: "Become a Validator",
+    icon: PackageCheck,
+    href: links.becomeValidator,
+    isExternal: true,
+  },
+] as const
+
+/** @deprecated use navGroups + navFooterItems */
+export const navItems = [
+  ...navGroups,
+  {
+    label: "MORE",
+    items: [...navFooterItems],
   },
 ] as {
   label: string
   items: {
     label: string
-    icon: React.ElementType
+    icon: ElementType
     href: string
     className?: string
     isExternal?: boolean
@@ -64,3 +81,5 @@ export const navItems = [
     disabled?: boolean
   }[]
 }[]
+
+export type NavItem = (typeof navGroups)[number]["items"][number]

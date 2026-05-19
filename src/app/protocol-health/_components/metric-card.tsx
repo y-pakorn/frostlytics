@@ -1,7 +1,7 @@
 import { Info, TrendingDown, TrendingUp } from "lucide-react"
 import type { ReactNode } from "react"
 
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { Skeleton } from "@/components/ui/skeleton"
 import {
   Tooltip,
@@ -47,7 +47,7 @@ export function MetricCard({
   className?: string
 }) {
   return (
-    <GradientBorderCard
+    <Surface
       className={cn(
         "flex h-full min-h-[280px] flex-col gap-2 p-5",
         // Bump card surface contrast locally without touching shared component.
@@ -153,6 +153,6 @@ export function MetricCard({
           {interpretation}
         </div>
       ) : null}
-    </GradientBorderCard>
+    </Surface>
   )
 }

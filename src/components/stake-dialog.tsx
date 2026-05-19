@@ -23,7 +23,7 @@ import { useBalances } from "@/hooks/use-balances"
 import { recursiveGetCoins, suiClient } from "@/services/client"
 import { useStaking } from "@/hooks"
 
-import { GradientBorderCard } from "./gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { OperatorHeader } from "./operator-header"
 import { Button } from "./ui/button"
 import {
@@ -202,7 +202,7 @@ export function StakeDialog({
           You are about to stake your WAL to the operator. Please confirm the
           details below.
         </DialogDescription>
-        <GradientBorderCard className="space-y-3">
+        <Surface className="space-y-3">
           <OperatorHeader operator={operator} />
           <div className="space-y-1">
             {[
@@ -234,7 +234,7 @@ export function StakeDialog({
               </div>
             ))}
           </div>
-        </GradientBorderCard>
+        </Surface>
         <div className="text-lg font-bold">Stake</div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">

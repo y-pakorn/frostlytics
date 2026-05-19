@@ -4,7 +4,7 @@ import { toast } from "sonner"
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { images } from "@/config/image"
 import { formatter } from "@/lib/formatter"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { Icons } from "@/components/icons"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -18,7 +18,7 @@ export function OperatorRewardRowCard({
 }) {
   const metadata = operator.metadata
   return (
-    <GradientBorderCard className="space-y-2 p-4">
+    <Surface className="space-y-2 p-4">
       <div className="flex items-center gap-3">
         {metadata?.imageUrl ? (
           <img
@@ -78,6 +78,6 @@ export function OperatorRewardRowCard({
           </div>
         </div>
       </div>
-    </GradientBorderCard>
+    </Surface>
   )
 }

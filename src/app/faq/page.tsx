@@ -71,25 +71,27 @@ export default function FAQPage() {
   return (
     <div className="space-y-8">
       <div className="space-y-2 text-center">
-        <h1 className="text-accent-purple-light text-2xl font-semibold sm:text-3xl md:text-4xl">
-          Frequently asked questions (FAQ)
+        <h1 className="font-heading text-foreground text-2xl font-bold sm:text-3xl md:text-4xl">
+          Frequently asked questions
         </h1>
-        <p className="text-tertiary text-base sm:text-lg md:text-xl">
+        <p className="text-tertiary text-base sm:text-lg">
           Everything you need to know about Frostlytics
         </p>
       </div>
-      <div className="space-y-6">
+      <div className="border-border-secondary bg-surface-elevated space-y-6 rounded-2xl border p-6">
         {faqItems.map((item, i) => (
           <Fragment key={item.question}>
-            <div>
-              <h2 className="text-lg font-semibold">
+            <div className="space-y-2">
+              <h2 className="font-heading text-foreground text-lg font-semibold">
                 {i + 1}. {item.question}
               </h2>
-              <p className="text-tertiary text-wrap whitespace-pre-wrap">
+              <p className="text-secondary-foreground text-wrap whitespace-pre-wrap">
                 {item.answer}
               </p>
             </div>
-            <Separator className="bg-border-secondary" />
+            {i < faqItems.length - 1 && (
+              <Separator className="bg-border-secondary" />
+            )}
           </Fragment>
         ))}
       </div>

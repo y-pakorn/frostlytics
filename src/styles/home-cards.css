@@ -1,0 +1,80 @@
+/* Home page card tone overlays — layered on LiquidGlass content */
+
+.home-glass-card {
+  --corner-radius: var(--home-card-radius);
+  /* 2px inset leaves a glass edge channel (same as opaque scrim) — material shows through */
+  --home-card-tone-inset: 2px;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  overflow: hidden;
+  border-radius: var(--home-card-radius);
+}
+
+.home-glass-card .liquid-glass-content {
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+/*
+ * Edge-reflection defaults extend outward (negative margin + larger radius) for
+ * floating overlays. On in-page cards that reads as a mismatched outer outline.
+ */
+.home-glass-card .liquid-glass-edge-reflection {
+  margin: 0;
+  border: 0;
+  border-radius: var(--corner-radius);
+}
+
+.home-card-tone {
+  position: absolute;
+  inset: var(--home-card-tone-inset);
+  z-index: 0;
+  border-radius: calc(var(--corner-radius) - var(--home-card-tone-inset));
+  pointer-events: none;
+  background-color: var(--home-card-base);
+  backdrop-filter: blur(20px) saturate(1.1);
+}
+
+.home-card-tone[data-tone="hero"] {
+  background-image: linear-gradient(
+    180deg,
+    var(--home-hero-from) 47.596%,
+    var(--home-hero-to) 100%
+  );
+}
+
+.home-card-tone[data-tone="epoch-success"] {
+  background-image: linear-gradient(
+    180deg,
+    var(--home-epoch-success-from) 47.596%,
+    var(--home-epoch-success-to) 100%
+  );
+}
+
+.home-card-tone[data-tone="epoch-error"] {
+  background-image: linear-gradient(
+    180deg,
+    var(--home-epoch-success-from) 47.596%,
+    var(--home-epoch-error-to) 100%
+  );
+}
+
+.home-card-tone[data-tone="storage"] {
+  background-image: linear-gradient(
+    180deg,
+    var(--home-storage-from) 47.596%,
+    var(--home-storage-to) 100%
+  );
+}
+
+.home-card-tone[data-tone="chart"] {
+  background-color: var(--home-card-base);
+}
+
+.home-card-inner {
+  position: relative;
+  z-index: 1;
+  min-height: 0;
+  min-width: 0;
+}

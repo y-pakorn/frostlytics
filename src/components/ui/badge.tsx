@@ -22,6 +22,14 @@ const badgeVariants = cva(
           "border-accent-purple bg-accent-purple-dark/20 text-accent-purple hover:bg-accent-purple-dark/10",
         success:
           "border-success-foreground bg-success text-success-foreground hover:bg-success/80",
+        walPrice:
+          "border-border-secondary bg-surface-elevated gap-1.5 px-2.5 py-1 text-sm font-bold text-foreground",
+        epoch:
+          "border-transparent bg-brand-700/30 text-brand-300 px-2 py-0.5 text-xs font-bold",
+        deltaUp:
+          "border-transparent bg-success/20 text-success-foreground text-xs font-semibold",
+        deltaDown:
+          "border-transparent bg-error/20 text-error-foreground text-xs font-semibold",
       },
       size: {
         md: "text-xs pb-0 leading-4.5",

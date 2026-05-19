@@ -64,7 +64,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { Icons } from "@/components/icons"
 import { Pagination } from "@/components/pagination"
 import { useFullOperators } from "@/hooks"

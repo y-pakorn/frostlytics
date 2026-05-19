@@ -2,131 +2,159 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import {
-  ArrowUpRight,
-  Book,
-  Gem,
-  Layout,
-  LayoutDashboard,
-  PackageCheck,
-  User,
-} from "lucide-react"
-import { FaXTwitter } from "react-icons/fa6"
+import { Menu, PanelLeftClose } from "lucide-react"
 
-import { links } from "@/config/link"
-import { navItems } from "@/config/nav"
-import { track } from "@/lib/analytic"
+import { navFooterItems, navGroups } from "@/config/nav"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarHeader,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarTrigger,
+  SidebarSeparator,
+  useSidebar,
 } from "@/components/ui/sidebar"
 
 import { Icons } from "./icons"
+import { MobileSidebar } from "./mobile-sidebar"
+import {
+  SidebarNavItem,
+  SidebarSectionLabel,
+} from "./sidebar-nav-item"
 import { Button } from "./ui/button"
+import { SidebarWalPrice } from "./wal-price-badge"
+
+function DesktopSidebarContent({
+  pathname,
+  collapsed,
+  onToggle,
+}: {
+  pathname: string
+  collapsed: boolean
+  onToggle: () => void
+}) {
+  return (
+    <SidebarContent className="flex min-h-0 flex-1 flex-col gap-0 overflow-hidden p-0">
+      <div
+        className={cn(
+          "flex shrink-0 items-center pt-3",
+          collapsed
+            ? "justify-center px-2"
+            : "justify-between pl-2.5 pr-2"
+        )}
+      >
+        <Link
+          href="/"
+          className="flex items-center gap-[8.5px]"
+        >
+          {collapsed ? (
+            <Icons.logo className="h-6 w-5" />
+          ) : (
+            <>
+              <Icons.logo />
+              <Icons.logoWordmark />
+            </>
+          )}
+        </Link>
+        {!collapsed && <SidebarWalPrice />}
+      </div>
+
+      <div
+        className={cn(
+          "flex min-h-0 flex-1 flex-col justify-between pb-3",
+          collapsed ? "mt-3 px-2" : "mt-4 px-2.5"
+        )}
+      >
+        <div className="flex flex-col gap-1.5">
+          {navGroups.map((group, groupIndex) => (
+            <div key={group.label} className="flex flex-col gap-1.5">
+              {collapsed && groupIndex > 0 && (
+                <SidebarSeparator className="mx-auto my-1 w-8 bg-white/10" />
+              )}
+              <SidebarSectionLabel collapsed={collapsed}>
+                {group.label}
+              </SidebarSectionLabel>
+              <div className="flex flex-col">
+                {group.items.map((item) => {
+                  const isActive = item.matchFn
+                    ? item.matchFn(pathname)
+                    : item.href === pathname
+
+                  return (
+                    <SidebarNavItem
+                      key={item.href}
+                      href={item.href}
+                      label={item.label}
+                      icon={item.icon}
+                      isActive={isActive}
+                      collapsed={collapsed}
+                    />
+                  )
+                })}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        <div className="flex flex-col">
+          {navFooterItems.map((item) => {
+            const isActive =
+              "matchFn" in item && item.matchFn
+                ? item.matchFn(pathname)
+                : item.href === pathname
+
+            return (
+              <SidebarNavItem
+                key={item.href}
+                href={item.href}
+                label={item.label}
+                icon={item.icon}
+                isActive={isActive}
+                isExternal={"isExternal" in item ? item.isExternal : undefined}
+                collapsed={collapsed}
+              />
+            )
+          })}
+        </div>
+      </div>
+
+      <div className="flex shrink-0 justify-center px-2 pb-3">
+        <Button
+          variant="ghost"
+          size="iconSm"
+          className="rounded-lg border border-white/20 text-white"
+          onClick={onToggle}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <Menu className="size-4 stroke-[1.5]" />
+          ) : (
+            <PanelLeftClose className="size-4 stroke-[1.5]" />
+          )}
+        </Button>
+      </div>
+    </SidebarContent>
+  )
+}
 
 export function AppSidebar() {
   const pathname = usePathname()
+  const isMobile = useIsMobile()
+  const { state, toggleSidebar, setOpenMobile } = useSidebar()
+  const collapsed = state === "collapsed" && !isMobile
+
+  const closeMobile = () => setOpenMobile(false)
 
   return (
     <Sidebar variant="sidebar" collapsible="icon">
-      <SidebarHeader className="flex-row items-center gap-3 px-4 py-5 group-data-[state=collapsed]:justify-center group-data-[state=collapsed]:px-2">
-        <Icons.logo />
-        <Icons.logoText className="group-data-[state=collapsed]:hidden" />
-      </SidebarHeader>
-      <SidebarContent>
-        {navItems.map((item) => (
-          <SidebarGroup key={item.label}>
-            <SidebarGroupLabel>{item.label}</SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {item.items.map((item) => (
-                  <Link
-                    href={item.href}
-                    key={item.href}
-                    className={cn(item.disabled && "pointer-events-none")}
-                    target={item.isExternal ? "_blank" : undefined}
-                    rel={item.isExternal ? "noopener noreferrer" : undefined}
-                    onClick={() => {
-                      if (item.isExternal) {
-                        track("ExternalLinkClick", {
-                          url: item.href,
-                          label: item.label,
-                        })
-                      } else {
-                        track("NavigationClick", {
-                          destination: item.href,
-                          label: item.label,
-                        })
-                      }
-                    }}
-                  >
-                    <SidebarMenuItem>
-                      <SidebarMenuButton
-                        disabled={item.disabled}
-                        isActive={
-                          item.matchFn
-                            ? item.matchFn(pathname)
-                            : item.href === pathname
-                        }
-                        variant="gradient"
-                      >
-                        <item.icon className={cn(item.className)} />
-                        <span className="group-data-[state=collapsed]:hidden">
-                          {item.label}
-                        </span>
-                        {item.isExternal && (
-                          <ArrowUpRight className="text-accent-blue! ml-auto" />
-                        )}
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  </Link>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        ))}
-      </SidebarContent>
-      <SidebarFooter className="flex-row justify-center">
-        <Link
-          href={links.twitter}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mr-auto group-data-[state=collapsed]:hidden"
-          onClick={() =>
-            track("ExternalLinkClick", {
-              url: links.twitter,
-              label: "Twitter",
-            })
-          }
-        >
-          <Button variant="ghost" size="icon">
-            <FaXTwitter />
-          </Button>
-        </Link>
-        {/* <Link
-          href={links.docs}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="mr-auto group-data-[state=collapsed]:hidden"
-        >
-          <Button variant="ghost" size="icon">
-            <Book />
-          </Button>
-        </Link> */}
-        <SidebarTrigger size="icon" className="rounded-full" variant="outline">
-          <Layout />
-        </SidebarTrigger>
-      </SidebarFooter>
+      {isMobile ? (
+        <MobileSidebar pathname={pathname} onClose={closeMobile} />
+      ) : (
+        <DesktopSidebarContent
+          pathname={pathname}
+          collapsed={collapsed}
+          onToggle={toggleSidebar}
+        />
+      )}
     </Sidebar>
   )
 }

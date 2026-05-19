@@ -2,8 +2,7 @@ import "@/styles/globals.css"
 import "@mysten/dapp-kit/dist/index.css"
 
 import type { Metadata, Viewport } from "next"
-import { JetBrains_Mono } from "next/font/google"
-import localFont from "next/font/local"
+import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google"
 import { GoogleAnalytics } from "@next/third-parties/google"
 
 import { env } from "@/env.mjs"
@@ -17,13 +16,17 @@ import { AppSidebar } from "@/components/app-sidebar"
 import { Providers } from "@/components/providers"
 import { ThemeProvider } from "@/components/theme-provider"
 
-const sans = localFont({
-  src: "./mosvita-vf.ttf",
-  variable: "--font-sans",
-})
-const mono = JetBrains_Mono({
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-mono",
+  variable: "--font-geist",
+})
+const geistMono = Geist_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono",
+})
+const bricolage = Bricolage_Grotesque({
+  subsets: ["latin"],
+  variable: "--font-bricolage",
 })
 
 interface RootLayoutProps {
@@ -63,10 +66,7 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
+  themeColor: [{ color: "#0c0e12" }],
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
@@ -76,8 +76,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
       <body
         className={cn(
           "bg-background min-h-screen font-sans antialiased",
-          sans.variable,
-          mono.variable
+          geist.variable,
+          geistMono.variable,
+          bricolage.variable
         )}
       >
         <Providers>
@@ -90,9 +91,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <AppSidebar />
               <SidebarInset className="relative flex min-h-screen w-full flex-col overflow-hidden">
                 <img
-                  className="fixed inset-0 -z-10 size-full object-cover opacity-10 blur-sm"
-                  src={images.bg}
-                  alt="Background"
+                  className="pointer-events-none fixed inset-x-0 bottom-0 -z-10 w-full object-cover object-bottom"
+                  src={images.gradientFooter}
+                  alt=""
+                  aria-hidden
                 />
                 <AppNavbar />
                 <div className="container flex-1 py-6">{children}</div>

@@ -7,7 +7,7 @@ import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { links } from "@/config/link"
 import { formatter } from "@/lib/formatter"
 import { track } from "@/lib/analytic"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { SafeImage } from "@/components/safe-image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -28,7 +28,7 @@ export function StakingRowCard({
   readOnly?: boolean
 }) {
   return (
-    <GradientBorderCard className="space-y-3 p-4">
+    <Surface className="space-y-3 p-4">
       {/* Operator row */}
       {operator ? (
         <Link
@@ -134,6 +134,6 @@ export function StakingRowCard({
           </UnstakeDialog>
         )
       ) : null}
-    </GradientBorderCard>
+    </Surface>
   )
 }

@@ -3,7 +3,7 @@ import { ChevronRight } from "lucide-react"
 
 import { OperatorWithSharesAndBaseApy } from "@/types/operator"
 import { formatter } from "@/lib/formatter"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { SafeImage } from "@/components/safe-image"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -19,7 +19,7 @@ export function OperatorRowCard({
   yourPositions?: number
 }) {
   return (
-    <GradientBorderCard className="space-y-3 p-4">
+    <Surface className="space-y-3 p-4">
       <Link
         href={`/operator?id=${operator.id}`}
         prefetch={false}
@@ -99,6 +99,6 @@ export function OperatorRowCard({
           Stake
         </Button>
       </StakeDialog>
-    </GradientBorderCard>
+    </Surface>
   )
 }

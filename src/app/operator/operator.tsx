@@ -11,7 +11,7 @@ import { track } from "@/lib/analytic"
 import { formatter } from "@/lib/formatter"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { SafeImage } from "@/components/safe-image"
 import { StakeDialog } from "@/components/stake-dialog"
 import { useOperatorMetadatas, useOperatorWithSharesAndBaseApy } from "@/hooks"
@@ -69,7 +69,7 @@ export function Operator({
 
   return (
     <div className="space-y-4">
-      <GradientBorderCard className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <Surface className="flex flex-col gap-4 sm:flex-row sm:items-center">
         <div className="flex items-center gap-4">
           <SafeImage
             src={operatorMetadata?.imageUrl}
@@ -180,14 +180,14 @@ export function Operator({
             </div>
           ))}
         </div>
-      </GradientBorderCard>
+      </Surface>
 
       <OperatorHistorySection operatorId={id} />
 
       <div className="flex flex-col gap-6 lg:flex-row">
         <div className="w-full shrink-0 space-y-2 text-sm font-medium lg:w-[330px]">
-          <h2 className="font-bold">Info</h2>
-          <div className="space-y-2 rounded-2xl bg-black/20 p-4">
+          <h2 className="font-heading font-bold">Info</h2>
+          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
             {[
               {
                 label: "Pending Stake",
@@ -232,7 +232,7 @@ export function Operator({
             ))}
           </div>
 
-          <div className="space-y-2 rounded-2xl bg-black/20 p-4">
+          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
             {[
               {
                 label: "Commission receiver",
@@ -289,8 +289,8 @@ export function Operator({
             ))}
           </div>
 
-          <h2 className="font-bold">Voting Params</h2>
-          <div className="space-y-2 rounded-2xl bg-black/20 p-4">
+          <h2 className="font-heading font-bold">Voting Params</h2>
+          <div className="border-border-secondary bg-surface-elevated/50 space-y-2 rounded-2xl border p-4">
             {[
               {
                 label: "Node Capacity",
@@ -331,12 +331,12 @@ export function Operator({
           </div>
         </div>
         <div className="min-w-0 flex-1 space-y-4">
-          <div className="-mx-4 flex items-center gap-2 overflow-x-auto px-4">
+          <div className="flex items-center gap-1 overflow-x-auto rounded-full border border-border-secondary bg-surface-elevated p-1">
             {tabs.map((t) => (
               <Button
                 key={t.label}
                 variant={t.label === tab ? "active" : "inactive"}
-                className="shrink-0"
+                className="shrink-0 rounded-full"
                 onClick={() => {
                   setTab(t.label)
                   track("TabChange", { tabName: t.label, operatorId: id })

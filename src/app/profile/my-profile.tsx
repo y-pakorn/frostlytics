@@ -29,7 +29,7 @@ function WalletNotConnected() {
         </p>
       </div>
       <ConnectModal
-        trigger={<Button variant="purple">Connect Wallet</Button>}
+        trigger={<Button variant="skeuomorphic">Connect Wallet</Button>}
       />
     </div>
   )

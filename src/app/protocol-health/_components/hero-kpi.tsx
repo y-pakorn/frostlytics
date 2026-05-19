@@ -4,7 +4,7 @@ import type { ReactNode } from "react"
 import { TrendingDown, TrendingUp } from "lucide-react"
 import { Area, AreaChart } from "recharts"
 
-import { GradientBorderCard } from "@/components/gradient-border-card"
+import { Surface } from "@/components/ui/surface"
 import { ChartContainer } from "@/components/ui/chart"
 import { Skeleton } from "@/components/ui/skeleton"
 import { formatter } from "@/lib/formatter"
@@ -31,7 +31,7 @@ export function HeroKpi({
 }) {
   const gradientId = `hero-spark-${label.replace(/[^a-z0-9]/gi, "")}`
   return (
-    <GradientBorderCard
+    <Surface
       className={cn(
         "relative flex min-h-[140px] flex-col justify-between gap-2 overflow-hidden p-5",
         "!bg-[linear-gradient(180deg,hsla(237,37%,8%,0.55)_0%,hsla(254,36%,24%,0.4)_100%)]",
@@ -106,6 +106,6 @@ export function HeroKpi({
           </ChartContainer>
         </div>
       ) : null}
-    </GradientBorderCard>
+    </Surface>
   )
 }

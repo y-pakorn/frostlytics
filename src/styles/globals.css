@@ -1,17 +1,33 @@
 @import "tailwindcss";
+@import "./liquid-glass.css";
+@import "./home-cards.css";
 
-@plugin 'tailwindcss-animate';
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-lg: 24px;
+  --radius-xl: calc(var(--radius-lg) + 4px);
+  --radius-sidebar: 24px;
+  --radius-full: 9999px;
+
+  --color-surface-glass: var(--surface-glass);
+  /* Figma Colors/Background/bg-primary — NOT brand purple */
+  --color-surface-primary: var(--surface-primary);
+  /* Figma colors/chart/background/bg-primary — elevated panels */
+  --color-surface-elevated: var(--surface-elevated);
+  --color-search-surface: var(--search-surface);
+  --color-border-primary: var(--border-primary);
+  --color-border-secondary: var(--border-secondary);
 
   --color-background: var(--background);
-  --color-background-overlay: var(--background-overlay);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
@@ -27,11 +43,13 @@
   --color-muted-foreground: var(--muted-foreground);
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  --color-accent-blue: var(--accent-blue);
-  --color-accent-purple: var(--accent-purple);
-  --color-accent-purple-light: var(--accent-purple-light);
-  --color-accent-purple-dark: var(--accent-purple-dark);
-  --color-accent-purple-deep: var(--accent-purple-deep);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-purple: var(--brand-700);
+  --color-accent-blue: var(--accent-teal);
+  --color-accent-purple-light: var(--brand-500);
+  --color-brand-tertiary-alt: var(--brand-600);
+  --color-accent-purple-dark: var(--brand-800);
+  --color-accent-purple-deep: var(--brand-900);
   --color-placeholder: var(--placeholder);
   --color-destructive: var(--destructive);
   --color-border: var(--border);
@@ -63,6 +81,18 @@
   --color-success-foreground: var(--success-foreground);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
+  --color-brand-50: var(--brand-50);
+  --color-brand-100: var(--brand-100);
+  --color-brand-200: var(--brand-200);
+  --color-brand-300: var(--brand-300);
+  --color-brand-400: var(--brand-400);
+  --color-brand-500: var(--brand-500);
+  --color-brand-600: var(--brand-600);
+  --color-brand-700: var(--brand-700);
+  --color-brand-800: var(--brand-800);
+  --color-brand-900: var(--brand-900);
+  --color-brand-950: var(--brand-950);
+  --color-nav-active: var(--nav-active-bg);
 
   --animate-accordion-down: accordion-down 0.2s ease-out;
   --animate-accordion-up: accordion-up 0.2s ease-out;
@@ -92,121 +122,135 @@
     padding-inline: 2rem;
     max-width: none;
   }
-  @media (width >= 1150px) {
-    max-width: 1150px;
+  @media (width >= 1280px) {
+    max-width: 1280px;
   }
 }
 
-/*
-  The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
-  looks the same as it did with Tailwind CSS v3.
-
-  If we ever want to remove these styles, we need to add an explicit border
-  color utility to any element that depends on these defaults.
-*/
 @layer base {
   *,
   ::after,
   ::before,
   ::backdrop,
   ::file-selector-button {
-    border-color: var(--color-gray-200, currentcolor);
+    border-color: var(--border);
   }
 }
 
-:root {
-  --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-icon-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
 .dark {
-  --background: hsla(244, 100%, 3%, 0.9);
-  --background-overlay: hsla(220, 16%, 16%, 0.5);
-  --foreground: hsla(0, 0%, 97%, 1);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: hsla(244, 58%, 5%, 1);
-  --popover-foreground: hsla(0, 0%, 97%, 1);
-  --popover-border: hsla(220, 16%, 16%, 1);
-  --primary: hsla(220, 20%, 6%, 1);
-  --primary-foreground: hsla(220, 24%, 12%, 1);
-  --primary-hover: oklch(0.205 0 0);
-  --secondary: hsla(220, 4%, 82%, 1);
-  --secondary-foreground: hsla(218, 4%, 60%, 1);
-  --muted: hsla(254, 36%, 24%, 0.2);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: hsla(220, 18%, 9%, 1);
-  --accent-foreground: oklch(0.985 0 0);
-  --accent-blue: hsla(173, 75%, 77%, 1);
-  --accent-purple: hsla(255, 100%, 74%, 1);
-  --accent-purple-light: hsla(249, 94%, 76%, 1);
-  --accent-purple-dark: hsla(256, 85%, 58%, 1);
-  --accent-purple-deep: hsla(257, 69%, 22%, 1);
-  --placeholder: hsla(220, 4%, 54%, 1);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: hsla(220, 8%, 24%, 1);
-  --border-secondary: hsla(220, 16%, 16%, 1);
-  --input: hsla(220, 20%, 6%, 0.7);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
-  --chart-2: oklch(0.696 0.17 162.48);
-  --chart-3: oklch(0.769 0.188 70.08);
-  --chart-4: oklch(0.627 0.265 303.9);
-  --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: hsla(244, 58%, 5%, 0.95);
-  --sidebar-foreground: hsla(220, 4%, 82%, 1);
-  --sidebar-icon-foreground: hsla(220, 5%, 40%, 1);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: hsla(220, 24%, 12%, 1);
-  --sidebar-accent: hsla(220, 16%, 16%, 1);
-  --sidebar-accent-foreground: hsla(220, 3%, 93%, 1);
+  --radius: 0.625rem;
+
+  /* Brand purple scale */
+  --brand-950: #27115f;
+  --brand-900: #3e1c96;
+  --brand-800: #4a1fb8;
+  --brand-700: #5925dc;
+  --brand-600: #6938ef;
+  --brand-500: #7a5af8;
+  --brand-400: #9b8afb;
+  --brand-300: #bdb4fe;
+  --brand-200: #d9d6fe;
+  --brand-100: #ebe9fe;
+  --brand-50: #f0f0f1;
+
+  /*
+   * Figma token mapping (Mar 2026):
+   * --surface-primary  → Colors/Background/bg-primary (#0c0e12) — page + buttons
+   * --surface-elevated → colors/chart/background/bg-primary (#161b26) — cards/panels
+   * --primary          → utility-brand-300 (#5925dc) — purple CTAs only
+   */
+  --background: #0c0e12;
+  --surface-primary: #0c0e12;
+  --surface-elevated: #161b26;
+  --foreground: #f7f7f7;
+  --card: #161b26;
+  --card-foreground: #f7f7f7;
+  --popover: #161b26;
+  --popover-foreground: #f7f7f7;
+  --popover-border: #333741;
+
+  /* Semantic — brand purple CTAs */
+  --primary: #5925dc;
+  --primary-hover: #6938ef;
+  --primary-foreground: #ffffff;
+  --secondary: #161b26;
+  --secondary-foreground: #cecfd2;
+  --muted: #161b26;
+  --muted-foreground: #94979c;
+  --accent: #161b26;
+  --accent-foreground: #f7f7f7;
+  --accent-teal: #97f0e5;
+  --destructive: #ef4444;
+  --border: #333741;
+  --border-primary: #373a41;
+  --border-secondary: #333741;
+  --input: #0c0e12;
+  --ring: #5925dc;
+  --placeholder: #85888e;
+  --search-surface: rgba(12, 14, 18, 0.7);
+
+  /* Text hierarchy */
+  --tertiary: #94979c;
+  --tertiary-foreground: #94979c;
+  --quaternary: #94979c;
+  --quaternary-foreground: #94979c;
+  --disabled: #94979c;
+
+  /* Status */
+  --success: #052e1a;
+  --success-foreground: #22c55e;
+  --error: #450a0a;
+  --error-foreground: #ef4444;
+
+  /* Sidebar & nav */
+  --sidebar: rgba(6, 5, 19, 0.6);
+  --sidebar-foreground: #f7f7f7;
+  --sidebar-icon-foreground: #cecfd2;
+  --sidebar-primary: #5925dc;
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgba(82, 70, 93, 0.8);
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: transparent;
-  --sidebar-ring: oklch(0.439 0 0);
+  --sidebar-ring: #5925dc;
+  --nav: rgba(12, 14, 18, 0.7);
+  --nav-foreground: #f7f7f7;
+  --nav-active-bg: rgba(82, 70, 93, 0.8);
 
-  --disabled: hsla(220, 4%, 54%, 1);
-  --tertiary: hsla(220, 4%, 60%, 1);
-  --tertiary-foreground: hsla(220, 8%, 35%, 1);
-  --quaternary-foreground: hsla(220, 6%, 47%, 1);
+  /* Charts */
+  --chart-1: #5925dc;
+  --chart-2: #22c55e;
+  --chart-3: #ef4444;
+  --chart-4: #97f0e5;
+  --chart-5: #9b8afb;
 
-  --success: hsla(156, 83%, 11%, 1);
-  --success-foreground: hsla(150, 57%, 54%, 1);
-  --error: hsla(8, 75%, 19%, 1);
-  --error-foreground: hsla(350, 57%, 54%, 1);
+  /* Layout */
+  --sidebar-width: 248px;
+  --sidebar-width-collapsed: 64px;
 
-  --nav: hsla(244, 100%, 3%, 0.9);
-  --nav-foreground: hsla(0, 0%, 97%, 1);
+  /* Glass surfaces & elevation — Figma shadow tokens */
+  --surface-glass: rgba(26, 26, 26, 0.38);
+
+  /* Home card layout tokens */
+  --home-card-radius: var(--radius-lg);
+  --home-card-padding: 24px;
+
+  /* Home card fill — #0E0E0E @ 80% */
+  --home-card-base: rgba(14, 14, 14, 0.8);
+  --home-hero-from: rgba(14, 11, 30, 0.72);
+  --home-hero-to: rgba(39, 17, 95, 0.78);
+  --home-epoch-success-from: rgba(12, 10, 21, 0.78);
+  --home-epoch-success-to: rgba(10, 54, 32, 0.82);
+  --home-epoch-error-to: rgba(46, 11, 9, 0.82);
+  --home-storage-from: rgba(14, 11, 30, 0.78);
+  --home-storage-to: rgba(50, 40, 84, 0.82);
+  --home-chart-tint: rgba(14, 14, 14, 0.8);
+  --home-card-highlight: inset 0 1px 2px rgba(255, 255, 255, 0.3);
+  --shadow-xs: 0px 1px 2px rgba(10, 13, 18, 0.05);
+  --shadow-elevated:
+    0px 4px 8px rgba(0, 0, 0, 0.1), 0px 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-skeu-inner: inset 0px -2px 0px rgba(10, 13, 18, 0.05);
+  --shadow-skeu-inner-border: inset 0px 0px 0px 1px rgba(10, 13, 18, 0.18);
+  --shadow-skeu-highlight: inset 0px 1px 2px rgba(255, 255, 255, 0.3);
 }
 
 @layer base {
@@ -214,6 +258,12 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-heading;
   }
 }
