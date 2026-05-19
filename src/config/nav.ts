@@ -6,13 +6,14 @@ import {
   Cross,
   MessageCircleQuestionMark,
   PackageCheck,
+  User,
 } from "lucide-react"
 
 import { links } from "./link"
 
 export const navGroups = [
   {
-    label: "ANALYTIC",
+    label: "EXPLORE",
     items: [
       {
         label: "Protocol Stats",
@@ -32,6 +33,12 @@ export const navGroups = [
         icon: Cross,
         href: "/protocol-health",
         matchFn: (pathname: string) => pathname === "/protocol-health",
+      },
+      {
+        label: "Profile",
+        icon: User,
+        href: "/profile",
+        matchFn: (pathname: string) => pathname === "/profile",
       },
     ],
   },

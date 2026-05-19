@@ -10,7 +10,7 @@ import {
 } from "@mysten/dapp-kit"
 import type { WalletAccount } from "@mysten/wallet-standard"
 import { blo } from "blo"
-import { ChevronDown, Copy, ExternalLink, LogOut } from "lucide-react"
+import { ChevronDown, Copy, ExternalLink, LogOut, User } from "lucide-react"
 import { toast } from "sonner"
 
 import { images } from "@/config/image"
@@ -383,6 +383,12 @@ function WalletAccountMenu({
         </DropdownMenuItem>
 
         <DropdownMenuSeparator />
+        <Link href="/profile">
+          <DropdownMenuItem>
+            <User />
+            My Profile
+          </DropdownMenuItem>
+        </Link>
         <Link
           href={links.account(currentAccount.address)}
           target="_blank"

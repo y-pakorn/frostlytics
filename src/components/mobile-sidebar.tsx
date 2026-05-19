@@ -30,7 +30,7 @@ export function MobileSidebar({
             {navGroups.map((group) => (
               <div key={group.label} className="flex flex-col gap-1.5">
                 <SidebarSectionLabel size="mobile">{group.label}</SidebarSectionLabel>
-                <div className="flex flex-col">
+                <div className="flex min-w-0 flex-col">
                   {group.items.map((item) => {
                     const isActive = item.matchFn
                       ? item.matchFn(pathname)
@@ -53,7 +53,7 @@ export function MobileSidebar({
             ))}
           </div>
 
-          <div className="flex flex-col">
+          <div className="flex min-w-0 flex-col">
             {navFooterItems.map((item) => {
               const isActive =
                 "matchFn" in item && item.matchFn
@@ -83,10 +83,10 @@ export function MobileSidebar({
         <Link
           href="/"
           onClick={onClose}
-          className="flex items-center gap-[8.5px]"
+          className="flex min-w-0 items-center gap-2.5"
         >
-          <Icons.logo />
-          <Icons.logoWordmark />
+          <Icons.logo className="h-8 w-7" />
+          <Icons.logoWordmark className="h-5 w-[98px]" />
         </Link>
         <SidebarWalPrice />
       </div>

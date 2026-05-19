@@ -30,13 +30,17 @@ export function SegmentedControl<T extends string>({
     return (
       <LiquidGlass
         radius={size === "md" ? 20 : 12}
-        className={cn("h-10 min-w-0", className)}
+        className={cn(
+          "inline-flex h-10 w-fit max-w-full min-w-0",
+          fill && "w-full",
+          className
+        )}
         contentClassName="flex h-full min-w-0 items-center p-1"
       >
         <div
           className={cn(
-            "flex h-full w-full min-w-0 items-center overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
-            fill && "overflow-x-visible"
+            "flex h-full min-w-0 items-center overflow-x-auto overscroll-x-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden",
+            fill ? "w-full overflow-x-visible" : "w-max max-w-full"
           )}
         >
           <div

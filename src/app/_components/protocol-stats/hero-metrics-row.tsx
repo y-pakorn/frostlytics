@@ -57,7 +57,7 @@ function HeroMetric({
           {value}
         </p>
       )}
-      <p className="text-tertiary truncate text-sm leading-5 font-normal">
+      <p className="text-tertiary text-sm leading-5 font-normal min-[480px]:truncate">
         {label}
       </p>
     </div>
@@ -126,8 +126,8 @@ export function HeroMetricsRow({
         contentClassName="h-full"
         innerClassName="h-full justify-between"
       >
-        <div className="grid min-w-0 grid-cols-2 items-start gap-3 overflow-hidden md:flex md:items-center md:justify-between">
-          <div className="min-w-0 overflow-hidden md:shrink">
+        <div className="grid min-w-0 grid-cols-1 gap-4 sm:grid-cols-2 md:flex md:items-center md:justify-between">
+          <div className="min-w-0 md:shrink">
             {staking ? (
               <p className="font-heading text-foreground truncate text-base leading-normal font-bold tracking-[-0.01em]">
                 {epochLabel}
@@ -138,55 +138,48 @@ export function HeroMetricsRow({
             <p className="font-heading text-tertiary text-[10px] leading-normal font-normal tracking-[-0.01em]">
               Remaining time
             </p>
-            <div
-              className={cn(
-                "mt-1 max-w-full overflow-hidden",
-                remaining.d > 0
-                  ? "grid grid-cols-[auto_1fr] grid-rows-1"
-                  : "inline-flex max-w-full"
-              )}
-            >
+            <div className="mt-1 flex max-w-full flex-wrap items-stretch">
               {remaining.d > 0 && (
-                <CountdownPill className="col-start-1 rounded-r-none">
-                  <span className="font-heading text-foreground text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:text-2xl">
+                <CountdownPill className="rounded-r-none">
+                  <span className="font-heading text-foreground text-lg leading-normal font-semibold tracking-[-0.02em] tabular-nums sm:text-xl md:text-2xl">
                     {remaining.d}d
                   </span>
                 </CountdownPill>
               )}
               <CountdownPill
                 className={cn(
-                  "flex max-w-full items-center gap-0 px-2 md:px-3",
-                  remaining.d > 0 ? "col-start-2 rounded-l-none" : ""
+                  "flex min-w-[9.5rem] flex-1 items-center justify-center gap-0 px-2 sm:min-w-0 sm:flex-initial sm:px-3",
+                  remaining.d > 0 && "rounded-l-none"
                 )}
               >
-                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
+                <span className="font-heading text-foreground px-0.5 text-lg leading-normal font-semibold tracking-[-0.02em] tabular-nums sm:text-xl md:px-1 md:text-2xl">
                   {String(remaining.h).padStart(2, "0")}
                 </span>
-                <span className="text-foreground w-[7px] shrink-0 text-center text-xl leading-normal font-extralight md:text-2xl">
+                <span className="text-foreground w-[7px] shrink-0 text-center text-lg leading-normal font-extralight sm:text-xl md:text-2xl">
                   :
                 </span>
-                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
+                <span className="font-heading text-foreground px-0.5 text-lg leading-normal font-semibold tracking-[-0.02em] tabular-nums sm:text-xl md:px-1 md:text-2xl">
                   {String(remaining.m).padStart(2, "0")}
                 </span>
-                <span className="text-foreground w-[7px] shrink-0 text-center text-xl leading-normal font-extralight md:text-2xl">
+                <span className="text-foreground w-[7px] shrink-0 text-center text-lg leading-normal font-extralight sm:text-xl md:text-2xl">
                   :
                 </span>
-                <span className="font-heading text-foreground px-0.5 text-xl leading-normal font-semibold tracking-[-0.02em] tabular-nums md:px-1 md:text-2xl">
+                <span className="font-heading text-foreground px-0.5 text-lg leading-normal font-semibold tracking-[-0.02em] tabular-nums sm:text-xl md:px-1 md:text-2xl">
                   {String(remaining.s).padStart(2, "0")}
                 </span>
               </CountdownPill>
             </div>
           </div>
 
-          <div className="min-w-0 overflow-hidden text-right md:shrink">
+          <div className="min-w-0 text-left sm:text-right md:shrink">
             {estEpochRewardUsd != null ? (
-              <p className="font-heading text-foreground truncate text-[28px] leading-none font-bold">
+              <p className="font-heading text-foreground truncate text-2xl leading-none font-bold sm:text-[28px]">
                 ${formatter.number(estEpochRewardUsd)}
               </p>
             ) : (
-              <Skeleton className="ml-auto h-7 w-24" />
+              <Skeleton className="h-7 w-24 sm:ml-auto" />
             )}
-            <p className="text-brand-300 mt-1 min-w-0 truncate text-sm leading-5 font-bold">
+            <p className="text-brand-300 mt-1 text-sm leading-5 font-bold sm:truncate">
               Est. Total Reward ({epochLabel})
             </p>
           </div>
@@ -194,7 +187,7 @@ export function HeroMetricsRow({
 
         <Separator className="mx-auto not-md:my-2" />
 
-        <div className="grid w-full min-w-0 grid-cols-3 gap-3">
+        <div className="grid w-full min-w-0 grid-cols-1 gap-4 min-[480px]:grid-cols-3 min-[480px]:gap-3">
           <HeroMetric
             value={
               averageApy != null

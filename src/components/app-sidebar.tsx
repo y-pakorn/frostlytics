@@ -2,7 +2,6 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { Menu, PanelLeftClose } from "lucide-react"
 
 import { navFooterItems, navGroups } from "@/config/nav"
 import { cn } from "@/lib/utils"
@@ -19,9 +18,12 @@ import { MobileSidebar } from "./mobile-sidebar"
 import {
   SidebarNavItem,
   SidebarSectionLabel,
+  SidebarToggleItem,
 } from "./sidebar-nav-item"
-import { Button } from "./ui/button"
 import { SidebarWalPrice } from "./wal-price-badge"
+
+const SIDEBAR_LOGO_CLASS = "h-8 w-7"
+const SIDEBAR_WORDMARK_CLASS = "h-5 w-[98px]"
 
 function DesktopSidebarContent({
   pathname,
@@ -44,14 +46,14 @@ function DesktopSidebarContent({
       >
         <Link
           href="/"
-          className="flex items-center gap-[8.5px]"
+          className="flex min-w-0 items-center gap-2.5"
         >
           {collapsed ? (
-            <Icons.logo className="h-6 w-5" />
+            <Icons.logo className={SIDEBAR_LOGO_CLASS} />
           ) : (
             <>
-              <Icons.logo />
-              <Icons.logoWordmark />
+              <Icons.logo className={SIDEBAR_LOGO_CLASS} />
+              <Icons.logoWordmark className={SIDEBAR_WORDMARK_CLASS} />
             </>
           )}
         </Link>
@@ -73,7 +75,7 @@ function DesktopSidebarContent({
               <SidebarSectionLabel collapsed={collapsed}>
                 {group.label}
               </SidebarSectionLabel>
-              <div className="flex flex-col">
+              <div className="flex min-w-0 flex-col">
                 {group.items.map((item) => {
                   const isActive = item.matchFn
                     ? item.matchFn(pathname)
@@ -95,7 +97,7 @@ function DesktopSidebarContent({
           ))}
         </div>
 
-        <div className="flex flex-col">
+        <div className="flex min-w-0 flex-col gap-1.5">
           {navFooterItems.map((item) => {
             const isActive =
               "matchFn" in item && item.matchFn
@@ -114,23 +116,14 @@ function DesktopSidebarContent({
               />
             )
           })}
+          <SidebarSeparator
+            className={cn(
+              "bg-white/10",
+              collapsed ? "mx-auto my-1 w-8" : "mx-0 my-1"
+            )}
+          />
+          <SidebarToggleItem collapsed={collapsed} onToggle={onToggle} />
         </div>
-      </div>
-
-      <div className="flex shrink-0 justify-center px-2 pb-3">
-        <Button
-          variant="ghost"
-          size="iconSm"
-          className="rounded-lg border border-white/20 text-white"
-          onClick={onToggle}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-        >
-          {collapsed ? (
-            <Menu className="size-4 stroke-[1.5]" />
-          ) : (
-            <PanelLeftClose className="size-4 stroke-[1.5]" />
-          )}
-        </Button>
       </div>
     </SidebarContent>
   )

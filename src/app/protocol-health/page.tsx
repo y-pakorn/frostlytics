@@ -99,7 +99,11 @@ export default function ProtocolHealthPage() {
             decentralization.
           </p>
         </div>
-        <TimerangePicker value={range} onChange={setRange} />
+        <TimerangePicker
+          value={range}
+          onChange={setRange}
+          className="self-start md:self-auto"
+        />
       </div>
 
       <div className="grid grid-cols-1 items-stretch gap-3 sm:grid-cols-2 lg:grid-cols-5 [&>*]:h-full">

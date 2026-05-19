@@ -91,7 +91,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <AppSidebar />
               <SidebarInset className="relative flex min-h-screen w-full flex-col overflow-hidden">
                 <img
-                  className="pointer-events-none fixed inset-x-0 bottom-0 -z-10 w-full object-cover object-bottom"
+                  className="pointer-events-none fixed inset-x-0 bottom-0 -z-10 w-full object-cover object-bottom max-md:h-[40vh]"
                   src={images.gradientFooter}
                   alt=""
                   aria-hidden
